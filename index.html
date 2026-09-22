@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full bg-slate-50">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E&H Career Competency Tracker</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts: Inter -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    </style>
+</head>
+<body class="h-full flex flex-col text-slate-800">
+
+    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <!-- Branding -->
+                <div class="flex items-center space-x-3">
+                    <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-indigo-950 font-black text-xl shadow">
+                        E&H
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-lg leading-none">Career Competencies</h1>
+                        <span class="text-xs text-indigo-200">Emory & Henry University</span>
+                    </div>
+                </div>
+
+                <!-- Right Menu & Mode Toggle -->
+                <div class="flex items-center space-x-3 sm:space-x-4">
+                    <!-- Google Sheets Sync Status Pill -->
+                    <div id="sync-status-badge" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
+                        <span class="w-2 h-2 rounded-full bg-slate-400" id="sync-dot"></span>
+                        <span id="sync-text">Local Mode</span>
+                    </div>
+
+                    <!-- Role Selector Switcher -->
+                    <div class="bg-indigo-950 p-1 rounded-xl flex border border-indigo-700/50">
+                        <button id="view-student-btn" onclick="switchView('student')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-indigo-950 shadow">
+                            <i class="fa-solid fa-graduation-cap mr-1.5"></i> Student
+                        </button>
+                        <button id="view-admin-btn" onclick="switchView('admin')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white">
+                            <i class="fa-solid fa-user-shield mr-1.5"></i> Admin
+                        </button>
+                    </div>
+
+                    <!-- Settings Gear (Configure Backend URL) -->
+                    <button onclick="toggleSettingsModal(true)" class="p-2 text-indigo-200 hover:text-amber-400 transition-colors rounded-lg hover:bg-indigo-800" title="Database Settings">
+                        <i class="fa-solid fa-gear text-lg"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+
+        <!-- STUDENT DASHBOARD VIEW -->
+        <div id="student-view" class="space-y-6">
+            <!-- Student Header Profile Banner -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <h2 class="text-2xl font-black text-slate-900" id="student-name-display">Alex Morgan</h2>
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">Class of '26</span>
+                    </div>
+                    <p class="text-sm text-slate-500 mt-1" id="student-email-display">alex.morgan@ehc.edu • Business Administration</p>
+                </div>
+                <!-- Overall Completion Progress -->
+                <div class="w-full md:w-72 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                    <div class="flex justify-between items-center text-xs font-bold text-slate-600 mb-1">
+                        <span>Total Competency Points</span>
+                        <span id="total-points-display" class="text-indigo-900 font-extrabold text-sm">0 / 400</span>
+                    </div>
+                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
+                        <div id="total-progress-bar" class="bg-gradient-to-r from-indigo-600 to-amber-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submit Activity / Artifact Panel -->
+            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
+                <h3 class="text-lg font-bold text-slate-900 mb-1">Log Activity or Experience</h3>
+                <p class="text-sm text-slate-500 mb-4">Submit experiential learning activities to earn up to 50 points toward each competency.</p>
+
+                <form id="artifact-form" onsubmit="handleArtifactSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Target Badge</label>
+                        <select id="form-badge-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="" disabled selected>Select Competency...</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Experience Type</label>
+                        <select id="form-exp-type" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                            <option value="Internship / Work">Internship / Work Experience</option>
+                            <option value="Leadership Role">Campus Leadership / Club Officer</option>
+                            <option value="Community Service">Community Service / Volunteering</option>
+                            <option value="Academic Project">Academic Research / Project</option>
+                            <option value="Workshop / Seminar">Workshop / Career Seminar</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Requested Points (Max 50/badge)</label>
+                        <input type="number" id="form-points" min="5" max="50" step="5" value="10" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                    </div>
+
+                    <div class="flex items-end">
+                        <button type="submit" id="submit-artifact-btn" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all shadow flex items-center justify-center space-x-2">
+                            <i class="fa-solid fa-paper-plane"></i>
+                            <span>Submit Entry</span>
+                        </button>
+                    </div>
+
+                    <div class="md:col-span-2 lg:col-span-4">
+                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Description / Proof Summary</label>
+                        <textarea id="form-description" required rows="2" placeholder="Briefly describe what you did and key learnings..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+                </form>
+            </div>
+
+            <!-- NACE Competency Badges Grid -->
+            <div>
+                <h3 class="text-lg font-bold text-slate-900 mb-3">NACE Career Competencies (50 Pt Cap Each)</h3>
+                <div id="badges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Cards dynamic render -->
+                </div>
+            </div>
+
+            <!-- Student Submissions History Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                    <h3 class="font-bold text-slate-800">Your Activity & Artifact Submissions</h3>
+                    <span id="submission-count-tag" class="text-xs bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-full">0 Entries</span>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+                            <tr>
+                                <th class="p-3.5">Date</th>
+                                <th class="p-3.5">Competency</th>
+                                <th class="p-3.5">Type</th>
+                                <th class="p-3.5">Details</th>
+                                <th class="p-3.5 text-center">Points</th>
+                                <th class="p-3.5 text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="student-history-table" class="divide-y divide-slate-200 font-medium text-slate-700">
+                            <!-- Dynamic Row Injection -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- ADMIN VIEW -->
+        <div id="admin-view" class="space-y-6 hidden">
+            <!-- Admin Top Stats -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-black">
+                        <i class="fa-solid fa-clock"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-black text-slate-900" id="admin-pending-count">0</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase">Pending Review</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-black">
+                        <i class="fa-solid fa-circle-check"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-black text-slate-900" id="admin-approved-count">0</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase">Approved Items</div>
+                    </div>
+                </div>
+
+                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl font-black">
+                        <i class="fa-solid fa-award"></i>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-black text-slate-900" id="admin-capstone-count">0</div>
+                        <div class="text-xs font-semibold text-slate-500 uppercase">Capstones Unlocked</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Admin Review Table -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
+                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
+                    <div>
+                        <h3 class="font-bold text-slate-800">Student Submission Queue</h3>
+                        <p class="text-xs text-slate-500">Review activity points and capstone credential reflections</p>
+                    </div>
+                    <button onclick="refreshData()" class="px-3 py-1.5 text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg shadow-sm flex items-center space-x-1.5">
+                        <i class="fa-solid fa-arrows-rotate"></i>
+                        <span>Refresh Queue</span>
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
+                            <tr>
+                                <th class="p-3.5">Student</th>
+                                <th class="p-3.5">Submission Type</th>
+                                <th class="p-3.5">Target Badge</th>
+                                <th class="p-3.5">Details / Content</th>
+                                <th class="p-3.5 text-center">Pts</th>
+                                <th class="p-3.5 text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-queue-table" class="divide-y divide-slate-200">
+                            <!-- Dynamic Row Injection -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Capstone Submission Modal -->
+    <div id="capstone-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
+            <div class="bg-indigo-900 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-crown text-amber-400 text-lg"></i>
+                    <h3 class="font-bold text-base">Submit Capstone Credential</h3>
+                </div>
+                <button onclick="toggleCapstoneModal(false)" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="p-6 overflow-y-auto space-y-4">
+                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start space-x-2">
+                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm mt-0.5"></i>
+                    <div>
+                        <strong class="font-bold">50 Points Reached!</strong> Complete your final reflection to earn the official verified credential for <span id="modal-badge-name" class="font-bold underline">Competency</span>.
+                    </div>
+                </div>
+
+                <!-- Reflection Type Tabs -->
+                <div class="flex bg-slate-100 p-1 rounded-xl font-bold text-xs">
+                    <button id="tab-written-btn" onclick="setCapstoneTab('written')" class="flex-1 py-2 rounded-lg text-indigo-900 bg-white shadow text-center">
+                        <i class="fa-solid fa-pen-to-square mr-1"></i> Written Reflection
+                    </button>
+                    <button id="tab-video-btn" onclick="setCapstoneTab('video')" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 text-center">
+                        <i class="fa-solid fa-video mr-1"></i> Video Link
+                    </button>
+                </div>
+
+                <form id="capstone-form" onsubmit="handleFinalReflectionSubmit(event)">
+                    <input type="hidden" id="modal-badge-id">
+
+                    <!-- Written Input -->
+                    <div id="capstone-written-container" class="space-y-2">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Reflection Response (Min 100 words)</label>
+                        <textarea id="capstone-text" rows="5" placeholder="Reflect on how your experiences helped you master this competency at Emory & Henry..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
+                    </div>
+
+                    <!-- Video Link Input -->
+                    <div id="capstone-video-container" class="space-y-2 hidden">
+                        <label class="block text-xs font-bold text-slate-700 uppercase">Video Submission URL</label>
+                        <input type="url" id="capstone-video-url" placeholder="https://www.loom.com/share/... or YouTube link" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                        <p class="text-xs text-slate-500">Paste a link to your Loom, YouTube, or Google Drive video presentation.</p>
+                    </div>
+
+                    <div class="mt-6 flex justify-end space-x-3">
+                        <button type="button" onclick="toggleCapstoneModal(false)" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
+                        <button type="submit" id="submit-capstone-btn" class="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-indigo-950 rounded-lg shadow flex items-center space-x-1.5">
+                            <i class="fa-solid fa-award"></i>
+                            <span>Submit Capstone</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database / Google Sheets Settings Modal -->
+    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
+            <div class="bg-indigo-950 text-white px-6 py-4 flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fa-solid fa-database text-amber-400"></i>
+                    <h3 class="font-bold text-base">Backend & Google Sheets Connection</h3>
+                </div>
+                <button onclick="toggleSettingsModal(false)" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <p class="text-xs text-slate-600 leading-relaxed">
+                    By default, submissions run in <strong>Local Demo Mode</strong>. To persist submissions across devices, paste your <strong>Google Apps Script Web App URL</strong> below.
+                </p>
+
+                <div>
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Google Web App Endpoint URL</label>
+                    <input type="url" id="settings-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+                </div>
+
+                <div class="flex items-center justify-between p-3 bg-slate-100 rounded-xl text-xs">
+                    <span class="font-semibold text-slate-700">Current Mode:</span>
+                    <span id="settings-mode-text" class="font-bold text-slate-600">Local Memory</span>
+                </div>
+
+                <div class="flex justify-end space-x-3 pt-2">
+                    <button type="button" onclick="clearGoogleUrl()" class="px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg">Reset to Local</button>
+                    <button type="button" onclick="saveGoogleUrl()" class="px-5 py-2 text-xs font-bold bg-indigo-900 hover:bg-indigo-800 text-white rounded-lg shadow">Save Endpoint</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- CONFIG & STATE ---
+        let GOOGLE_SCRIPT_URL = localStorage.getItem('eh_google_script_url') || "";
+
+        const NACE_COMPETENCIES = [
+            { id: 'career', name: 'Career & Self-Development', icon: 'fa-user-graduate', color: 'indigo' },
+            { id: 'communication', name: 'Communication', icon: 'fa-comments', color: 'blue' },
+            { id: 'critical', name: 'Critical Thinking', icon: 'fa-brain', color: 'purple' },
+            { id: 'equity', name: 'Equity & Inclusion', icon: 'fa-handshake-angle', color: 'emerald' },
+            { id: 'leadership', name: 'Leadership', icon: 'fa-flag', color: 'amber' },
+            { id: 'professionalism', name: 'Professionalism', icon: 'fa-briefcase', color: 'slate' },
+            { id: 'teamwork', name: 'Teamwork', icon: 'fa-people-group', color: 'teal' },
+            { id: 'technology', name: 'Technology', icon: 'fa-laptop-code', color: 'cyan' }
+        ];
+
+        let state = {
+            currentView: 'student',
+            student: {
+                name: "Alex Morgan",
+                email: "alex.morgan@ehc.edu",
+                points: {
+                    career: 0, communication: 0, critical: 0, equity: 0,
+                    leadership: 0, professionalism: 0, teamwork: 0, technology: 0
+                },
+                capstones: {} // e.g. { career: 'approved' | 'pending' }
+            },
+            submissions: [],
+            capstoneType: 'written'
+        };
+
+        window.onload = function() {
+            populateCompetencyDropdown();
+            updateSyncStatusUI();
+            renderBadges();
+            renderStudentHistory();
+            renderAdminQueue();
+        };
+
+        // Switch Student / Admin views
+        function switchView(view) {
+            state.currentView = view;
+            const studentView = document.getElementById('student-view');
+            const adminView = document.getElementById('admin-view');
+            const studentBtn = document.getElementById('view-student-btn');
+            const adminBtn = document.getElementById('view-admin-btn');
+
+            if (view === 'student') {
+                studentView.classList.remove('hidden');
+                adminView.classList.add('hidden');
+                studentBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-indigo-950 shadow";
+                adminBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white";
+            } else {
+                studentView.classList.add('hidden');
+                adminView.classList.remove('hidden');
+                adminBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-indigo-950 shadow";
+                studentBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white";
+            }
+        }
+
+        function updateSyncStatusUI() {
+            const badge = document.getElementById('sync-status-badge');
+            const dot = document.getElementById('sync-dot');
+            const text = document.getElementById('sync-text');
+            const modeText = document.getElementById('settings-mode-text');
+            const input = document.getElementById('settings-url-input');
+
+            input.value = GOOGLE_SCRIPT_URL;
+
+            if (GOOGLE_SCRIPT_URL.trim() !== "") {
+                badge.classList.remove('hidden');
+                dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
+                text.innerText = "Google Sheets Sync";
+                modeText.innerText = "Connected to Google Apps Script";
+                modeText.className = "font-bold text-emerald-600";
+            } else {
+                badge.classList.remove('hidden');
+                dot.className = "w-2 h-2 rounded-full bg-amber-400";
+                text.innerText = "Local Mode";
+                modeText.innerText = "Local Browser State";
+                modeText.className = "font-bold text-slate-600";
+            }
+        }
+
+        function saveGoogleUrl() {
+            const url = document.getElementById('settings-url-input').value.trim();
+            GOOGLE_SCRIPT_URL = url;
+            localStorage.setItem('eh_google_script_url', url);
+            updateSyncStatusUI();
+            toggleSettingsModal(false);
+            showToast("Settings saved successfully!", "success");
+        }
+
+        function clearGoogleUrl() {
+            GOOGLE_SCRIPT_URL = "";
+            localStorage.removeItem('eh_google_script_url');
+            updateSyncStatusUI();
+            toggleSettingsModal(false);
+            showToast("Switched back to local mode.", "info");
+        }
+
+        function toggleSettingsModal(show) {
+            document.getElementById('settings-modal').classList.toggle('hidden', !show);
+        }
+
+        // Send submission payload to Google Sheets Apps Script endpoint
+        async function postToGoogleSheets(payload) {
+            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.trim() === "") {
+                return false; // Skip network call if not configured
+            }
+
+            try {
+                // Using no-cors mode to safely post cross-origin to Apps Script Web App
+                await fetch(GOOGLE_SCRIPT_URL, {
+                    method: 'POST',
+                    mode: 'no-cors',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                return true;
+            } catch (err) {
+                console.warn("Google Sheets Sync failed, fallback to local state:", err);
+                return false;
+            }
+        }
+
+        function populateCompetencyDropdown() {
+            const select = document.getElementById('form-badge-select');
+            select.innerHTML = '<option value="" disabled selected>Select Competency...</option>';
+            NACE_COMPETENCIES.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.id;
+                opt.textContent = `${c.name} (${state.student.points[c.id]}/50 pts)`;
+                select.appendChild(opt);
+            });
+        }
+
+        async function handleArtifactSubmit(e) {
+            e.preventDefault();
+            const badgeId = document.getElementById('form-badge-select').value;
+            const expType = document.getElementById('form-exp-type').value;
+            const requestedPoints = parseInt(document.getElementById('form-points').value, 10);
+            const description = document.getElementById('form-description').value;
+
+            const currentPts = state.student.points[badgeId] || 0;
+            if (currentPts >= 50) {
+                showToast("This badge has reached the 50-point cap! Submit your capstone instead.", "warning");
+                return;
+            }
+
+            // Cap math check
+            const allowedPoints = Math.min(requestedPoints, 50 - currentPts);
+
+            const payload = {
+                studentName: state.student.name,
+                studentEmail: state.student.email,
+                targetBadge: NACE_COMPETENCIES.find(c => c.id === badgeId)?.name || badgeId,
+                experienceType: expType,
+                points: allowedPoints,
+                content: description,
+                submissionType: "Activity / Artifact",
+                timestamp: new Date().toLocaleString()
+            };
+
+            const submitBtn = document.getElementById('submit-artifact-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Sending...</span>`;
+
+            // Attempt Google Sheets API Post
+            const synced = await postToGoogleSheets(payload);
+
+            // Update Local State
+            state.student.points[badgeId] += allowedPoints;
+            state.submissions.unshift({
+                id: Date.now(),
+                ...payload,
+                status: 'Approved'
+            });
+
+            // Reset UI
+            document.getElementById('artifact-form').reset();
+            populateCompetencyDropdown();
+            renderBadges();
+            renderStudentHistory();
+            renderAdminQueue();
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Submit Entry</span>`;
+
+            if (synced) {
+                showToast("Saved locally and synced to Google Sheets!", "success");
+            } else {
+                showToast("Saved locally in browser session.", "info");
+            }
+        }
+
+        function openCapstoneModal(badgeId) {
+            const comp = NACE_COMPETENCIES.find(c => c.id === badgeId);
+            document.getElementById('modal-badge-id').value = badgeId;
+            document.getElementById('modal-badge-name').textContent = comp ? comp.name : badgeId;
+            toggleCapstoneModal(true);
+        }
+
+        function toggleCapstoneModal(show) {
+            document.getElementById('capstone-modal').classList.toggle('hidden', !show);
+        }
+
+        function setCapstoneTab(tab) {
+            state.capstoneType = tab;
+            const writtenBtn = document.getElementById('tab-written-btn');
+            const videoBtn = document.getElementById('tab-video-btn');
+            const writtenContainer = document.getElementById('capstone-written-container');
+            const videoContainer = document.getElementById('capstone-video-container');
+
+            if (tab === 'written') {
+                writtenBtn.className = "flex-1 py-2 rounded-lg text-indigo-900 bg-white shadow text-center font-bold";
+                videoBtn.className = "flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 text-center font-bold";
+                writtenContainer.classList.remove('hidden');
+                videoContainer.classList.add('hidden');
+            } else {
+                videoBtn.className = "flex-1 py-2 rounded-lg text-indigo-900 bg-white shadow text-center font-bold";
+                writtenBtn.className = "flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 text-center font-bold";
+                videoContainer.classList.remove('hidden');
+                writtenContainer.classList.add('hidden');
+            }
+        }
+
+        async function handleFinalReflectionSubmit(e) {
+            e.preventDefault();
+            const badgeId = document.getElementById('modal-badge-id').value;
+            const comp = NACE_COMPETENCIES.find(c => c.id === badgeId);
+
+            let content = "";
+            if (state.capstoneType === 'written') {
+                content = document.getElementById('capstone-text').value;
+                if (!content || content.trim().length < 20) {
+                    showToast("Please write a complete reflection before submitting.", "warning");
+                    return;
+                }
+            } else {
+                content = document.getElementById('capstone-video-url').value;
+                if (!content || !content.startsWith('http')) {
+                    showToast("Please enter a valid video URL.", "warning");
+                    return;
+                }
+            }
+
+            const payload = {
+                studentName: state.student.name,
+                studentEmail: state.student.email,
+                targetBadge: comp ? comp.name : badgeId,
+                experienceType: "Capstone Credential",
+                points: 0,
+                content: `[${state.capstoneType.toUpperCase()}] ${content}`,
+                submissionType: "Capstone Reflection",
+                timestamp: new Date().toLocaleString()
+            };
+
+            const submitBtn = document.getElementById('submit-capstone-btn');
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Sending...</span>`;
+
+            const synced = await postToGoogleSheets(payload);
+
+            state.student.capstones[badgeId] = 'Pending Admin Review';
+            state.submissions.unshift({
+                id: Date.now(),
+                ...payload,
+                status: 'Pending Admin Review'
+            });
+
+            toggleCapstoneModal(false);
+            document.getElementById('capstone-form').reset();
+            renderBadges();
+            renderStudentHistory();
+            renderAdminQueue();
+
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = `<i class="fa-solid fa-award"></i> <span>Submit Capstone</span>`;
+
+            if (synced) {
+                showToast("Capstone reflection synced to Google Sheets!", "success");
+            } else {
+                showToast("Capstone submitted for Admin review!", "info");
+            }
+        }
+
+        function renderBadges() {
+            const grid = document.getElementById('badges-grid');
+            grid.innerHTML = "";
+
+            let grandTotal = 0;
+
+            NACE_COMPETENCIES.forEach(c => {
+                const pts = state.student.points[c.id] || 0;
+                grandTotal += pts;
+                const percent = Math.min(100, (pts / 50) * 100);
+                const capstoneStatus = state.student.capstones[c.id];
+
+                let actionArea = "";
+                if (pts >= 50) {
+                    if (capstoneStatus === 'Approved') {
+                        actionArea = `<span class="inline-flex items-center text-xs font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-full"><i class="fa-solid fa-check-double mr-1.5"></i> Credential Earned</span>`;
+                    } else if (capstoneStatus === 'Pending Admin Review') {
+                        actionArea = `<span class="inline-flex items-center text-xs font-bold text-amber-800 bg-amber-100 px-3 py-1.5 rounded-full"><i class="fa-solid fa-hourglass-half mr-1.5"></i> Review Pending</span>`;
+                    } else {
+                        actionArea = `<button onclick="openCapstoneModal('${c.id}')" class="w-full bg-amber-500 hover:bg-amber-400 text-indigo-950 text-xs font-black py-2 rounded-lg shadow transition-all"><i class="fa-solid fa-crown mr-1"></i> Submit Capstone</button>`;
+                    }
+                } else {
+                    actionArea = `<span class="text-xs text-slate-400 font-medium">${50 - pts} points needed for Capstone</span>`;
+                }
+
+                const card = document.createElement('div');
+                card.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow";
+                card.innerHTML = `
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-900 flex items-center justify-center text-lg">
+                                <i class="fa-solid ${c.icon}"></i>
+                            </div>
+                            <span class="text-xs font-extrabold px-2.5 py-1 rounded-full ${pts >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">${pts} / 50 pts</span>
+                        </div>
+                        <h4 class="font-bold text-slate-900 text-sm mb-1">${c.name}</h4>
+                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden mt-2">
+                            <div class="bg-indigo-900 h-2 rounded-full transition-all duration-300" style="width: ${percent}%"></div>
+                        </div>
+                    </div>
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-center">
+                        ${actionArea}
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+
+            // Update Total Header Display
+            document.getElementById('total-points-display').textContent = `${grandTotal} / 400`;
+            const overallPct = (grandTotal / 400) * 100;
+            document.getElementById('total-progress-bar').style.width = `${overallPct}%`;
+        }
+
+        function renderStudentHistory() {
+            const table = document.getElementById('student-history-table');
+            const countTag = document.getElementById('submission-count-tag');
+            table.innerHTML = "";
+
+            countTag.textContent = `${state.submissions.length} Entries`;
+
+            if (state.submissions.length === 0) {
+                table.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-xs">No activity entries logged yet.</td></tr>`;
+                return;
+            }
+
+            state.submissions.forEach(sub => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors";
+                row.innerHTML = `
+                    <td class="p-3.5 text-xs text-slate-500">${sub.timestamp}</td>
+                    <td class="p-3.5 font-bold text-slate-800 text-xs">${sub.targetBadge}</td>
+                    <td class="p-3.5 text-xs text-slate-600">${sub.experienceType}</td>
+                    <td class="p-3.5 text-xs text-slate-600 max-w-xs truncate">${sub.content}</td>
+                    <td class="p-3.5 text-xs font-extrabold text-center text-indigo-900">+${sub.points}</td>
+                    <td class="p-3.5 text-center">
+                        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${sub.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${sub.status}</span>
+                    </td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function renderAdminQueue() {
+            const table = document.getElementById('admin-queue-table');
+            table.innerHTML = "";
+
+            let pendingCount = 0;
+            let approvedCount = 0;
+            let capstoneCount = 0;
+
+            state.submissions.forEach(sub => {
+                if (sub.status === 'Pending Admin Review') pendingCount++;
+                if (sub.status === 'Approved') approvedCount++;
+                if (sub.submissionType === 'Capstone Reflection' && sub.status === 'Approved') capstoneCount++;
+            });
+
+            document.getElementById('admin-pending-count').textContent = pendingCount;
+            document.getElementById('admin-approved-count').textContent = approvedCount;
+            document.getElementById('admin-capstone-count').textContent = capstoneCount;
+
+            if (state.submissions.length === 0) {
+                table.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-xs">No pending items in queue.</td></tr>`;
+                return;
+            }
+
+            state.submissions.forEach(sub => {
+                const row = document.createElement('tr');
+                row.className = "hover:bg-slate-50 transition-colors";
+
+                let actionBtn = "";
+                if (sub.status === 'Pending Admin Review') {
+                    actionBtn = `<button onclick="approveSubmission(${sub.id})" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded shadow"><i class="fa-solid fa-check mr-1"></i> Approve</button>`;
+                } else {
+                    actionBtn = `<span class="text-xs font-bold text-slate-400"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Verified</span>`;
+                }
+
+                row.innerHTML = `
+                    <td class="p-3.5 text-xs">
+                        <div class="font-bold text-slate-900">${sub.studentName}</div>
+                        <div class="text-slate-400">${sub.studentEmail}</div>
+                    </td>
+                    <td class="p-3.5 text-xs font-semibold text-slate-700">${sub.submissionType}</td>
+                    <td class="p-3.5 text-xs font-bold text-indigo-900">${sub.targetBadge}</td>
+                    <td class="p-3.5 text-xs text-slate-600 max-w-sm">${sub.content}</td>
+                    <td class="p-3.5 text-xs font-extrabold text-center">+${sub.points}</td>
+                    <td class="p-3.5 text-center">${actionBtn}</td>
+                `;
+                table.appendChild(row);
+            });
+        }
+
+        function approveSubmission(subId) {
+            const sub = state.submissions.find(s => s.id === subId);
+            if (sub) {
+                sub.status = 'Approved';
+                // If this was a capstone, unlock full status for student
+                const comp = NACE_COMPETENCIES.find(c => c.name === sub.targetBadge);
+                if (comp) {
+                    state.student.capstones[comp.id] = 'Approved';
+                }
+                renderBadges();
+                renderStudentHistory();
+                renderAdminQueue();
+                showToast(`Approved capstone for ${sub.targetBadge}!`, "success");
+            }
+        }
+
+        function refreshData() {
+            showToast("Queue refreshed.", "info");
+            renderAdminQueue();
+        }
+
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+
+            let colors = "bg-slate-900 text-white";
+            let icon = "fa-circle-info";
+
+            if (type === 'success') { colors = "bg-emerald-800 text-white"; icon = "fa-circle-check"; }
+            if (type === 'warning') { colors = "bg-amber-600 text-white"; icon = "fa-triangle-exclamation"; }
+
+            toast.className = `pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-xl shadow-lg ${colors} text-xs font-bold transition-all transform translate-y-2 opacity-0`;
+            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
