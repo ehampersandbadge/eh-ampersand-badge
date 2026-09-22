@@ -13,8 +13,8 @@
                 extend: {
                     colors: {
                         eh: {
-                            blue: '#002855',  // E&H Official Navy/Indigo
-                            gold: '#EEB111',  // E&H Official Gold
+                            blue: '#002855',   // E&H Official Navy/Indigo
+                            gold: '#EEB111',   // E&H Official Gold
                             darkGold: '#C59108',
                             lightBlue: '#1B487A',
                             accentBg: '#F3F6FA'
@@ -74,7 +74,7 @@
                     <button onclick="switchTab('my-submissions')" id="nav-my-submissions" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
                         <i data-lucide="history" class="w-4 h-4 inline mr-1.5"></i> My History
                     </button>
-                    <!-- Admin Tab (Hidden by default, shown for admin emails or ?admin=true) -->
+                    <!-- Admin Tab (Hidden by default, shown for admin emails) -->
                     <button onclick="switchTab('admin')" id="nav-admin" class="hidden px-3 py-2 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
                         <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Review
                         <span id="admin-pending-count" class="ml-1.5 px-1.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full font-bold">0</span>
@@ -477,163 +477,439 @@
         </div>
     </div>
 
+    <!-- APPLICATION LOGIC JavaScript -->
     <script>
-        /* ====================================================================
-         * DATA DEFINITIONS & NACE COMPETENCY CONFIGURATION
-         * ==================================================================== */
-
-        const ADMIN_EMAILS = [
-            "careercenter@emoryhenry.edu",
-            "admin@emoryhenry.edu",
-            "jdoe@emoryhenry.edu"
-        ];
-
+        // MASTER DATA: NACE BADGES & ACTIVITY RULES
         const NACE_BADGES = [
             {
-                id: "career-dev",
-                name: "Career & Self-Development",
-                icon: "trending-up",
-                description: "Proactively develop self and career through continual personal and professional learning.",
-                specificOptions: [
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'career',
+                title: 'Career & Self-Development',
+                icon: 'compass',
+                desc: 'Proactively develop self and career through continual personal and professional learning.',
+                rules: [
+                    { type: 'core_course', title: 'Core Career Course (e.g., CORE 101/201)', points: 20 },
+                    { type: 'workshop', title: 'Attended Career Fair or Workshop', points: 10 },
+                    { type: 'resume_review', title: 'Resume Review with Career Center', points: 15 },
+                    { type: 'internship', title: 'Career Exploration / Shadowing (10+ hrs)', points: 15 }
                 ]
             },
             {
-                id: "communication",
-                name: "Communication",
-                icon: "message-square",
-                description: "Clearly and effectively exchange information, ideas, and concepts with diverse audiences.",
-                specificOptions: [
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'communication',
+                title: 'Communication',
+                icon: 'message-square',
+                desc: 'Clearly and effectively exchange information, ideas, and facts with diverse audiences.',
+                rules: [
+                    { type: 'public_speaking', title: 'Public Presentation / Symposium Speaker', points: 20 },
+                    { type: 'writing_course', title: 'Advanced Writing / Communication Intensive Course', points: 15 },
+                    { type: 'publication', title: 'Published Article, Blog, or Campus Paper', points: 15 },
+                    { type: 'debate_club', title: 'Active Role in Speech/Debate/Student Media', points: 15 }
                 ]
             },
             {
-                id: "critical-thinking",
-                name: "Critical Thinking",
-                icon: "brain",
-                description: "Identify and respond to needs based upon an understanding of situational context and logical analysis.",
-                specificOptions: [
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'critical_thinking',
+                title: 'Critical Thinking',
+                icon: 'brain',
+                desc: 'Identify and respond to needs based upon an understanding of situational context and facts.',
+                rules: [
+                    { type: 'research_project', title: 'Undergraduate Research Project', points: 25 },
+                    { type: 'lab_course', title: 'Upper-Level Quantitative/Scientific Lab', points: 15 },
+                    { type: 'case_study', title: 'Case Study Competition or Data Project', points: 15 },
+                    { type: 'problem_solving', title: 'Complex Problem Solving Assignment', points: 10 }
                 ]
             },
             {
-                id: "cultural-awareness",
-                name: "Cultural Awareness",
-                icon: "globe",
-                description: "Understand, respect, and engage with diverse cultural backgrounds and global perspectives.",
-                specificOptions: [
-                    { id: "study_abroad_2wk", name: "2-Week Study Abroad Experience", points: 25 },
-                    { id: "study_abroad_sem", name: "Full Semester Study Abroad Program", points: 50 },
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'equity_inclusion',
+                title: 'Equity & Inclusion',
+                icon: 'users',
+                desc: 'Demonstrate awareness, attitude, knowledge, and skills required to engage equitably with all.',
+                rules: [
+                    { type: 'dei_workshop', title: 'DEI Training or Cultural Awareness Workshop', points: 15 },
+                    { type: 'study_abroad', title: 'Study Abroad / Cultural Immersion Trip', points: 25 },
+                    { type: 'community_service', title: 'Diverse Community Service Engagement', points: 15 },
+                    { type: 'dei_course', title: 'Core Course with Global/Inclusive Focus', points: 15 }
                 ]
             },
             {
-                id: "leadership",
-                name: "Leadership",
-                icon: "award",
-                description: "Recognize and leverage personal strengths and the strengths of others to achieve common goals.",
-                specificOptions: [
-                    { id: "club_leadership", name: "Club Executive Board or Team Captain Role", points: 15 },
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'leadership',
+                title: 'Leadership',
+                icon: 'award',
+                desc: 'Recognize and capitalize on personal and team strengths to achieve organizational goals.',
+                rules: [
+                    { type: 'sga_officer', title: 'Student Org Officer / SGA Representative', points: 25 },
+                    { type: 'team_captain', title: 'Athletic Team Captain / Resident Advisor (RA)', points: 25 },
+                    { type: 'project_lead', title: 'Lead Coordinator for Campus Event', points: 15 },
+                    { type: 'leadership_course', title: 'Leadership Seminar or Certificate', points: 15 }
                 ]
             },
             {
-                id: "professionalism",
-                name: "Professionalism",
-                icon: "briefcase",
-                description: "Knowing work habits and understanding the impact of actions in the workplace.",
-                specificOptions: [
-                    { id: "etiquette_dinner", name: "E&H Etiquette Dinner Attendance", points: 15 },
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'professionalism',
+                title: 'Professionalism',
+                icon: 'briefcase',
+                desc: 'Knowing work habits and understanding the impact of actions on external organizations.',
+                rules: [
+                    { type: 'internship_full', title: 'Completed Formal Internship or Co-op', points: 30 },
+                    { type: 'campus_job', title: 'Campus Student Employment (1+ Semester)', points: 20 },
+                    { type: 'ethics_course', title: 'Ethics or Professional Practice Course', points: 15 },
+                    { type: 'cert', title: 'Professional Certification / Micro-credential', points: 15 }
                 ]
             },
             {
-                id: "teamwork",
-                name: "Teamwork",
-                icon: "users",
-                description: "Build and maintain collaborative relationships to work effectively toward common goals.",
-                specificOptions: [
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'teamwork',
+                title: 'Teamwork',
+                icon: 'users-round',
+                desc: 'Build and maintain collaborative relationships to work effectively toward common goals.',
+                rules: [
+                    { type: 'group_project', title: 'Major Semester Group Project / Presentation', points: 15 },
+                    { type: 'athletics', title: 'Varsity/Intramural Athletics Participation', points: 15 },
+                    { type: 'greek_life', title: 'Active Service/Greek Life Team Role', points: 15 },
+                    { type: 'ensemble', title: 'Band, Choir, or Theater Cast Ensemble', points: 15 }
                 ]
             },
             {
-                id: "technology",
-                name: "Technology",
-                icon: "cpu",
-                description: "Understand and leverage technologies ethically to enhance efficiency and solve complex problems.",
-                specificOptions: [
-                    { id: "core_new", name: "New Core Course Requirement", points: 15 },
-                    { id: "core_old", name: "Old Core Course Requirement", points: 15 }
+                id: 'technology',
+                title: 'Technology',
+                icon: 'cpu',
+                desc: 'Understand and leverage technologies ethically to enhance efficiencies and solve problems.',
+                rules: [
+                    { type: 'tech_course', title: 'CS, Data Analytics, or Tech Intensive Course', points: 20 },
+                    { type: 'software_cert', title: 'Software Certification (Excel, Python, GIS, etc.)', points: 20 },
+                    { type: 'web_design', title: 'Website, App, or Digital Media Creation', points: 15 },
+                    { type: 'tech_project', title: 'Applied Tech Project for Client/Campus', points: 15 }
                 ]
             }
         ];
 
-        // Flexible Activity options that apply to ANY NACE badge
-        const COMMON_FLEX_OPTIONS = [
-            { id: "student_emp", name: "Student Employment Position", points: 10 },
-            { id: "grow_convo", name: "GROW Structured Conversation", points: 5 },
-            { id: "club_sport_member", name: "Club Member or Student Athlete", points: 5 },
-            { id: "internship_research", name: "Internship or Undergraduate Research Project", points: 25 },
-            { id: "volunteer", name: "Community Volunteer Service", points: 5 },
-            { id: "career_advisor", name: "1-on-1 Career Advisor Appointment", points: 10 }
+        // MASTER LIST OF AUTHORIZED ADMIN EMAILS
+        const ADMIN_EMAILS = [
+            'admin@emoryhenry.edu',
+            'careers@emoryhenry.edu',
+            'jwbennett@emoryhenry.edu'
         ];
 
-        /* ====================================================================
-         * STATE MANAGEMENT & LOCAL STORAGE SETUP
-         * ==================================================================== */
+        // APP STATE
+        let currentUser = null;
+        let registeredUsers = JSON.parse(localStorage.getItem('eh_users')) || [];
+        let allSubmissions = JSON.parse(localStorage.getItem('eh_submissions')) || [];
+        let appsScriptEndpoint = localStorage.getItem('eh_script_url') || '';
+        let pendingAuthEmail = '';
+        let adminFilterMode = 'all';
 
-        let currentUser = null; // { email, firstName, lastName, fullName, isAdmin }
-        let currentTab = 'dashboard';
-        let adminFilter = 'all';
+        // INITIALIZATION
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            populateBadgeDropdown();
+            
+            // Restore Session
+            const savedUser = localStorage.getItem('eh_current_user');
+            if (savedUser) {
+                currentUser = JSON.parse(savedUser);
+                setupLoggedInView();
+            } else {
+                setupLoggedOutView();
+            }
 
-        // Load persisted state from localStorage
-        let appUsers = JSON.parse(localStorage.getItem('eh_app_users')) || {};
-        let appSubmissions = JSON.parse(localStorage.getItem('eh_app_submissions')) || [];
-        let scriptUrl = localStorage.getItem('eh_script_url') || '';
+            // Sync Settings UI
+            if (appsScriptEndpoint) {
+                document.getElementById('apps-script-url').value = appsScriptEndpoint;
+            }
+        });
 
-        // Helper: Hash password (simple client-side SHA-256 for demo security)
-        async function hashPassword(str) {
-            const msgBuffer = new TextEncoder().encode(str);
-            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-            const hashArray = Array.from(new Uint8Array(hashBuffer));
-            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        // VIEW ROUTING
+        function setupLoggedOutView() {
+            document.getElementById('hero-view').classList.remove('hidden');
+            document.getElementById('tab-dashboard').classList.add('hidden');
+            document.getElementById('tab-activities').classList.add('hidden');
+            document.getElementById('tab-my-submissions').classList.add('hidden');
+            document.getElementById('tab-admin').classList.add('hidden');
+            document.getElementById('main-nav').classList.add('hidden');
+            document.getElementById('user-menu').classList.add('hidden');
+            document.getElementById('login-button-header').classList.remove('hidden');
         }
 
-        /* ====================================================================
-         * APPLICATION INITIALIZATION
-         * ==================================================================== */
+        function setupLoggedInView() {
+            document.getElementById('hero-view').classList.add('hidden');
+            document.getElementById('main-nav').classList.remove('hidden');
+            document.getElementById('user-menu').classList.remove('hidden');
+            document.getElementById('login-button-header').classList.add('hidden');
 
-        window.onload = function() {
-            lucide.createIcons();
-            
-            // Check for dynamic admin URL parameter ?admin=true
-            const urlParams = new URLSearchParams(window.location.search);
-            const isAdminParam = urlParams.get('admin') === 'true';
+            document.getElementById('user-display-name').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+            document.getElementById('user-display-email').textContent = currentUser.email;
 
-            // Check if user session exists in localStorage
-            const savedSession = localStorage.getItem('eh_active_user');
-            if (savedSession) {
-                const sessionObj = JSON.parse(savedSession);
-                loginUserSession(sessionObj.email, isAdminParam);
-            } else if (isAdminParam) {
-                // If ?admin=true is present without login, prompt login or set demo admin
-                loginUserSession("careercenter@emoryhenry.edu", true);
+            const isAdmin = ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+            const adminTabBtn = document.getElementById('nav-admin');
+
+            if (isAdmin) {
+                adminTabBtn.classList.remove('hidden');
+                switchTab('admin');
+            } else {
+                adminTabBtn.classList.add('hidden');
+                switchTab('dashboard');
             }
 
-            updateUI();
-        };
+            refreshAppData();
+        }
 
-        /* ====================================================================
-         * AUTHENTICATION & LOGIN FLOW (PASSWORD & NAME PROMPTS)
-         * ==================================================================== */
+        function switchTab(tabName) {
+            if (!currentUser) {
+                openLoginModal();
+                return;
+            }
 
+            // Restrict admin tab to authorized personnel
+            const isAdmin = ADMIN_EMAILS.includes(currentUser.email.toLowerCase());
+            if (tabName === 'admin' && !isAdmin) {
+                alert('Access restricted to authorized administrators.');
+                tabName = 'dashboard';
+            }
+
+            ['dashboard', 'activities', 'my-submissions', 'admin'].forEach(t => {
+                const el = document.getElementById(`tab-${t}`);
+                const navBtn = document.getElementById(`nav-${t}`);
+                if (el) el.classList.add('hidden');
+                if (navBtn) {
+                    navBtn.classList.remove('bg-eh-lightBlue', 'text-white');
+                    navBtn.classList.add('text-slate-200');
+                }
+            });
+
+            const activeTab = document.getElementById(`tab-${tabName}`);
+            const activeNavBtn = document.getElementById(`nav-${tabName}`);
+
+            if (activeTab) activeTab.classList.remove('hidden');
+            if (activeNavBtn) {
+                activeNavBtn.classList.add('bg-eh-lightBlue', 'text-white');
+                activeNavBtn.classList.remove('text-slate-200');
+            }
+
+            refreshAppData();
+        }
+
+        // REFRESH & RENDER DATA
+        function refreshAppData() {
+            if (!currentUser) return;
+
+            renderBadgesGrid();
+            renderStudentHistory();
+            renderAdminPortal();
+            updateAdminPendingBadge();
+            lucide.createIcons();
+        }
+
+        function calculateUserPoints() {
+            const userSubs = allSubmissions.filter(s => s.userEmail.toLowerCase() === currentUser.email.toLowerCase() && s.status === 'approved');
+            const pointsByBadge = {};
+            
+            NACE_BADGES.forEach(b => pointsByBadge[b.id] = 0);
+            userSubs.forEach(s => {
+                if (pointsByBadge[s.badgeId] !== undefined) {
+                    pointsByBadge[s.badgeId] += parseInt(s.pointsGranted || 0);
+                }
+            });
+
+            return pointsByBadge;
+        }
+
+        function renderBadgesGrid() {
+            const grid = document.getElementById('badges-grid');
+            if (!grid) return;
+
+            const badgePoints = calculateUserPoints();
+            let totalPoints = 0;
+            let badgesEarnedCount = 0;
+
+            grid.innerHTML = NACE_BADGES.map(badge => {
+                const pts = badgePoints[badge.id] || 0;
+                totalPoints += pts;
+                
+                // Check capstone status
+                const capstoneSub = allSubmissions.find(s => 
+                    s.userEmail.toLowerCase() === currentUser.email.toLowerCase() && 
+                    s.badgeId === badge.id && 
+                    s.isCapstone === true
+                );
+
+                const isUnlocked = capstoneSub && capstoneSub.status === 'approved';
+                if (isUnlocked) badgesEarnedCount++;
+
+                const progressPct = Math.min(100, Math.round((pts / 50) * 100));
+
+                return `
+                    <div class="badge-card bg-white rounded-xl border ${isUnlocked ? 'border-emerald-400 ring-2 ring-emerald-400/20' : 'border-slate-200'} p-5 shadow-sm flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center justify-between mb-3">
+                                <div class="w-10 h-10 rounded-lg ${isUnlocked ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-100 text-eh-blue'} flex items-center justify-center">
+                                    <i data-lucide="${badge.icon}" class="w-5 h-5"></i>
+                                </div>
+                                <span class="text-xs font-bold px-2.5 py-1 rounded-full ${isUnlocked ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
+                                    ${pts} / 50 Pts
+                                </span>
+                            </div>
+
+                            <h4 class="font-bold text-eh-blue text-base leading-snug mb-1">${badge.title}</h4>
+                            <p class="text-xs text-slate-500 mb-4 line-clamp-2">${badge.desc}</p>
+                        </div>
+
+                        <div>
+                            <!-- Progress Bar -->
+                            <div class="w-full bg-slate-100 rounded-full h-2 mb-3 overflow-hidden">
+                                <div class="bg-eh-gold h-2 rounded-full transition-all duration-500" style="width: ${progressPct}%"></div>
+                            </div>
+
+                            ${isUnlocked ? `
+                                <div class="w-full py-2 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-lg text-center flex items-center justify-center">
+                                    <i data-lucide="check-circle" class="w-4 h-4 mr-1"></i> Badge Earned!
+                                </div>
+                            ` : pts >= 50 ? `
+                                <button onclick="openCapstoneModal('${badge.id}')" class="w-full py-2 bg-eh-gold hover:bg-yellow-400 text-eh-blue font-bold text-xs rounded-lg transition shadow">
+                                    Submit Capstone &rarr;
+                                </button>
+                            ` : `
+                                <button onclick="quickSubmitForBadge('${badge.id}')" class="w-full py-2 border border-slate-200 hover:border-eh-blue text-slate-700 font-semibold text-xs rounded-lg transition">
+                                    + Add Activity
+                                </button>
+                            `}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('total-points-display').textContent = totalPoints;
+            document.getElementById('badges-earned-display').textContent = `${badgesEarnedCount} / 8`;
+            document.getElementById('welcome-title').textContent = `Welcome, ${currentUser.firstName}!`;
+        }
+
+        function renderStudentHistory() {
+            const tableBody = document.getElementById('student-history-table');
+            if (!tableBody) return;
+
+            const userSubs = allSubmissions.filter(s => s.userEmail.toLowerCase() === currentUser.email.toLowerCase());
+
+            if (userSubs.length === 0) {
+                tableBody.innerHTML = `
+                    <tr>
+                        <td colspan="6" class="text-center py-8 text-slate-400 text-sm">
+                            No activities submitted yet. Click "Submit Activity" to begin tracking!
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tableBody.innerHTML = userSubs.map(s => {
+                const badge = NACE_BADGES.find(b => b.id === s.badgeId);
+                const badgeTitle = badge ? badge.title : s.badgeId;
+
+                let statusBadge = `<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-md text-xs font-bold">Pending Review</span>`;
+                if (s.status === 'approved') statusBadge = `<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md text-xs font-bold">Approved</span>`;
+                if (s.status === 'rejected') statusBadge = `<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-md text-xs font-bold">Needs Revision</span>`;
+
+                return `
+                    <tr class="hover:bg-slate-50/50">
+                        <td class="p-4 font-semibold text-eh-blue">${badgeTitle}</td>
+                        <td class="p-4 font-medium text-slate-800">
+                            ${s.title}
+                            ${s.isCapstone ? '<span class="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-bold rounded">CAPSTONE</span>' : ''}
+                        </td>
+                        <td class="p-4 font-bold text-slate-700">+${s.pointsGranted || s.pointsRequested || 0}</td>
+                        <td class="p-4 text-xs text-slate-500">${new Date(s.timestamp).toLocaleDateString()}</td>
+                        <td class="p-4">${statusBadge}</td>
+                        <td class="p-4 text-right">
+                            <button onclick="viewSubmissionDetail('${s.id}')" class="text-xs text-eh-blue font-bold hover:underline">Details</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // ADMIN PORTAL LOGIC
+        function renderAdminPortal() {
+            const adminBody = document.getElementById('admin-table-body');
+            if (!adminBody) return;
+
+            let filtered = allSubmissions;
+            if (adminFilterMode === 'pending') {
+                filtered = allSubmissions.filter(s => s.status === 'pending');
+            }
+
+            if (filtered.length === 0) {
+                adminBody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="text-center py-8 text-slate-400 text-sm">
+                            No submissions found in this filter.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            adminBody.innerHTML = filtered.map(s => {
+                const badge = NACE_BADGES.find(b => b.id === s.badgeId);
+                const badgeTitle = badge ? badge.title : s.badgeId;
+
+                return `
+                    <tr class="hover:bg-slate-50/80">
+                        <td class="p-4">
+                            <span class="font-bold text-slate-800 block">${s.userName || 'Student'}</span>
+                            <span class="text-xs text-slate-400">${s.userEmail}</span>
+                        </td>
+                        <td class="p-4 font-semibold text-eh-blue">${badgeTitle}</td>
+                        <td class="p-4">
+                            ${s.isCapstone ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 font-bold text-xs rounded-full">Capstone</span>' : '<span class="text-xs text-slate-600">Activity</span>'}
+                        </td>
+                        <td class="p-4 max-w-xs">
+                            <p class="font-medium text-slate-800 truncate">${s.title}</p>
+                            <p class="text-xs text-slate-500 truncate">${s.description || ''}</p>
+                        </td>
+                        <td class="p-4 font-bold text-slate-800">${s.pointsRequested || 0} Pts</td>
+                        <td class="p-4">
+                            <span class="px-2 py-1 rounded text-xs font-bold ${s.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : s.status === 'rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">
+                                ${s.status.toUpperCase()}
+                            </span>
+                        </td>
+                        <td class="p-4 text-right">
+                            ${s.status === 'pending' ? `
+                                <button onclick="reviewSubmission('${s.id}', 'approve')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-bold hover:bg-emerald-700 transition mr-1">Approve</button>
+                                <button onclick="reviewSubmission('${s.id}', 'reject')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs font-bold hover:bg-rose-700 transition">Reject</button>
+                            ` : `
+                                <span class="text-xs text-slate-400 italic">Reviewed</span>
+                            `}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        function filterAdminSubmissions(mode) {
+            adminFilterMode = mode;
+            renderAdminPortal();
+        }
+
+        function updateAdminPendingBadge() {
+            const pendingCount = allSubmissions.filter(s => s.status === 'pending').length;
+            const badgeEl = document.getElementById('admin-pending-count');
+            if (badgeEl) badgeEl.textContent = pendingCount;
+        }
+
+        function reviewSubmission(subId, action) {
+            const sub = allSubmissions.find(s => s.id === subId);
+            if (!sub) return;
+
+            if (action === 'approve') {
+                const pts = prompt('Enter approved points for this activity:', sub.pointsRequested || 15);
+                if (pts === null) return;
+                sub.status = 'approved';
+                sub.pointsGranted = parseInt(pts) || 0;
+            } else {
+                sub.status = 'rejected';
+                sub.pointsGranted = 0;
+            }
+
+            saveSubmissions();
+            refreshAppData();
+            syncToGoogleSheet('REVIEW_SUBMISSION', sub);
+        }
+
+        // AUTHENTICATION MODAL & LOGIC
         function openLoginModal() {
             document.getElementById('auth-modal').classList.remove('hidden');
             showAuthStep('email');
@@ -647,374 +923,134 @@
             document.getElementById('auth-step-email').classList.add('hidden');
             document.getElementById('auth-step-password').classList.add('hidden');
             document.getElementById('auth-step-register').classList.add('hidden');
+            document.getElementById('auth-error-box').classList.add('hidden');
 
             if (step === 'email') document.getElementById('auth-step-email').classList.remove('hidden');
             if (step === 'password') document.getElementById('auth-step-password').classList.remove('hidden');
             if (step === 'register') document.getElementById('auth-step-register').classList.remove('hidden');
         }
 
-        let pendingAuthEmail = "";
-
-        async function handleEmailLookup(e) {
+        function handleEmailLookup(e) {
             e.preventDefault();
             const emailInput = document.getElementById('auth-email-input').value.trim().toLowerCase();
             const errorBox = document.getElementById('auth-error-box');
 
-            // Domain Check
             if (!emailInput.endsWith('@emoryhenry.edu') && !emailInput.endsWith('@ehc.edu')) {
                 errorBox.classList.remove('hidden');
-                document.getElementById('auth-error-msg').textContent = "Access restricted. Please use your official @emoryhenry.edu or @ehc.edu email.";
+                document.getElementById('auth-error-msg').textContent = 'Please use your official @emoryhenry.edu or @ehc.edu email.';
                 return;
             }
-            errorBox.classList.add('hidden');
-            pendingAuthEmail = emailInput;
 
-            // Check if user exists in database
-            if (appUsers[pendingAuthEmail] && appUsers[pendingAuthEmail].passwordHash) {
-                // Returning User -> Require Password
-                document.getElementById('welcome-back-email').textContent = pendingAuthEmail;
+            pendingAuthEmail = emailInput;
+            const existingUser = registeredUsers.find(u => u.email.toLowerCase() === emailInput);
+
+            if (existingUser) {
+                document.getElementById('welcome-back-email').textContent = emailInput;
                 showAuthStep('password');
             } else {
-                // First-time User -> Register Name & Password
-                // Auto-extract preliminary name from email (e.g. jsmith@emoryhenry.edu -> J Smith)
-                const prefix = pendingAuthEmail.split('@')[0];
-                const parts = prefix.split('.');
-                let defaultFirst = parts[0] ? parts[0].charAt(0).toUpperCase() + parts[0].slice(1) : "";
-                let defaultLast = parts[1] ? parts[1].charAt(0).toUpperCase() + parts[1].slice(1) : "";
-
-                document.getElementById('reg-firstname').value = defaultFirst;
-                document.getElementById('reg-lastname').value = defaultLast;
                 showAuthStep('register');
             }
         }
 
-        async function handlePasswordLogin(e) {
+        function handlePasswordLogin(e) {
             e.preventDefault();
-            const pwdInput = document.getElementById('auth-password-input').value;
-            const errorBox = document.getElementById('password-error-box');
+            const password = document.getElementById('auth-password-input').value;
+            const user = registeredUsers.find(u => u.email.toLowerCase() === pendingAuthEmail);
 
-            const enteredHash = await hashPassword(pwdInput);
-            const userRecord = appUsers[pendingAuthEmail];
-
-            if (userRecord && userRecord.passwordHash === enteredHash) {
-                errorBox.classList.add('hidden');
-                loginUserSession(pendingAuthEmail);
+            if (user && user.password === password) {
+                currentUser = user;
+                localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
                 closeLoginModal();
+                setupLoggedInView();
             } else {
-                errorBox.classList.remove('hidden');
+                document.getElementById('password-error-box').classList.remove('hidden');
             }
         }
 
-        async function handleFirstTimeRegister(e) {
+        function handleFirstTimeRegister(e) {
             e.preventDefault();
             const firstName = document.getElementById('reg-firstname').value.trim();
             const lastName = document.getElementById('reg-lastname').value.trim();
-            const pwd = document.getElementById('reg-password').value;
-            const confirmPwd = document.getElementById('reg-confirm-password').value;
-            const errorBox = document.getElementById('register-error-box');
+            const password = document.getElementById('reg-password').value;
+            const confirmPassword = document.getElementById('reg-confirm-password').value;
+            const errBox = document.getElementById('register-error-box');
 
-            if (pwd !== confirmPwd) {
-                errorBox.textContent = "Passwords do not match. Please re-enter.";
-                errorBox.classList.remove('hidden');
+            if (password !== confirmPassword) {
+                errBox.textContent = 'Passwords do not match.';
+                errBox.classList.remove('hidden');
                 return;
             }
 
-            const pwdHash = await hashPassword(pwd);
-
-            // Save User Record
-            appUsers[pendingAuthEmail] = {
+            const newUser = {
+                id: 'u_' + Date.now(),
                 email: pendingAuthEmail,
-                firstName: firstName,
-                lastName: lastName,
-                fullName: `${firstName} ${lastName}`,
-                passwordHash: pwdHash,
+                firstName,
+                lastName,
+                password,
                 createdAt: new Date().toISOString()
             };
 
-            localStorage.setItem('eh_app_users', JSON.stringify(appUsers));
-            syncToBackend('registerUser', appUsers[pendingAuthEmail]);
+            registeredUsers.push(newUser);
+            localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
 
-            errorBox.classList.add('hidden');
-            loginUserSession(pendingAuthEmail);
+            currentUser = newUser;
+            localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+
             closeLoginModal();
-        }
-
-        function loginUserSession(email, forceAdmin = false) {
-            const urlParams = new URLSearchParams(window.location.search);
-            const isAdminParam = urlParams.get('admin') === 'true' || forceAdmin;
-
-            let userObj = appUsers[email];
-            if (!userObj) {
-                // Fallback demo object if none exists
-                userObj = {
-                    email: email,
-                    firstName: "E&H",
-                    lastName: "Student",
-                    fullName: "E&H Student"
-                };
-            }
-
-            const isAdmin = ADMIN_EMAILS.includes(email.toLowerCase()) || isAdminParam;
-
-            currentUser = {
-                email: email,
-                firstName: userObj.firstName,
-                lastName: userObj.lastName,
-                fullName: userObj.fullName,
-                isAdmin: isAdmin
-            };
-
-            localStorage.setItem('eh_active_user', JSON.stringify(currentUser));
-            updateUI();
+            setupLoggedInView();
+            syncToGoogleSheet('REGISTER_USER', newUser);
         }
 
         function handleSignOut() {
             currentUser = null;
-            localStorage.removeItem('eh_active_user');
-            updateUI();
+            localStorage.removeItem('eh_current_user');
+            setupLoggedOutView();
         }
 
-        /* ====================================================================
-         * UI STATE SWITCHING & RENDERING
-         * ==================================================================== */
-
-        function updateUI() {
-            const heroView = document.getElementById('hero-view');
-            const mainNav = document.getElementById('main-nav');
-            const userMenu = document.getElementById('user-menu');
-            const loginBtn = document.getElementById('login-button-header');
-            const adminNavTab = document.getElementById('nav-admin');
-
-            if (currentUser) {
-                heroView.classList.add('hidden');
-                mainNav.classList.remove('hidden');
-                userMenu.classList.remove('hidden');
-                loginBtn.classList.add('hidden');
-
-                document.getElementById('user-display-name').textContent = currentUser.fullName;
-                document.getElementById('user-display-email').textContent = currentUser.email;
-                document.getElementById('welcome-title').textContent = `Welcome, ${currentUser.firstName}!`;
-                document.getElementById('form-user-fullname').value = `${currentUser.fullName} (${currentUser.email})`;
-
-                // Admin Visibility
-                if (currentUser.isAdmin) {
-                    adminNavTab.classList.remove('hidden');
-                } else {
-                    adminNavTab.classList.add('hidden');
-                    if (currentTab === 'admin') currentTab = 'dashboard';
-                }
-
-                renderDashboardBadges();
-                renderStudentHistory();
-                renderAdminPortal();
-                switchTab(currentTab);
-            } else {
-                heroView.classList.remove('hidden');
-                mainNav.classList.add('hidden');
-                userMenu.classList.add('hidden');
-                loginBtn.classList.remove('hidden');
-                
-                // Hide tab views
-                document.getElementById('tab-dashboard').classList.add('hidden');
-                document.getElementById('tab-activities').classList.add('hidden');
-                document.getElementById('tab-my-submissions').classList.add('hidden');
-                document.getElementById('tab-admin').classList.add('hidden');
-            }
-        }
-
-        function switchTab(tabId) {
-            if (!currentUser) return;
-            currentTab = tabId;
-
-            ['dashboard', 'activities', 'my-submissions', 'admin'].forEach(t => {
-                const viewEl = document.getElementById(`tab-${t}`);
-                const navEl = document.getElementById(`nav-${t}`);
-                if (viewEl) viewEl.classList.add('hidden');
-                if (navEl) {
-                    navEl.classList.remove('bg-eh-lightBlue', 'text-white');
-                    navEl.classList.add('text-slate-200');
-                }
-            });
-
-            const activeView = document.getElementById(`tab-${tabId}`);
-            const activeNav = document.getElementById(`nav-${tabId}`);
-            if (activeView) activeView.classList.remove('hidden');
-            if (activeNav) {
-                activeNav.classList.add('bg-eh-lightBlue', 'text-white');
-                activeNav.classList.remove('text-slate-200');
-            }
-
-            if (tabId === 'activities') populateBadgeSelect();
-            if (tabId === 'my-submissions') renderStudentHistory();
-            if (tabId === 'admin') renderAdminPortal();
-        }
-
-        /* ====================================================================
-         * DASHBOARD & BADGE PROGRESS CALCULATION
-         * ==================================================================== */
-
-        function calculateUserPoints() {
-            if (!currentUser) return { pointsMap: {}, badgesEarned: 0, totalPoints: 0 };
-
-            const pointsMap = {};
-            let totalPoints = 0;
-            let badgesEarned = 0;
-
-            NACE_BADGES.forEach(b => {
-                pointsMap[b.id] = { points: 0, capstoneSubmitted: false, badgeUnlocked: false };
-            });
-
-            appSubmissions.forEach(sub => {
-                if (sub.userEmail === currentUser.email && sub.status === 'Approved') {
-                    if (sub.isCapstone) {
-                        if (pointsMap[sub.badgeId]) pointsMap[sub.badgeId].capstoneSubmitted = true;
-                    } else {
-                        if (pointsMap[sub.badgeId]) {
-                            pointsMap[sub.badgeId].points += (parseInt(sub.points) || 0);
-                        }
-                    }
-                }
-            });
-
-            NACE_BADGES.forEach(b => {
-                // Strict 50 pts cap limit per badge
-                if (pointsMap[b.id].points > 50) pointsMap[b.id].points = 50;
-                totalPoints += pointsMap[b.id].points;
-
-                // Unlock badge condition: 50 points AND approved capstone
-                if (pointsMap[b.id].points >= 50 && pointsMap[b.id].capstoneSubmitted) {
-                    pointsMap[b.id].badgeUnlocked = true;
-                    badgesEarned++;
-                }
-            });
-
-            return { pointsMap, badgesEarned, totalPoints };
-        }
-
-        function renderDashboardBadges() {
-            const grid = document.getElementById('badges-grid');
-            grid.innerHTML = '';
-
-            const { pointsMap, badgesEarned, totalPoints } = calculateUserPoints();
-
-            document.getElementById('total-points-display').textContent = totalPoints;
-            document.getElementById('badges-earned-display').textContent = `${badgesEarned} / 8`;
-
-            NACE_BADGES.forEach(badge => {
-                const data = pointsMap[badge.id];
-                const pct = Math.min(100, Math.round((data.points / 50) * 100));
-                const readyForCapstone = data.points >= 50 && !data.capstoneSubmitted;
-
-                const card = document.createElement('div');
-                card.className = `badge-card bg-white rounded-2xl border p-5 shadow-sm flex flex-col justify-between relative overflow-hidden ${
-                    data.badgeUnlocked ? 'border-yellow-400 ring-2 ring-yellow-400/30' : 'border-slate-200'
-                }`;
-
-                card.innerHTML = `
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl flex items-center justify-center ${
-                                data.badgeUnlocked ? 'bg-yellow-400 text-slate-950' : 'bg-slate-100 text-eh-blue'
-                            }">
-                                <i data-lucide="${badge.icon}" class="w-5 h-5"></i>
-                            </div>
-                            ${data.badgeUnlocked ? `
-                                <span class="px-2.5 py-1 bg-yellow-100 text-eh-blue font-extrabold text-xs rounded-full border border-yellow-300 flex items-center">
-                                    <i data-lucide="check-circle-2" class="w-3.5 h-3.5 mr-1 text-emerald-600"></i> UNLOCKED
-                                </span>
-                            ` : `
-                                <span class="text-xs font-bold text-slate-500">${data.points} / 50 pts</span>
-                            `}
-                        </div>
-
-                        <h4 class="font-bold text-slate-900 text-base leading-snug">${badge.name}</h4>
-                        <p class="text-xs text-slate-500 mt-1 line-clamp-2">${badge.description}</p>
-                    </div>
-
-                    <div class="mt-6 pt-4 border-t border-slate-100">
-                        <!-- Progress Bar -->
-                        <div class="w-full bg-slate-100 rounded-full h-2.5 mb-3 overflow-hidden">
-                            <div class="bg-eh-blue h-2.5 rounded-full transition-all duration-500" style="width: ${pct}%"></div>
-                        </div>
-
-                        ${data.badgeUnlocked ? `
-                            <p class="text-xs font-semibold text-emerald-600 text-center flex items-center justify-center">
-                                <i data-lucide="award" class="w-4 h-4 mr-1"></i> NACE Badge Credential Earned
-                            </p>
-                        ` : readyForCapstone ? `
-                            <button onclick="openCapstoneModal('${badge.id}')" class="w-full py-2 bg-eh-gold hover:bg-yellow-400 text-eh-blue font-bold rounded-lg text-xs shadow transition flex items-center justify-center">
-                                <i data-lucide="file-text" class="w-3.5 h-3.5 mr-1.5"></i> Submit Capstone Reflection
-                            </button>
-                        ` : `
-                            <button onclick="quickSubmitForBadge('${badge.id}')" class="w-full py-2 bg-slate-50 hover:bg-slate-100 text-slate-700 font-semibold rounded-lg text-xs border border-slate-200 transition">
-                                + Log Activity
-                            </button>
-                        `}
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-
-            lucide.createIcons();
-        }
-
-        /* ====================================================================
-         * ACTIVITY FORM & OPTIONS HANDLING
-         * ==================================================================== */
-
-        function populateBadgeSelect() {
+        // SUBMISSION & CAPSTONE LOGIC
+        function populateBadgeDropdown() {
             const select = document.getElementById('form-badge-select');
-            select.innerHTML = '<option value="">-- Choose a NACE Badge --</option>';
-            NACE_BADGES.forEach(b => {
-                select.innerHTML += `<option value="${b.id}">${b.name}</option>`;
-            });
-        }
+            if (!select) return;
 
-        function quickSubmitForBadge(badgeId) {
-            switchTab('activities');
-            document.getElementById('form-badge-select').value = badgeId;
-            updateActivityOptions();
+            select.innerHTML = '<option value="">-- Choose a NACE Badge --</option>' + 
+                NACE_BADGES.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
         }
 
         function updateActivityOptions() {
             const badgeId = document.getElementById('form-badge-select').value;
             const typeSelect = document.getElementById('form-activity-type');
-            typeSelect.innerHTML = '<option value="">-- Select Activity Option --</option>';
-
-            if (!badgeId) return;
-
-            const badgeObj = NACE_BADGES.find(b => b.id === badgeId);
-
-            // Group 1: Badge Specific
-            if (badgeObj && badgeObj.specificOptions.length > 0) {
-                const optgroup1 = document.createElement('optgroup');
-                optgroup1.label = `${badgeObj.name} Specific Options`;
-                badgeObj.specificOptions.forEach(opt => {
-                    optgroup1.innerHTML += `<option value="${opt.id}" data-pts="${opt.points}">${opt.name} (${opt.points} pts)</option>`;
-                });
-                typeSelect.appendChild(optgroup1);
+            
+            if (!badgeId) {
+                typeSelect.innerHTML = '<option value="">-- Select Badge First --</option>';
+                return;
             }
 
-            // Group 2: Flexible Any Badge Options
-            const optgroup2 = document.createElement('optgroup');
-            optgroup2.label = "Flexible Experience Options (Applies to Any Badge)";
-            COMMON_FLEX_OPTIONS.forEach(opt => {
-                optgroup2.innerHTML += `<option value="${opt.id}" data-pts="${opt.points}">${opt.name} (${opt.points} pts)</option>`;
-            });
-            typeSelect.appendChild(optgroup2);
+            const badge = NACE_BADGES.find(b => b.id === badgeId);
+            if (!badge) return;
+
+            typeSelect.innerHTML = '<option value="">-- Choose Activity Category --</option>' + 
+                badge.rules.map(r => `<option value="${r.type}" data-pts="${r.points}">${r.title} (+${r.points} Pts)</option>`).join('');
         }
 
         function handleActivityTypeChange() {
             const select = document.getElementById('form-activity-type');
             const selectedOpt = select.options[select.selectedIndex];
+            const pts = selectedOpt.getAttribute('data-pts');
             const hint = document.getElementById('activity-point-hint');
 
-            if (selectedOpt && selectedOpt.dataset.pts) {
-                hint.textContent = `This option awards ${selectedOpt.dataset.pts} points upon admin approval.`;
+            if (pts) {
+                hint.textContent = `This activity option is eligible for ${pts} points upon approval.`;
                 hint.classList.remove('hidden');
             } else {
                 hint.classList.add('hidden');
             }
+        }
+
+        function quickSubmitForBadge(badgeId) {
+            switchTab('activities');
+            const select = document.getElementById('form-badge-select');
+            select.value = badgeId;
+            updateActivityOptions();
         }
 
         function handleActivitySubmit(e) {
@@ -1022,45 +1058,39 @@
             if (!currentUser) return;
 
             const badgeId = document.getElementById('form-badge-select').value;
-            const activityType = document.getElementById('form-activity-type').value;
-            const selectOpt = document.getElementById('form-activity-type').options[document.getElementById('form-activity-type').selectedIndex];
-            const points = parseInt(selectOpt.dataset.pts) || 10;
-            const title = document.getElementById('form-title').value.trim();
-            const description = document.getElementById('form-description').value.trim();
-            const proofUrl = document.getElementById('form-proof-url').value.trim();
+            const typeSelect = document.getElementById('form-activity-type');
+            const selectedOpt = typeSelect.options[typeSelect.selectedIndex];
+            const ptsRequested = parseInt(selectedOpt.getAttribute('data-pts')) || 15;
 
             const newSubmission = {
-                id: 'SUB-' + Date.now(),
+                id: 'sub_' + Date.now(),
                 userEmail: currentUser.email,
-                userName: currentUser.fullName,
+                userName: `${currentUser.firstName} ${currentUser.lastName}`,
                 badgeId: badgeId,
-                activityType: activityType,
-                title: title,
-                description: description,
-                proofUrl: proofUrl,
-                points: points,
+                activityType: typeSelect.value,
+                title: document.getElementById('form-title').value.trim(),
+                description: document.getElementById('form-description').value.trim(),
+                proofUrl: document.getElementById('form-proof-url').value.trim(),
+                pointsRequested: ptsRequested,
+                pointsGranted: 0,
+                status: 'pending',
                 isCapstone: false,
-                status: 'Pending',
-                submittedAt: new Date().toLocaleDateString()
+                timestamp: new Date().toISOString()
             };
 
-            appSubmissions.unshift(newSubmission);
-            localStorage.setItem('eh_app_submissions', JSON.stringify(appSubmissions));
-            syncToBackend('addSubmission', newSubmission);
+            allSubmissions.unshift(newSubmission);
+            saveSubmissions();
 
             document.getElementById('activity-form').reset();
-            alert('Your activity has been submitted successfully for Admin review!');
             switchTab('my-submissions');
+            syncToGoogleSheet('NEW_SUBMISSION', newSubmission);
         }
 
-        /* ====================================================================
-         * CAPSTONE SUBMISSION MODAL
-         * ==================================================================== */
-
+        // CAPSTONE MODAL LOGIC
         function openCapstoneModal(badgeId) {
             const badge = NACE_BADGES.find(b => b.id === badgeId);
             document.getElementById('capstone-badge-id').value = badgeId;
-            document.getElementById('capstone-modal-badge-title').textContent = `Submit ${badge.name} Capstone`;
+            document.getElementById('capstone-modal-badge-title').textContent = `Capstone Reflection: ${badge ? badge.title : ''}`;
             document.getElementById('capstone-modal').classList.remove('hidden');
         }
 
@@ -1069,21 +1099,12 @@
         }
 
         function toggleCapstoneFormat(format) {
-            const writtenArea = document.getElementById('capstone-written-area');
-            const videoArea = document.getElementById('capstone-video-area');
-            const labelWritten = document.getElementById('format-label-written');
-            const labelVideo = document.getElementById('format-label-video');
-
             if (format === 'written') {
-                writtenArea.classList.remove('hidden');
-                videoArea.classList.add('hidden');
-                labelWritten.classList.add('border-eh-blue');
-                labelVideo.classList.remove('border-eh-blue');
+                document.getElementById('capstone-written-area').classList.remove('hidden');
+                document.getElementById('capstone-video-area').classList.add('hidden');
             } else {
-                writtenArea.classList.add('hidden');
-                videoArea.classList.remove('hidden');
-                labelVideo.classList.add('border-eh-blue');
-                labelWritten.classList.remove('border-eh-blue');
+                document.getElementById('capstone-written-area').classList.add('hidden');
+                document.getElementById('capstone-video-area').classList.remove('hidden');
             }
         }
 
@@ -1091,157 +1112,38 @@
             e.preventDefault();
             const badgeId = document.getElementById('capstone-badge-id').value;
             const format = document.querySelector('input[name="capstone_format"]:checked').value;
-            const essayText = document.getElementById('capstone-text').value.trim();
-            const videoUrl = document.getElementById('capstone-video-url').value.trim();
+            
+            let content = format === 'written' ? document.getElementById('capstone-text').value.trim() : document.getElementById('capstone-video-url').value.trim();
 
-            const description = format === 'written' ? `[Written Reflection]: ${essayText}` : `[Video Reflection Link]: ${videoUrl}`;
+            if (!content) {
+                alert('Please provide your reflection content or video link.');
+                return;
+            }
 
             const capstoneSub = {
-                id: 'CAP-' + Date.now(),
+                id: 'cap_' + Date.now(),
                 userEmail: currentUser.email,
-                userName: currentUser.fullName,
+                userName: `${currentUser.firstName} ${currentUser.lastName}`,
                 badgeId: badgeId,
-                activityType: 'Capstone Reflection',
                 title: `Capstone Reflection (${format.toUpperCase()})`,
-                description: description,
-                proofUrl: format === 'video' ? videoUrl : '',
-                points: 0,
+                description: content,
+                proofUrl: format === 'video' ? content : '',
+                pointsRequested: 0,
+                pointsGranted: 0,
+                status: 'pending',
                 isCapstone: true,
-                status: 'Pending',
-                submittedAt: new Date().toLocaleDateString()
+                timestamp: new Date().toISOString()
             };
 
-            appSubmissions.unshift(capstoneSub);
-            localStorage.setItem('eh_app_submissions', JSON.stringify(appSubmissions));
-            syncToBackend('addSubmission', capstoneSub);
-
+            allSubmissions.unshift(capstoneSub);
+            saveSubmissions();
             closeCapstoneModal();
-            alert('Capstone submitted! Once approved by an admin, your official NACE Badge will unlock.');
-            switchTab('dashboard');
+            switchTab('my-submissions');
+            syncToGoogleSheet('NEW_SUBMISSION', capstoneSub);
         }
 
-        /* ====================================================================
-         * STUDENT HISTORY & ADMIN PORTAL TABLES
-         * ==================================================================== */
-
-        function renderStudentHistory() {
-            const tbody = document.getElementById('student-history-table');
-            tbody.innerHTML = '';
-
-            const mySubmissions = appSubmissions.filter(s => s.userEmail === currentUser.email);
-
-            if (mySubmissions.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="p-6 text-center text-slate-400">No activity submissions found. Submit your first activity above!</td></tr>';
-                return;
-            }
-
-            mySubmissions.forEach(sub => {
-                const badgeObj = NACE_BADGES.find(b => b.id === sub.badgeId) || { name: sub.badgeId };
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50/80 transition";
-
-                tr.innerHTML = `
-                    <td class="p-4 font-semibold text-slate-800">${badgeObj.name}</td>
-                    <td class="p-4">
-                        <span class="font-medium text-slate-900 block">${sub.title}</span>
-                        <span class="text-xs text-slate-400 line-clamp-1">${sub.description}</span>
-                    </td>
-                    <td class="p-4 font-bold text-eh-blue">${sub.isCapstone ? 'N/A' : `+${sub.points}`}</td>
-                    <td class="p-4 text-xs text-slate-500">${sub.submittedAt}</td>
-                    <td class="p-4">${getStatusBadge(sub.status)}</td>
-                    <td class="p-4 text-right">
-                        ${sub.proofUrl ? `<a href="${sub.proofUrl}" target="_blank" class="text-xs text-eh-blue font-semibold hover:underline">View Link</a>` : '-'}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function renderAdminPortal() {
-            if (!currentUser || !currentUser.isAdmin) return;
-
-            const tbody = document.getElementById('admin-table-body');
-            tbody.innerHTML = '';
-
-            let filtered = appSubmissions;
-            if (adminFilter === 'pending') {
-                filtered = appSubmissions.filter(s => s.status === 'Pending');
-            }
-
-            // Update pending counter badge
-            const pendingCount = appSubmissions.filter(s => s.status === 'Pending').length;
-            document.getElementById('admin-pending-count').textContent = pendingCount;
-
-            if (filtered.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="7" class="p-6 text-center text-slate-400">No submissions matching filter.</td></tr>';
-                return;
-            }
-
-            filtered.forEach(sub => {
-                const badgeObj = NACE_BADGES.find(b => b.id === sub.badgeId) || { name: sub.badgeId };
-                const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition";
-
-                tr.innerHTML = `
-                    <td class="p-4">
-                        <span class="font-bold text-slate-900 block">${sub.userName}</span>
-                        <span class="text-xs text-slate-500">${sub.userEmail}</span>
-                    </td>
-                    <td class="p-4 font-semibold text-slate-800">${badgeObj.name}</td>
-                    <td class="p-4">
-                        ${sub.isCapstone ? '<span class="px-2 py-0.5 bg-yellow-100 text-eh-blue font-bold text-xs rounded">CAPSTONE</span>' : '<span class="text-xs text-slate-500">Activity</span>'}
-                    </td>
-                    <td class="p-4 max-w-xs">
-                        <span class="font-medium text-slate-900 block truncate">${sub.title}</span>
-                        <span class="text-xs text-slate-500 line-clamp-2">${sub.description}</span>
-                    </td>
-                    <td class="p-4 font-bold text-slate-700">${sub.isCapstone ? '-' : `+${sub.points} pts`}</td>
-                    <td class="p-4">${getStatusBadge(sub.status)}</td>
-                    <td class="p-4 text-right space-x-1">
-                        ${sub.status === 'Pending' ? `
-                            <button onclick="reviewSubmission('${sub.id}', 'Approved')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-xs font-bold transition">Approve</button>
-                            <button onclick="reviewSubmission('${sub.id}', 'Rejected')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded text-xs font-bold transition">Reject</button>
-                        ` : `
-                            <span class="text-xs text-slate-400 font-medium">Reviewed</span>
-                        `}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
-
-        function filterAdminSubmissions(type) {
-            adminFilter = type;
-            renderAdminPortal();
-        }
-
-        function reviewSubmission(id, newStatus) {
-            const sub = appSubmissions.find(s => s.id === id);
-            if (sub) {
-                sub.status = newStatus;
-                localStorage.setItem('eh_app_submissions', JSON.stringify(appSubmissions));
-                syncToBackend('updateSubmissionStatus', { id, status: newStatus });
-                renderAdminPortal();
-                renderDashboardBadges();
-            }
-        }
-
-        function getStatusBadge(status) {
-            if (status === 'Approved') {
-                return `<span class="px-2.5 py-1 bg-emerald-100 text-emerald-800 font-bold text-xs rounded-full inline-flex items-center"><i data-lucide="check" class="w-3 h-3 mr-1"></i> Approved</span>`;
-            } else if (status === 'Rejected') {
-                return `<span class="px-2.5 py-1 bg-rose-100 text-rose-800 font-bold text-xs rounded-full inline-flex items-center"><i data-lucide="x" class="w-3 h-3 mr-1"></i> Rejected</span>`;
-            } else {
-                return `<span class="px-2.5 py-1 bg-amber-100 text-amber-800 font-bold text-xs rounded-full inline-flex items-center"><i data-lucide="clock" class="w-3 h-3 mr-1"></i> Pending</span>`;
-            }
-        }
-
-        /* ====================================================================
-         * BACKEND SYNC (GOOGLE APPS SCRIPT SETTINGS)
-         * ==================================================================== */
-
+        // SETTINGS & APPS SCRIPT PERSISTENCE
         function openSettingsModal() {
-            document.getElementById('apps-script-url').value = scriptUrl;
             document.getElementById('settings-modal').classList.remove('hidden');
         }
 
@@ -1250,24 +1152,32 @@
         }
 
         function saveSettings() {
-            scriptUrl = document.getElementById('apps-script-url').value.trim();
-            localStorage.setItem('eh_script_url', scriptUrl);
+            const url = document.getElementById('apps-script-url').value.trim();
+            appsScriptEndpoint = url;
+            localStorage.setItem('eh_script_url', url);
             closeSettingsModal();
-            alert('Settings saved successfully.');
+            alert('Settings saved!');
         }
 
-        function syncToBackend(action, payload) {
-            if (!scriptUrl) return; // Silent return if no Google Apps Script endpoint configured
+        function saveSubmissions() {
+            localStorage.setItem('eh_submissions', JSON.stringify(allSubmissions));
+        }
 
-            try {
-                fetch(scriptUrl, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ action: action, payload: payload })
-                });
-            } catch (err) {
-                console.error('API Sync Error:', err);
+        function syncToGoogleSheet(action, payload) {
+            if (!appsScriptEndpoint) return;
+
+            fetch(appsScriptEndpoint, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, payload, timestamp: new Date().toISOString() })
+            }).catch(err => console.log('Sync Error:', err));
+        }
+
+        function viewSubmissionDetail(id) {
+            const sub = allSubmissions.find(s => s.id === id);
+            if (sub) {
+                alert(`Activity: ${sub.title}\nStatus: ${sub.status.toUpperCase()}\nPoints Granted: ${sub.pointsGranted}\nReflection: ${sub.description}`);
             }
         }
     </script>
