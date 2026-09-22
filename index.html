@@ -1,791 +1,1181 @@
 <!DOCTYPE html>
-<html lang="en" class="h-full bg-slate-50">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>E&H Career Competency Tracker</title>
-    <!-- Tailwind CSS CDN -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Font Awesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <!-- Google Fonts: Inter -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        body { font-family: 'Inter', sans-serif; }
-        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
-        .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>E&H Career Competency Tracker</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; }
+    .badge-card { transition: all 0.2s ease-in-out; }
+    .badge-card:hover { transform: translateY(-2px); }
+  </style>
 </head>
-<body class="h-full flex flex-col text-slate-800">
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col">
 
-    <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between items-center h-16">
-                <!-- Branding -->
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 bg-amber-500 rounded-lg flex items-center justify-center text-indigo-950 font-black text-xl shadow">
-                        E&H
-                    </div>
-                    <div>
-                        <h1 class="font-bold text-lg leading-none">Career Competencies</h1>
-                        <span class="text-xs text-indigo-200">Emory & Henry University</span>
-                    </div>
-                </div>
-
-                <!-- Right Menu & Mode Toggle -->
-                <div class="flex items-center space-x-3 sm:space-x-4">
-                    <!-- Google Sheets Sync Status Pill -->
-                    <div id="sync-status-badge" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">
-                        <span class="w-2 h-2 rounded-full bg-slate-400" id="sync-dot"></span>
-                        <span id="sync-text">Local Mode</span>
-                    </div>
-
-                    <!-- Role Selector Switcher -->
-                    <div class="bg-indigo-950 p-1 rounded-xl flex border border-indigo-700/50">
-                        <button id="view-student-btn" onclick="switchView('student')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-indigo-950 shadow">
-                            <i class="fa-solid fa-graduation-cap mr-1.5"></i> Student
-                        </button>
-                        <button id="view-admin-btn" onclick="switchView('admin')" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white">
-                            <i class="fa-solid fa-user-shield mr-1.5"></i> Admin
-                        </button>
-                    </div>
-
-                    <!-- Settings Gear (Configure Backend URL) -->
-                    <button onclick="toggleSettingsModal(true)" class="p-2 text-indigo-200 hover:text-amber-400 transition-colors rounded-lg hover:bg-indigo-800" title="Database Settings">
-                        <i class="fa-solid fa-gear text-lg"></i>
-                    </button>
-                </div>
-            </div>
+  <!-- TOP NAV BAR -->
+  <header class="bg-indigo-900 text-white shadow-md sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="bg-amber-400 p-2 rounded-lg text-indigo-950 font-bold text-xl">E&H</div>
+        <div>
+          <h1 class="font-bold text-lg leading-tight">Career Competency Badges</h1>
+          <p class="text-xs text-indigo-200">Emory & Henry University • NACE Framework</p>
         </div>
-    </header>
-
-    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
-    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
-
-        <!-- STUDENT DASHBOARD VIEW -->
-        <div id="student-view" class="space-y-6">
-            <!-- Student Header Profile Banner -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                <div>
-                    <div class="flex items-center space-x-2">
-                        <h2 class="text-2xl font-black text-slate-900" id="student-name-display">Alex Morgan</h2>
-                        <span class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-indigo-100 text-indigo-800">Class of '26</span>
-                    </div>
-                    <p class="text-sm text-slate-500 mt-1" id="student-email-display">alex.morgan@ehc.edu • Business Administration</p>
-                </div>
-                <!-- Overall Completion Progress -->
-                <div class="w-full md:w-72 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                    <div class="flex justify-between items-center text-xs font-bold text-slate-600 mb-1">
-                        <span>Total Competency Points</span>
-                        <span id="total-points-display" class="text-indigo-900 font-extrabold text-sm">0 / 400</span>
-                    </div>
-                    <div class="w-full bg-slate-200 rounded-full h-2.5 overflow-hidden">
-                        <div id="total-progress-bar" class="bg-gradient-to-r from-indigo-600 to-amber-500 h-2.5 rounded-full transition-all duration-500" style="width: 0%"></div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Submit Activity / Artifact Panel -->
-            <div class="bg-white rounded-2xl p-6 shadow-sm border border-slate-200">
-                <h3 class="text-lg font-bold text-slate-900 mb-1">Log Activity or Experience</h3>
-                <p class="text-sm text-slate-500 mb-4">Submit experiential learning activities to earn up to 50 points toward each competency.</p>
-
-                <form id="artifact-form" onsubmit="handleArtifactSubmit(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Target Badge</label>
-                        <select id="form-badge-select" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="" disabled selected>Select Competency...</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Experience Type</label>
-                        <select id="form-exp-type" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                            <option value="Internship / Work">Internship / Work Experience</option>
-                            <option value="Leadership Role">Campus Leadership / Club Officer</option>
-                            <option value="Community Service">Community Service / Volunteering</option>
-                            <option value="Academic Project">Academic Research / Project</option>
-                            <option value="Workshop / Seminar">Workshop / Career Seminar</option>
-                        </select>
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Requested Points (Max 50/badge)</label>
-                        <input type="number" id="form-points" min="5" max="50" step="5" value="10" required class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                    </div>
-
-                    <div class="flex items-end">
-                        <button type="submit" id="submit-artifact-btn" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-bold py-2.5 px-4 rounded-lg text-sm transition-all shadow flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-paper-plane"></i>
-                            <span>Submit Entry</span>
-                        </button>
-                    </div>
-
-                    <div class="md:col-span-2 lg:col-span-4">
-                        <label class="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">Description / Proof Summary</label>
-                        <textarea id="form-description" required rows="2" placeholder="Briefly describe what you did and key learnings..." class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-                    </div>
-                </form>
-            </div>
-
-            <!-- NACE Competency Badges Grid -->
-            <div>
-                <h3 class="text-lg font-bold text-slate-900 mb-3">NACE Career Competencies (50 Pt Cap Each)</h3>
-                <div id="badges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    <!-- Cards dynamic render -->
-                </div>
-            </div>
-
-            <!-- Student Submissions History Table -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                    <h3 class="font-bold text-slate-800">Your Activity & Artifact Submissions</h3>
-                    <span id="submission-count-tag" class="text-xs bg-slate-200 text-slate-700 font-bold px-2.5 py-1 rounded-full">0 Entries</span>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
-                            <tr>
-                                <th class="p-3.5">Date</th>
-                                <th class="p-3.5">Competency</th>
-                                <th class="p-3.5">Type</th>
-                                <th class="p-3.5">Details</th>
-                                <th class="p-3.5 text-center">Points</th>
-                                <th class="p-3.5 text-center">Status</th>
-                            </tr>
-                        </thead>
-                        <tbody id="student-history-table" class="divide-y divide-slate-200 font-medium text-slate-700">
-                            <!-- Dynamic Row Injection -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+      </div>
+      
+      <div id="nav-user-area" class="hidden flex items-center space-x-4">
+        <!-- Live Connection Status Badge -->
+        <div id="sync-status-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30">
+          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+          <span>Local Storage</span>
         </div>
 
-        <!-- ADMIN VIEW -->
-        <div id="admin-view" class="space-y-6 hidden">
-            <!-- Admin Top Stats -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center text-xl font-black">
-                        <i class="fa-solid fa-clock"></i>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-black text-slate-900" id="admin-pending-count">0</div>
-                        <div class="text-xs font-semibold text-slate-500 uppercase">Pending Review</div>
-                    </div>
-                </div>
+        <!-- Settings Button (Google Sheet API Integration) -->
+        <button onclick="toggleSettingsModal()" class="p-2 text-indigo-200 hover:text-white transition rounded-lg hover:bg-indigo-800" title="Google Sheet Database Settings">
+          <i data-lucide="settings" class="w-4 h-4"></i>
+        </button>
 
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center text-xl font-black">
-                        <i class="fa-solid fa-circle-check"></i>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-black text-slate-900" id="admin-approved-count">0</div>
-                        <div class="text-xs font-semibold text-slate-500 uppercase">Approved Items</div>
-                    </div>
-                </div>
-
-                <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-xl bg-indigo-100 text-indigo-700 flex items-center justify-center text-xl font-black">
-                        <i class="fa-solid fa-award"></i>
-                    </div>
-                    <div>
-                        <div class="text-2xl font-black text-slate-900" id="admin-capstone-count">0</div>
-                        <div class="text-xs font-semibold text-slate-500 uppercase">Capstones Unlocked</div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Admin Review Table -->
-            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
-                <div class="px-6 py-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-                    <div>
-                        <h3 class="font-bold text-slate-800">Student Submission Queue</h3>
-                        <p class="text-xs text-slate-500">Review activity points and capstone credential reflections</p>
-                    </div>
-                    <button onclick="refreshData()" class="px-3 py-1.5 text-xs font-bold bg-white border border-slate-300 hover:bg-slate-50 text-slate-700 rounded-lg shadow-sm flex items-center space-x-1.5">
-                        <i class="fa-solid fa-arrows-rotate"></i>
-                        <span>Refresh Queue</span>
-                    </button>
-                </div>
-                <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm">
-                        <thead class="bg-slate-100 text-slate-600 uppercase text-xs">
-                            <tr>
-                                <th class="p-3.5">Student</th>
-                                <th class="p-3.5">Submission Type</th>
-                                <th class="p-3.5">Target Badge</th>
-                                <th class="p-3.5">Details / Content</th>
-                                <th class="p-3.5 text-center">Pts</th>
-                                <th class="p-3.5 text-center">Action</th>
-                            </tr>
-                        </thead>
-                        <tbody id="admin-queue-table" class="divide-y divide-slate-200">
-                            <!-- Dynamic Row Injection -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <!-- View Switcher -->
+        <div class="bg-indigo-950 p-1 rounded-lg flex text-xs font-medium border border-indigo-800">
+          <button id="btn-view-student" onclick="switchView('student')" class="px-3 py-1.5 rounded-md bg-indigo-700 text-white shadow-sm transition">Student Portal</button>
+          <button id="btn-view-admin" onclick="switchView('admin')" class="px-3 py-1.5 rounded-md text-indigo-200 hover:text-white transition flex items-center gap-1.5">
+            Admin Review
+            <span id="nav-pending-badge" class="bg-amber-400 text-indigo-950 text-[10px] font-bold px-1.5 py-0.5 rounded-full hidden">0</span>
+          </button>
         </div>
-    </main>
-
-    <!-- Capstone Submission Modal -->
-    <div id="capstone-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-xl rounded-2xl shadow-2xl border border-slate-200 overflow-hidden flex flex-col max-h-[90vh]">
-            <div class="bg-indigo-900 text-white px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-crown text-amber-400 text-lg"></i>
-                    <h3 class="font-bold text-base">Submit Capstone Credential</h3>
-                </div>
-                <button onclick="toggleCapstoneModal(false)" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <div class="p-6 overflow-y-auto space-y-4">
-                <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start space-x-2">
-                    <i class="fa-solid fa-triangle-exclamation text-amber-600 text-sm mt-0.5"></i>
-                    <div>
-                        <strong class="font-bold">50 Points Reached!</strong> Complete your final reflection to earn the official verified credential for <span id="modal-badge-name" class="font-bold underline">Competency</span>.
-                    </div>
-                </div>
-
-                <!-- Reflection Type Tabs -->
-                <div class="flex bg-slate-100 p-1 rounded-xl font-bold text-xs">
-                    <button id="tab-written-btn" onclick="setCapstoneTab('written')" class="flex-1 py-2 rounded-lg text-indigo-900 bg-white shadow text-center">
-                        <i class="fa-solid fa-pen-to-square mr-1"></i> Written Reflection
-                    </button>
-                    <button id="tab-video-btn" onclick="setCapstoneTab('video')" class="flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 text-center">
-                        <i class="fa-solid fa-video mr-1"></i> Video Link
-                    </button>
-                </div>
-
-                <form id="capstone-form" onsubmit="handleFinalReflectionSubmit(event)">
-                    <input type="hidden" id="modal-badge-id">
-
-                    <!-- Written Input -->
-                    <div id="capstone-written-container" class="space-y-2">
-                        <label class="block text-xs font-bold text-slate-700 uppercase">Reflection Response (Min 100 words)</label>
-                        <textarea id="capstone-text" rows="5" placeholder="Reflect on how your experiences helped you master this competency at Emory & Henry..." class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none"></textarea>
-                    </div>
-
-                    <!-- Video Link Input -->
-                    <div id="capstone-video-container" class="space-y-2 hidden">
-                        <label class="block text-xs font-bold text-slate-700 uppercase">Video Submission URL</label>
-                        <input type="url" id="capstone-video-url" placeholder="https://www.loom.com/share/... or YouTube link" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-sm focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                        <p class="text-xs text-slate-500">Paste a link to your Loom, YouTube, or Google Drive video presentation.</p>
-                    </div>
-
-                    <div class="mt-6 flex justify-end space-x-3">
-                        <button type="button" onclick="toggleCapstoneModal(false)" class="px-4 py-2 text-xs font-bold text-slate-600 hover:bg-slate-100 rounded-lg">Cancel</button>
-                        <button type="submit" id="submit-capstone-btn" class="px-5 py-2 text-xs font-bold bg-amber-500 hover:bg-amber-400 text-indigo-950 rounded-lg shadow flex items-center space-x-1.5">
-                            <i class="fa-solid fa-award"></i>
-                            <span>Submit Capstone</span>
-                        </button>
-                    </div>
-                </form>
-            </div>
+        
+        <!-- User Profile info -->
+        <div class="flex items-center space-x-3 text-xs border-l border-indigo-800 pl-4">
+          <div class="text-right hidden sm:block">
+            <p id="user-display-name" class="font-semibold text-white">Student User</p>
+            <p id="user-display-email" class="text-indigo-300 text-[10px]">student@emoryhenry.edu</p>
+          </div>
+          <button onclick="handleSignOut()" class="p-1.5 text-indigo-200 hover:text-amber-400 transition" title="Sign Out">
+            <i data-lucide="log-out" class="w-4 h-4"></i>
+          </button>
         </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- AUTHENTICATION SCREEN -->
+  <div id="auth-screen" class="flex-1 flex items-center justify-center p-4">
+    <div class="bg-white max-w-md w-full rounded-2xl shadow-xl border border-slate-200 p-8 text-center space-y-6">
+      <div class="w-16 h-16 bg-indigo-100 text-indigo-900 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
+        <i data-lucide="award" class="w-8 h-8 text-indigo-900"></i>
+      </div>
+      <div>
+        <h2 class="text-2xl font-bold text-slate-900">Career Badging Portal</h2>
+        <p class="text-slate-500 text-sm mt-1">Earn 50-point NACE Competency Badging credentials through campus experiences.</p>
+      </div>
+
+      <div id="auth-error-box" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg p-3 text-left">
+        <p class="font-bold flex items-center gap-1"><i data-lucide="alert-circle" class="w-4 h-4"></i> Access Restricted</p>
+        <p id="auth-error-msg" class="mt-0.5">Please sign in using your official @emoryhenry.edu or @ehc.edu institutional account.</p>
+      </div>
+
+      <div class="space-y-3">
+        <button onclick="handleGoogleSignIn()" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-medium py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
+          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.24 10.285V13.4h6.887c-.58 2.319-2.72 4.041-5.887 4.041-3.66 0-6.627-2.967-6.627-6.627s2.967-6.627 6.627-6.627c1.62 0 3.1.56 4.26 1.49l2.42-2.42C18.24 1.7 15.38 1 12.24 1 6.143 1 1.2 5.943 1.2 12s4.943 11 11.04 11c6.33 0 10.53-4.45 10.53-10.72 0-.72-.08-1.42-.2-2.005H12.24z"/></svg>
+          Sign in with Emory & Henry Email
+        </button>
+
+        <div class="relative my-4">
+          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+          <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-slate-400">Testing Sandbox</span></div>
+        </div>
+
+        <button onclick="enterSandboxMode()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 px-4 rounded-xl border border-slate-300 transition text-sm flex items-center justify-center gap-2">
+          <i data-lucide="play-circle" class="w-4 h-4 text-slate-500"></i>
+          Enter Sandbox Mode
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN APPLICATION DASHBOARD -->
+  <main id="app-screen" class="hidden flex-1 max-w-7xl w-full mx-auto px-4 py-8">
+    
+    <!-- STUDENT VIEW -->
+    <div id="view-student" class="space-y-8">
+      
+      <!-- Welcome Header -->
+      <div class="bg-gradient-to-r from-indigo-900 via-indigo-850 to-slate-900 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-indigo-800">
+        <div>
+          <h2 class="text-2xl font-bold">Welcome Back, <span id="student-name-heading">Student</span>!</h2>
+          <p class="text-indigo-200 text-sm mt-1">Earn 50 points per NACE badge, then submit a capstone reflection or video to unlock your official credential.</p>
+        </div>
+      </div>
+
+      <!-- COMPETENCY BADGES GRID -->
+      <div>
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4">
+          <div>
+            <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+              <i data-lucide="award" class="w-5 h-5 text-indigo-900"></i>
+              NACE Career Competency Badges (50 Points Each)
+            </h3>
+            <p class="text-xs text-slate-500">Accumulate 50 points, then submit a capstone reflection or video to unlock each badge.</p>
+          </div>
+          <button onclick="toggleSubmitModal()" class="bg-indigo-900 hover:bg-indigo-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-1.5">
+            <i data-lucide="plus-circle" class="w-4 h-4"></i> Submit Experience Artifact
+          </button>
+        </div>
+
+        <div id="badges-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <!-- Dynamically populated 8 NACE badges -->
+        </div>
+      </div>
+
+      <!-- UNALLOCATED POINTS DISTRIBUTOR PANEL -->
+      <div id="allocation-panel" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 hidden space-y-3 shadow-sm">
+        <div class="flex items-center justify-between">
+          <h4 class="font-bold text-amber-950 flex items-center gap-2 text-sm">
+            <i data-lucide="arrow-right-left" class="w-4 h-4 text-amber-700"></i>
+            Distribute Unallocated Points
+          </h4>
+          <span class="text-xs font-semibold bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full">Flexible Allocation</span>
+        </div>
+        <p class="text-xs text-amber-800">Assign unallocated points to any badge that has not yet reached its 50-point cap.</p>
+        
+        <div class="flex flex-col sm:flex-row gap-3 items-center pt-2">
+          <select id="alloc-badge-select" class="w-full sm:w-auto flex-1 text-xs rounded-lg border-amber-300 p-2.5 bg-white focus:ring-amber-500 focus:border-amber-500">
+            <!-- Options populated dynamically -->
+          </select>
+          <input type="number" id="alloc-points-input" min="1" max="50" placeholder="Pts" class="w-24 text-xs rounded-lg border-amber-300 p-2.5 bg-white">
+          <button onclick="handleAllocatePoints()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition">Assign Points</button>
+        </div>
+      </div>
+
+      <!-- ACTIVITY LOG TABLE -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="history" class="w-5 h-5 text-indigo-900"></i>
+          My Experience & Capstone History
+        </h3>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="p-3">Submission Type</th>
+                <th class="p-3">Target Badge</th>
+                <th class="p-3">Points</th>
+                <th class="p-3">Reflection / Link</th>
+                <th class="p-3">Status</th>
+                <th class="p-3">Date</th>
+              </tr>
+            </thead>
+            <tbody id="student-history-table" class="divide-y divide-slate-100">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
     </div>
 
-    <!-- Database / Google Sheets Settings Modal -->
-    <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white w-full max-w-lg rounded-2xl shadow-2xl border border-slate-200 overflow-hidden">
-            <div class="bg-indigo-950 text-white px-6 py-4 flex justify-between items-center">
-                <div class="flex items-center space-x-2">
-                    <i class="fa-solid fa-database text-amber-400"></i>
-                    <h3 class="font-bold text-base">Backend & Google Sheets Connection</h3>
-                </div>
-                <button onclick="toggleSettingsModal(false)" class="text-indigo-200 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-            </div>
-
-            <div class="p-6 space-y-4">
-                <p class="text-xs text-slate-600 leading-relaxed">
-                    By default, submissions run in <strong>Local Demo Mode</strong>. To persist submissions across devices, paste your <strong>Google Apps Script Web App URL</strong> below.
-                </p>
-
-                <div>
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Google Web App Endpoint URL</label>
-                    <input type="url" id="settings-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none">
-                </div>
-
-                <div class="flex items-center justify-between p-3 bg-slate-100 rounded-xl text-xs">
-                    <span class="font-semibold text-slate-700">Current Mode:</span>
-                    <span id="settings-mode-text" class="font-bold text-slate-600">Local Memory</span>
-                </div>
-
-                <div class="flex justify-end space-x-3 pt-2">
-                    <button type="button" onclick="clearGoogleUrl()" class="px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-lg">Reset to Local</button>
-                    <button type="button" onclick="saveGoogleUrl()" class="px-5 py-2 text-xs font-bold bg-indigo-900 hover:bg-indigo-800 text-white rounded-lg shadow">Save Endpoint</button>
-                </div>
-            </div>
+    <!-- ADMIN VIEW -->
+    <div id="view-admin" class="hidden space-y-8">
+      <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-lg flex justify-between items-center border border-slate-800">
+        <div>
+          <h2 class="text-2xl font-bold">Career Program Director Review Queue</h2>
+          <p class="text-slate-400 text-sm mt-1">Review event submissions, points, and final capstone badge reflections/videos.</p>
         </div>
+        <div class="bg-slate-800 border border-slate-700 px-5 py-2.5 rounded-xl text-right">
+          <span class="text-xs text-slate-400 block font-medium">Pending Reviews</span>
+          <span id="admin-pending-count" class="text-2xl font-bold text-amber-400">0</span>
+        </div>
+      </div>
+
+      <!-- PENDING APPROVALS QUEUE -->
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="clock" class="w-5 h-5 text-amber-600"></i>
+          Pending Student Submissions & Capstone Reflections
+        </h3>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-xs text-slate-600">
+            <thead class="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
+              <tr>
+                <th class="p-3">Student Email</th>
+                <th class="p-3">Submission Type</th>
+                <th class="p-3">Target Badge</th>
+                <th class="p-3">Pts Value</th>
+                <th class="p-3">Reflection / Justification</th>
+                <th class="p-3">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="admin-pending-table" class="divide-y divide-slate-100">
+              <!-- Pending rows populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
 
-    <script>
-        // --- CONFIG & STATE ---
-        let GOOGLE_SCRIPT_URL = localStorage.getItem('eh_google_script_url') || "";
+  </main>
 
-        const NACE_COMPETENCIES = [
-            { id: 'career', name: 'Career & Self-Development', icon: 'fa-user-graduate', color: 'indigo' },
-            { id: 'communication', name: 'Communication', icon: 'fa-comments', color: 'blue' },
-            { id: 'critical', name: 'Critical Thinking', icon: 'fa-brain', color: 'purple' },
-            { id: 'equity', name: 'Equity & Inclusion', icon: 'fa-handshake-angle', color: 'emerald' },
-            { id: 'leadership', name: 'Leadership', icon: 'fa-flag', color: 'amber' },
-            { id: 'professionalism', name: 'Professionalism', icon: 'fa-briefcase', color: 'slate' },
-            { id: 'teamwork', name: 'Teamwork', icon: 'fa-people-group', color: 'teal' },
-            { id: 'technology', name: 'Technology', icon: 'fa-laptop-code', color: 'cyan' }
-        ];
+  <!-- SUBMIT ARTIFACT MODAL -->
+  <div id="modal-submit" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="upload-cloud" class="w-5 h-5 text-indigo-900"></i>
+          Submit Career Experience
+        </h3>
+        <button onclick="toggleSubmitModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
 
-        let state = {
-            currentView: 'student',
-            student: {
-                name: "Alex Morgan",
-                email: "alex.morgan@ehc.edu",
-                points: {
-                    career: 0, communication: 0, critical: 0, equity: 0,
-                    leadership: 0, professionalism: 0, teamwork: 0, technology: 0
-                },
-                capstones: {} // e.g. { career: 'approved' | 'pending' }
-            },
-            submissions: [],
-            capstoneType: 'written'
-        };
+      <form id="submit-artifact-form" onsubmit="handleArtifactSubmit(event)" class="space-y-4 text-xs">
+        
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Experience Type</label>
+          <select id="form-event-select" onchange="handleEventSelectionChange()" class="w-full rounded-lg border-slate-300 p-2.5 bg-slate-50 border focus:ring-indigo-500 focus:border-indigo-500 text-xs font-medium">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
 
-        window.onload = function() {
-            populateCompetencyDropdown();
-            updateSyncStatusUI();
-            renderBadges();
-            renderStudentHistory();
-            renderAdminQueue();
-        };
+        <div id="restricted-notice" class="bg-indigo-50 border border-indigo-200 text-indigo-900 rounded-lg p-3 text-[11px]">
+          <p id="restricted-notice-text" class="leading-normal font-medium">Select an experience to view rules and target badge allocation.</p>
+        </div>
 
-        // Switch Student / Admin views
-        function switchView(view) {
-            state.currentView = view;
-            const studentView = document.getElementById('student-view');
-            const adminView = document.getElementById('admin-view');
-            const studentBtn = document.getElementById('view-student-btn');
-            const adminBtn = document.getElementById('view-admin-btn');
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Target Badge Allocation</label>
+          <select id="form-badge-select" class="w-full rounded-lg border-slate-300 p-2.5 bg-slate-50 border focus:ring-indigo-500 focus:border-indigo-500 text-xs font-medium">
+            <!-- Populated dynamically -->
+          </select>
+        </div>
 
-            if (view === 'student') {
-                studentView.classList.remove('hidden');
-                adminView.classList.add('hidden');
-                studentBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-indigo-950 shadow";
-                adminBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white";
-            } else {
-                studentView.classList.add('hidden');
-                adminView.classList.remove('hidden');
-                adminBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all bg-amber-500 text-indigo-950 shadow";
-                studentBtn.className = "px-3 py-1.5 rounded-lg text-xs font-bold transition-all text-indigo-200 hover:text-white";
-            }
+        <div>
+          <label id="form-artifact-label" class="block font-semibold text-slate-700 mb-1">Submission Reflection / Justification / Link</label>
+          <p id="form-artifact-subtext" class="text-[11px] text-slate-500 mb-1">Provide details or paste a link regarding your experience.</p>
+          <textarea id="form-reflection" rows="3" required placeholder="Type reflection or paste shareable URL here..." class="w-full rounded-lg border-slate-300 p-2.5 bg-slate-50 border focus:ring-indigo-500 text-xs"></textarea>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="toggleSubmitModal()" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-900 hover:bg-indigo-800 text-white font-semibold shadow">Submit to Reviewer Queue</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- FINAL BADGE CAPSTONE MODAL -->
+  <div id="modal-final-reflection" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4 overflow-y-auto">
+    <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 my-8 border-2 border-amber-400">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="award" class="w-5 h-5 text-amber-600"></i>
+          Submit Final Capstone Credential
+        </h3>
+        <button onclick="toggleFinalReflectionModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 space-y-1">
+        <p class="font-bold">Congratulations on reaching 50 points!</p>
+        <p>You are unlocking the <span id="final-modal-badge-title" class="font-bold underline"></span> badge. Submit either a written synthesis or a video reflection link explaining how your experiences demonstrate mastery.</p>
+      </div>
+
+      <!-- Submission Method Selection Tabs -->
+      <div class="flex border-b border-slate-200 text-xs font-semibold">
+        <button type="button" id="tab-capstone-written" onclick="switchCapstoneTab('written')" class="flex-1 py-2 text-center border-b-2 border-amber-500 text-amber-800 flex items-center justify-center gap-1.5">
+          <i data-lucide="file-text" class="w-4 h-4"></i> Written Reflection
+        </button>
+        <button type="button" id="tab-capstone-video" onclick="switchCapstoneTab('video')" class="flex-1 py-2 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1.5">
+          <i data-lucide="video" class="w-4 h-4"></i> Video Submission
+        </button>
+      </div>
+
+      <form id="final-reflection-form" onsubmit="handleFinalReflectionSubmit(event)" class="space-y-4 text-xs">
+        <input type="hidden" id="final-modal-badge-id">
+        <input type="hidden" id="capstone-submission-type" value="written">
+        
+        <!-- WRITTEN REFLECTION OPTION -->
+        <div id="capstone-written-container">
+          <label class="block font-semibold text-slate-700 mb-1">Final Written Reflection</label>
+          <p class="text-[11px] text-slate-500 mb-1">Summarize key growth, skills developed, and how your completed events prove your competency in this area.</p>
+          <textarea id="final-reflection-text" rows="5" placeholder="Write your comprehensive capstone reflection here..." class="w-full rounded-lg border-slate-300 p-2.5 bg-slate-50 border focus:ring-amber-500 text-xs"></textarea>
+        </div>
+
+        <!-- VIDEO SUBMISSION OPTION -->
+        <div id="capstone-video-container" class="hidden space-y-3">
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Video Recording Link (Loom, YouTube, Google Drive, OneDrive)</label>
+            <p class="text-[11px] text-slate-500 mb-1">Provide a link to a video reflection explaining how your campus events demonstrate competency mastery.</p>
+            <input type="url" id="final-video-url" placeholder="https://www.loom.com/share/your-video-id" class="w-full rounded-lg border-slate-300 p-2.5 bg-slate-50 border focus:ring-amber-500 text-xs">
+          </div>
+          <div>
+            <label class="block font-semibold text-slate-700 mb-1">Optional Video Notes or Summary</label>
+            <textarea id="final-video-notes" rows="2" placeholder="Optional brief outline or summary of your video..." class="w-full rounded-lg border-slate-300 p-2.5 bg-slate-50 border focus:ring-amber-500 text-xs"></textarea>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100">
+          <button type="button" onclick="toggleFinalReflectionModal()" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">Cancel</button>
+          <button type="submit" class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow">Submit Capstone for Badge Unlock</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- GOOGLE SHEETS SETTINGS MODAL -->
+  <div id="modal-settings" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-100 pb-3">
+        <h3 class="font-bold text-slate-900 text-base flex items-center gap-2">
+          <i data-lucide="database" class="w-5 h-5 text-indigo-900"></i>
+          Google Sheets Database Sync
+        </h3>
+        <button onclick="toggleSettingsModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+      </div>
+
+      <div class="space-y-3 text-xs">
+        <p class="text-slate-600">Paste your deployed **Google Apps Script Web App URL** below to send student submissions straight to a Google Sheet.</p>
+        
+        <div>
+          <label class="block font-semibold text-slate-700 mb-1">Google Web App Endpoint URL</label>
+          <input type="url" id="google-api-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full rounded-lg border-slate-300 p-2.5 bg-slate-50 border focus:ring-indigo-500 text-xs">
+        </div>
+
+        <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-3 rounded-lg text-[11px] space-y-1">
+          <p class="font-bold">Need help deploying your script?</p>
+          <p>1. Open Google Sheets $\rightarrow$ Extensions $\rightarrow$ Apps Script.</p>
+          <p>2. Deploy as Web App set to "Execute as: Me" and "Who has access: Anyone".</p>
+        </div>
+      </div>
+
+      <div class="flex justify-end space-x-2 pt-2 border-t border-slate-100 text-xs">
+        <button type="button" onclick="toggleSettingsModal()" class="px-4 py-2 rounded-lg text-slate-600 hover:bg-slate-100 font-medium">Cancel</button>
+        <button type="button" onclick="saveGoogleApiUrl()" class="px-4 py-2 rounded-lg bg-indigo-900 hover:bg-indigo-800 text-white font-semibold shadow">Save Endpoint</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 8 NACE COMPETENCY BADGES ---
+    const BADGES = [
+      { id: 'career-dev', title: 'Career & Self-Development', icon: 'trending-up', targetPoints: 50, desc: 'Proactively develop oneself through continual learning and career navigation.' },
+      { id: 'communication', title: 'Communication', icon: 'message-square', targetPoints: 50, desc: 'Clearly exchange information across written, oral, and digital channels.' },
+      { id: 'critical-thinking', title: 'Critical Thinking', icon: 'brain', targetPoints: 50, desc: 'Analyze data, evaluate evidence, and synthesize complex solutions.' },
+      { id: 'cultural-awareness', title: 'Cultural Awareness', icon: 'globe', targetPoints: 50, desc: 'Engage respectfully with diverse cultures, backgrounds, and perspectives.' },
+      { id: 'leadership', title: 'Leadership', icon: 'users', targetPoints: 50, desc: 'Guide, inspire, and mobilize collaborative teams to achieve goals.' },
+      { id: 'professionalism', title: 'Professionalism', icon: 'briefcase', targetPoints: 50, desc: 'Demonstrate personal accountability, integrity, and workplace reliability.' },
+      { id: 'teamwork', title: 'Teamwork', icon: 'user-check', targetPoints: 50, desc: 'Build collaborative working relationships across diverse groups.' },
+      { id: 'technology', title: 'Technology', icon: 'cpu', targetPoints: 50, desc: 'Leverage modern digital technologies ethically and efficiently.' }
+    ];
+
+    // --- EXPANDED EXPERIENCE TYPES MATCHING EXACT REQUIREMENTS ---
+    const EXPERIENCE_TYPES = [
+      // --- ANY BADGE CATEGORY ---
+      {
+        id: 'exp_student_emp',
+        category: 'Any Badge',
+        title: 'Student Employment (10 pts/sem, max 1 job/sem)',
+        defaultPoints: 10,
+        allowedBadgeIds: [],
+        promptLabel: 'Employment Justification',
+        promptSubtext: 'Provide a reflection describing what you learned in your student employment role.',
+        rulesText: 'Worth 10 points per semester. Flexible to ANY NACE badge (requires justification).'
+      },
+      {
+        id: 'exp_grow_convo',
+        category: 'Any Badge',
+        title: 'Emory GROW Conversation (5 pts/sem, max 1 job/sem)',
+        defaultPoints: 5,
+        allowedBadgeIds: [],
+        promptLabel: 'GROW Reflection Summary',
+        promptSubtext: 'Describe key discussions during your GROW supervisor conversation.',
+        rulesText: 'Worth 5 points per semester. Flexible to ANY badge (requires justification).'
+      },
+      {
+        id: 'exp_club_sport_member',
+        category: 'Any Badge',
+        title: 'Club or Sport Member (5 pts/sem, max 15 pts/sem in category)',
+        defaultPoints: 5,
+        allowedBadgeIds: [],
+        promptLabel: 'Participation Justification',
+        promptSubtext: 'Describe your club or sport involvement and key competencies developed.',
+        rulesText: 'Worth 5 points per semester per club/sport (max 15 pts/sem). Applies to ANY badge.'
+      },
+      {
+        id: 'exp_internship_research',
+        category: 'Any Badge',
+        title: 'Internship or Major Research Project (25 pts, max 1/sem)',
+        defaultPoints: 25,
+        allowedBadgeIds: [],
+        promptLabel: 'Project Justification or Summary Link',
+        promptSubtext: 'Provide details or a link regarding your internship or research project.',
+        rulesText: 'Worth 25 points. Applies to ANY badge (requires justification).'
+      },
+      {
+        id: 'exp_volunteer_opp',
+        category: 'Any Badge',
+        title: 'Volunteer Opportunity (5 pts, max 2/sem)',
+        defaultPoints: 5,
+        allowedBadgeIds: [],
+        promptLabel: 'Volunteer Service Justification',
+        promptSubtext: 'Describe your volunteer service experience and key takeaways.',
+        rulesText: 'Worth 5 points (max 2 per semester). Applies to ANY badge.'
+      },
+      {
+        id: 'exp_career_advisor_mtg',
+        category: 'Any Badge',
+        title: 'Meeting with a Career Advisor (10 pts/meeting)',
+        defaultPoints: 10,
+        allowedBadgeIds: [],
+        promptLabel: 'Advising Meeting Summary',
+        promptSubtext: 'Describe key guidance received during your career advising session.',
+        rulesText: 'Worth 10 points per meeting. Applies to ANY badge.'
+      },
+
+      // --- CAREER & SELF-DEVELOPMENT BADGE ---
+      {
+        id: 'exp_csd_new_core',
+        category: 'Career & Self-Development',
+        title: 'New Core: Well Being, Major Course (200+ level), or Career Course (GNST 201/203) (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['career-dev'],
+        promptLabel: 'Course Artifact or Justification',
+        promptSubtext: 'Provide details on the course artifact or learning outcomes.',
+        rulesText: 'Worth 25 points toward Career & Self-Development.'
+      },
+      {
+        id: 'exp_csd_old_core',
+        category: 'Career & Self-Development',
+        title: 'Old Core: Lifetime Wellness, World Language, Major Course (200+ level), or Career Course (GNST 201/203) (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['career-dev'],
+        promptLabel: 'Course Artifact or Reflection',
+        promptSubtext: 'Submit reflection or artifact link from the completed course.',
+        rulesText: 'Worth 25 points toward Career & Self-Development.'
+      },
+      {
+        id: 'exp_csd_success_me',
+        category: 'Career & Self-Development',
+        title: 'Attend a Success Looks Like Me Event (10 pts)',
+        defaultPoints: 10,
+        allowedBadgeIds: ['career-dev'],
+        promptLabel: 'Event Takeaway Reflection',
+        promptSubtext: 'Describe what you learned from attending the Success Looks Like Me event.',
+        rulesText: 'Worth 10 points toward Career & Self-Development.'
+      },
+
+      // --- COMMUNICATION BADGE ---
+      {
+        id: 'exp_comm_new_core',
+        category: 'Communication',
+        title: 'New Core: Communication Competency or Capstone Course Artifact (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['communication'],
+        promptLabel: 'Course Artifact Link / Summary',
+        promptSubtext: 'Submit link or write-up of your course artifact demonstrating communication mastery.',
+        rulesText: 'Worth 25 points toward Communication.'
+      },
+      {
+        id: 'exp_comm_old_core',
+        category: 'Communication',
+        title: 'Old Core: World Language, Creative Arts, Humanities, Natural/Social Sciences, or Capstone (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['communication'],
+        promptLabel: 'Course Reflection or Artifact',
+        promptSubtext: 'Describe your course experience or paste a link to your course project.',
+        rulesText: 'Worth 25 points toward Communication.'
+      },
+
+      // --- CRITICAL THINKING BADGE ---
+      {
+        id: 'exp_crit_new_core',
+        category: 'Critical Thinking',
+        title: 'New Core: Big Questions or Bridge Course (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['critical-thinking'],
+        promptLabel: 'Course Project Link or Reflection',
+        promptSubtext: 'Submit artifact link or reflection proving analytical/critical thinking work.',
+        rulesText: 'Worth 25 points toward Critical Thinking.'
+      },
+      {
+        id: 'exp_crit_old_core',
+        category: 'Critical Thinking',
+        title: 'Old Core: CORE 100, 200, or 300 (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['critical-thinking'],
+        promptLabel: 'CORE Course Reflection',
+        promptSubtext: 'Provide details regarding your CORE coursework artifact.',
+        rulesText: 'Worth 25 points toward Critical Thinking.'
+      },
+
+      // --- CULTURAL AWARENESS BADGE ---
+      {
+        id: 'exp_ca_new_core',
+        category: 'Cultural Awareness',
+        title: 'New Core: Cultural Competency or Arts & Humanities Toolkit (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['cultural-awareness'],
+        promptLabel: 'Toolkit Artifact Link',
+        promptSubtext: 'Submit proof or summary of cultural competency toolkit coursework.',
+        rulesText: 'Worth 25 points toward Cultural Awareness.'
+      },
+      {
+        id: 'exp_ca_old_core',
+        category: 'Cultural Awareness',
+        title: 'Old Core: Global Citizenship, CORE 200/300, Creative Arts, or Humanities Course (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['cultural-awareness'],
+        promptLabel: 'Course Reflection',
+        promptSubtext: 'Describe insights gained regarding global citizenship or cultural perspectives.',
+        rulesText: 'Worth 25 points toward Cultural Awareness.'
+      },
+      {
+        id: 'exp_ca_study_abroad_2wk',
+        category: 'Cultural Awareness',
+        title: 'Two-Week Study Abroad Course (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['cultural-awareness'],
+        promptLabel: 'Study Abroad Summary',
+        promptSubtext: 'Summarize cultural insights gained during your two-week study abroad program.',
+        rulesText: 'Worth 25 points toward Cultural Awareness.'
+      },
+      {
+        id: 'exp_ca_study_abroad_sem',
+        category: 'Cultural Awareness',
+        title: 'One-Semester or Greater Study Abroad Course (50 pts)',
+        defaultPoints: 50,
+        allowedBadgeIds: ['cultural-awareness'],
+        promptLabel: 'Semester Study Abroad Synthesis',
+        promptSubtext: 'Provide a synthesis of cross-cultural engagement during your semester abroad.',
+        rulesText: 'Worth 50 points (completes point requirement) for Cultural Awareness.'
+      },
+
+      // --- LEADERSHIP BADGE ---
+      {
+        id: 'exp_lead_new_core',
+        category: 'Leadership',
+        title: 'New Core: Ethics & Leadership Competency, Bridge, or Capstone (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['leadership'],
+        promptLabel: 'Course Reflection / Artifact',
+        promptSubtext: 'Submit reflection on leadership principles applied during coursework.',
+        rulesText: 'Worth 25 points toward Leadership.'
+      },
+      {
+        id: 'exp_lead_old_core',
+        category: 'Leadership',
+        title: 'Old Core: CORE 300, Global Citizenship, Major Course (200+ level), or Capstone (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['leadership'],
+        promptLabel: 'Course Leadership Artifact',
+        promptSubtext: 'Describe coursework demonstrating leadership capacity.',
+        rulesText: 'Worth 25 points toward Leadership.'
+      },
+      {
+        id: 'exp_lead_club_role',
+        category: 'Leadership',
+        title: 'Leadership Role in a Club or Sport (15 pts/sem)',
+        defaultPoints: 15,
+        allowedBadgeIds: ['leadership'],
+        promptLabel: 'Officer / Leadership Role Evidence',
+        promptSubtext: 'Describe your officer role and leadership responsibilities.',
+        rulesText: 'Worth 15 points per semester toward Leadership.'
+      },
+
+      // --- PROFESSIONALISM BADGE ---
+      {
+        id: 'exp_prof_new_core',
+        category: 'Professionalism',
+        title: 'New Core: Natural Sciences, Arts & Humanities, or Social Sciences Toolkit Course (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['professionalism'],
+        promptLabel: 'Toolkit Artifact Summary',
+        promptSubtext: 'Submit details of your toolkit course artifact.',
+        rulesText: 'Worth 25 points toward Professionalism.'
+      },
+      {
+        id: 'exp_prof_old_core',
+        category: 'Professionalism',
+        title: 'Old Core: Creative Arts, Humanities, Math, Natural Sciences, or Social Sciences Course (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['professionalism'],
+        promptLabel: 'Coursework Reflection',
+        promptSubtext: 'Describe work ethics or standards demonstrated in coursework.',
+        rulesText: 'Worth 25 points toward Professionalism.'
+      },
+      {
+        id: 'exp_prof_etiquette_dinner',
+        category: 'Professionalism',
+        title: 'Attend an Etiquette Dinner (15 pts)',
+        defaultPoints: 15,
+        allowedBadgeIds: ['professionalism'],
+        promptLabel: 'Etiquette Dinner Takeaways',
+        promptSubtext: 'Describe key professional etiquette rules learned at the dinner event.',
+        rulesText: 'Worth 15 points toward Professionalism.'
+      },
+
+      // --- TEAMWORK BADGE ---
+      {
+        id: 'exp_team_new_core',
+        category: 'Teamwork',
+        title: 'New Core: Big Questions, Bridge, or Capstone Course (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['teamwork'],
+        promptLabel: 'Collaborative Artifact Link',
+        promptSubtext: 'Provide link or summary of group project or teamwork artifact.',
+        rulesText: 'Worth 25 points toward Teamwork.'
+      },
+      {
+        id: 'exp_team_old_core',
+        category: 'Teamwork',
+        title: 'Old Core: CORE 100, 200, or 300 (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['teamwork'],
+        promptLabel: 'CORE Teamwork Reflection',
+        promptSubtext: 'Describe team dynamics and outcomes achieved during course.',
+        rulesText: 'Worth 25 points toward Teamwork.'
+      },
+
+      // --- TECHNOLOGY BADGE ---
+      {
+        id: 'exp_tech_new_core',
+        category: 'Technology',
+        title: 'New Core: Quantitative Literacy, Natural Sciences, Arts & Humanities, or Social Sciences Toolkit (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['technology'],
+        promptLabel: 'Tech / Quantitative Project Link',
+        promptSubtext: 'Submit link or write-up showing technical skill application.',
+        rulesText: 'Worth 25 points toward Technology.'
+      },
+      {
+        id: 'exp_tech_old_core',
+        category: 'Technology',
+        title: 'Old Core: Creative Arts, Humanities, Math, Natural Sciences, or Social Sciences Course (25 pts)',
+        defaultPoints: 25,
+        allowedBadgeIds: ['technology'],
+        promptLabel: 'Coursework Artifact',
+        promptSubtext: 'Submit summary of digital tools or quantitative methods used.',
+        rulesText: 'Worth 25 points toward Technology.'
+      }
+    ];
+
+    let currentUser = null;
+    let currentView = 'student';
+    let googleSheetApiUrl = localStorage.getItem('eh_google_api_url') || '';
+    
+    // Application State
+    let userState = {
+      unallocatedPoints: 0,
+      badgePoints: { 
+        'career-dev': 10, 
+        'communication': 0, 
+        'critical-thinking': 50, 
+        'cultural-awareness': 50, 
+        'leadership': 15, 
+        'professionalism': 0, 
+        'teamwork': 0, 
+        'technology': 0 
+      },
+      finalReflectionsSubmitted: {
+        'cultural-awareness': 'approved'
+      },
+      history: [
+        { id: 'h1', title: 'Old Core: CORE 100', badgeId: 'critical-thinking', points: 25, content: 'https://docs.google.com/document/d/sample-core100', status: 'Approved', date: '2026-09-12' },
+        { id: 'h2', title: 'One-Semester Study Abroad in Costa Rica', badgeId: 'cultural-awareness', points: 50, content: 'Completed cross-cultural immersion coursework.', status: 'Approved', date: '2026-09-14' },
+        { id: 'h3', title: 'Final Capstone Reflection - Cultural Awareness', badgeId: 'cultural-awareness', points: 0, content: '[VIDEO LINK] https://loom.com/share/sample-reflection', status: 'Approved', date: '2026-09-15' }
+      ],
+      pendingApprovals: [
+        { id: 'p1', userEmail: 'mismith23@emoryhenry.edu', eventTitle: 'Meeting with a Career Advisor', badgeId: 'career-dev', points: 10, content: 'Discussed resume formatting and goal setting.', date: '2026-09-20', isFinalReflection: false },
+        { id: 'p2', userEmail: 'jdoe22@emoryhenry.edu', eventTitle: 'Final Capstone Video - Critical Thinking', badgeId: 'critical-thinking', points: 0, content: '[VIDEO LINK] https://loom.com/share/critical-thinking-capstone', date: '2026-09-21', isFinalReflection: true }
+      ]
+    };
+
+    // --- INITIALIZATION ---
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      populateEventSelect();
+      updateSyncBadge();
+    });
+
+    function updateSyncBadge() {
+      const badge = document.getElementById('sync-status-badge');
+      if (googleSheetApiUrl) {
+        badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-400/30";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Google Sheets Sync`;
+      } else {
+        badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30";
+        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Local Memory`;
+      }
+      badge.classList.remove('hidden');
+    }
+
+    function toggleSettingsModal() {
+      document.getElementById('modal-settings').classList.toggle('hidden');
+      if (googleSheetApiUrl) {
+        document.getElementById('google-api-url-input').value = googleSheetApiUrl;
+      }
+    }
+
+    function saveGoogleApiUrl() {
+      const val = document.getElementById('google-api-url-input').value.trim();
+      googleSheetApiUrl = val;
+      localStorage.setItem('eh_google_api_url', val);
+      updateSyncBadge();
+      toggleSettingsModal();
+      alert("Google Sheets Web App endpoint saved!");
+    }
+
+    // --- AUTHENTICATION HANDLERS ---
+    function handleGoogleSignIn() {
+      const userEmail = "mismith23@emoryhenry.edu";
+      if (userEmail.endsWith('@emoryhenry.edu') || userEmail.endsWith('@ehc.edu')) {
+        loginUser({ displayName: 'Morgan Smith', email: userEmail });
+      } else {
+        document.getElementById('auth-error-box').classList.remove('hidden');
+      }
+    }
+
+    function enterSandboxMode() {
+      loginUser({ displayName: 'Test Student', email: 'teststudent@emoryhenry.edu' });
+    }
+
+    function loginUser(userObj) {
+      currentUser = userObj;
+      document.getElementById('auth-screen').classList.add('hidden');
+      document.getElementById('app-screen').classList.remove('hidden');
+      document.getElementById('nav-user-area').classList.remove('hidden');
+      document.getElementById('user-display-name').textContent = currentUser.displayName;
+      document.getElementById('user-display-email').textContent = currentUser.email;
+      document.getElementById('student-name-heading').textContent = currentUser.displayName.split(' ')[0];
+      
+      renderDashboard();
+    }
+
+    function handleSignOut() {
+      currentUser = null;
+      document.getElementById('app-screen').classList.add('hidden');
+      document.getElementById('nav-user-area').classList.add('hidden');
+      document.getElementById('auth-screen').classList.remove('hidden');
+    }
+
+    function switchView(view) {
+      currentView = view;
+      const studentBtn = document.getElementById('btn-view-student');
+      const adminBtn = document.getElementById('btn-view-admin');
+      
+      if (view === 'student') {
+        document.getElementById('view-student').classList.remove('hidden');
+        document.getElementById('view-admin').classList.add('hidden');
+        studentBtn.className = 'px-3 py-1.5 rounded-md bg-indigo-700 text-white shadow-sm transition';
+        adminBtn.className = 'px-3 py-1.5 rounded-md text-indigo-200 hover:text-white transition flex items-center gap-1.5';
+      } else {
+        document.getElementById('view-student').classList.add('hidden');
+        document.getElementById('view-admin').classList.remove('hidden');
+        adminBtn.className = 'px-3 py-1.5 rounded-md bg-indigo-700 text-white shadow-sm transition flex items-center gap-1.5';
+        studentBtn.className = 'px-3 py-1.5 rounded-md text-indigo-200 hover:text-white transition';
+      }
+    }
+
+    // --- RENDER FUNCTIONS ---
+    function renderDashboard() {
+      renderBadges();
+      renderUnallocated();
+      renderHistoryTable();
+      renderAdminQueue();
+      lucide.createIcons();
+    }
+
+    function renderBadges() {
+      const grid = document.getElementById('badges-grid');
+      grid.innerHTML = '';
+
+      BADGES.forEach(badge => {
+        const currentPts = userState.badgePoints[badge.id] || 0;
+        const pct = Math.min(100, Math.round((currentPts / badge.targetPoints) * 100));
+        const has50Pts = currentPts >= 50;
+        const finalStatus = userState.finalReflectionsSubmitted[badge.id];
+        const isUnlocked = finalStatus === 'approved';
+
+        let badgeActionUI = '';
+        if (isUnlocked) {
+          badgeActionUI = `<span class="bg-emerald-100 text-emerald-800 font-bold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1"><i data-lucide="check-circle" class="w-3 h-3"></i> BADGE UNLOCKED</span>`;
+        } else if (has50Pts && finalStatus === 'pending') {
+          badgeActionUI = `<span class="bg-amber-100 text-amber-800 font-bold text-[10px] px-2 py-0.5 rounded-full flex items-center gap-1"><i data-lucide="clock" class="w-3 h-3"></i> CAPSTONE PENDING</span>`;
+        } else if (has50Pts) {
+          badgeActionUI = `<button onclick="openFinalReflectionModal('${badge.id}')" class="w-full mt-2 bg-amber-500 hover:bg-amber-600 text-white text-[11px] font-bold py-1.5 px-2 rounded-lg shadow transition flex items-center justify-center gap-1"><i data-lucide="award" class="w-3.5 h-3.5"></i> Submit Capstone Credential</button>`;
+        } else {
+          badgeActionUI = `<span class="text-xs font-bold text-slate-500">${currentPts}/50 PTS</span>`;
         }
 
-        function updateSyncStatusUI() {
-            const badge = document.getElementById('sync-status-badge');
-            const dot = document.getElementById('sync-dot');
-            const text = document.getElementById('sync-text');
-            const modeText = document.getElementById('settings-mode-text');
-            const input = document.getElementById('settings-url-input');
+        grid.innerHTML += `
+          <div class="badge-card bg-white rounded-2xl p-4 border ${isUnlocked ? 'border-emerald-400 ring-2 ring-emerald-400/20' : has50Pts ? 'border-amber-300 ring-2 ring-amber-400/20' : 'border-slate-200'} shadow-sm space-y-3 flex flex-col justify-between">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start">
+                <div class="p-2 rounded-xl ${isUnlocked ? 'bg-emerald-100 text-emerald-800' : has50Pts ? 'bg-amber-100 text-amber-800' : 'bg-indigo-50 text-indigo-900'}">
+                  <i data-lucide="${badge.icon}" class="w-5 h-5"></i>
+                </div>
+                ${!has50Pts ? badgeActionUI : ''}
+              </div>
+              
+              <div>
+                <h4 class="font-bold text-slate-900 text-xs">${badge.title}</h4>
+                <p class="text-slate-500 text-[10px] mt-0.5 leading-tight line-clamp-2">${badge.desc}</p>
+              </div>
+            </div>
 
-            input.value = GOOGLE_SCRIPT_URL;
+            <div class="space-y-1.5 pt-1">
+              ${has50Pts ? badgeActionUI : `
+                <div class="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden">
+                  <div class="h-full bg-indigo-900 transition-all duration-500" style="width: ${pct}%"></div>
+                </div>
+                <p class="text-[9px] text-right text-slate-400 font-medium">${pct}% Progress</p>
+              `}
+            </div>
+          </div>
+        `;
+      });
+    }
 
-            if (GOOGLE_SCRIPT_URL.trim() !== "") {
-                badge.classList.remove('hidden');
-                dot.className = "w-2 h-2 rounded-full bg-emerald-400 animate-pulse";
-                text.innerText = "Google Sheets Sync";
-                modeText.innerText = "Connected to Google Apps Script";
-                modeText.className = "font-bold text-emerald-600";
-            } else {
-                badge.classList.remove('hidden');
-                dot.className = "w-2 h-2 rounded-full bg-amber-400";
-                text.innerText = "Local Mode";
-                modeText.innerText = "Local Browser State";
-                modeText.className = "font-bold text-slate-600";
-            }
+    function renderUnallocated() {
+      const panel = document.getElementById('allocation-panel');
+      const select = document.getElementById('alloc-badge-select');
+
+      if (userState.unallocatedPoints > 0) {
+        panel.classList.remove('hidden');
+        select.innerHTML = '<option value="">-- Select Target Badge (<50 pts) --</option>';
+        BADGES.filter(b => (userState.badgePoints[b.id] || 0) < 50).forEach(b => {
+          select.innerHTML += `<option value="${b.id}">${b.title} (${userState.badgePoints[b.id] || 0}/50 pts)</option>`;
+        });
+      } else {
+        panel.classList.add('hidden');
+      }
+    }
+
+    function renderHistoryTable() {
+      const tbody = document.getElementById('student-history-table');
+      tbody.innerHTML = '';
+
+      userState.history.forEach(item => {
+        const badgeObj = BADGES.find(b => b.id === item.badgeId);
+        const badgeLabel = badgeObj ? badgeObj.title : 'Unallocated';
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3 font-semibold text-slate-800">${item.title}</td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-700 border border-slate-200 font-medium">${badgeLabel}</span></td>
+            <td class="p-3 font-bold text-indigo-900">${item.points > 0 ? '+' + item.points : 'Capstone'}</td>
+            <td class="p-3 text-slate-500 max-w-xs truncate">${item.content}</td>
+            <td class="p-3"><span class="text-emerald-600 font-semibold flex items-center gap-1"><i data-lucide="check-circle-2" class="w-3.5 h-3.5"></i> ${item.status}</span></td>
+            <td class="p-3 text-slate-400">${item.date}</td>
+          </tr>
+        `;
+      });
+    }
+
+    function renderAdminQueue() {
+      const tbody = document.getElementById('admin-pending-table');
+      const pendingBadge = document.getElementById('nav-pending-badge');
+      const pendingCount = document.getElementById('admin-pending-count');
+
+      tbody.innerHTML = '';
+      const count = userState.pendingApprovals.length;
+      
+      pendingCount.textContent = count;
+      if (count > 0) {
+        pendingBadge.textContent = count;
+        pendingBadge.classList.remove('hidden');
+      } else {
+        pendingBadge.classList.add('hidden');
+      }
+
+      userState.pendingApprovals.forEach(item => {
+        const badgeObj = BADGES.find(b => b.id === item.badgeId);
+        
+        tbody.innerHTML += `
+          <tr class="${item.isFinalReflection ? 'bg-amber-50/50' : ''}">
+            <td class="p-3 font-medium text-slate-900">${item.userEmail}</td>
+            <td class="p-3 font-medium text-slate-800 flex items-center gap-1.5">
+              ${item.isFinalReflection ? '<span class="bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded text-[10px]">CAPSTONE</span>' : ''}
+              ${item.eventTitle}
+            </td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-900 font-medium">${badgeObj ? badgeObj.title : 'Unallocated'}</span></td>
+            <td class="p-3 font-bold text-slate-800">${item.points > 0 ? '+' + item.points : 'Unlock'}</td>
+            <td class="p-3 text-slate-600 max-w-xs truncate" title="${item.content}">${item.content}</td>
+            <td class="p-3">
+              <button onclick="approveSubmission('${item.id}')" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-3 py-1 rounded-lg shadow text-[11px] transition">Approve & Verify</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    // --- FORM & EVENT HANDLERS ---
+    function populateEventSelect() {
+      const select = document.getElementById('form-event-select');
+      select.innerHTML = '<option value="">-- Choose Experience Type --</option>';
+
+      // Group activities by category
+      const categories = [...new Set(EXPERIENCE_TYPES.map(e => e.category))];
+      categories.forEach(cat => {
+        const group = document.createElement('optgroup');
+        group.label = cat;
+        EXPERIENCE_TYPES.filter(e => e.category === cat).forEach(ev => {
+          const opt = document.createElement('option');
+          opt.value = ev.id;
+          opt.textContent = ev.title;
+          group.appendChild(opt);
+        });
+        select.appendChild(group);
+      });
+    }
+
+    function handleEventSelectionChange() {
+      const eventId = document.getElementById('form-event-select').value;
+      const badgeSelect = document.getElementById('form-badge-select');
+      const noticeText = document.getElementById('restricted-notice-text');
+      const label = document.getElementById('form-artifact-label');
+      const subtext = document.getElementById('form-artifact-subtext');
+
+      badgeSelect.innerHTML = '';
+      const selectedEvent = EXPERIENCE_TYPES.find(e => e.id === eventId);
+
+      if (!selectedEvent) return;
+
+      noticeText.textContent = selectedEvent.rulesText;
+      label.textContent = selectedEvent.promptLabel;
+      subtext.textContent = selectedEvent.promptSubtext;
+
+      // FILTER OUT BADGES CAPPED AT 50 PTS
+      const eligibleBadges = BADGES.filter(b => (userState.badgePoints[b.id] || 0) < 50);
+
+      if (selectedEvent.allowedBadgeIds.length === 0) {
+        eligibleBadges.forEach(b => badgeSelect.innerHTML += `<option value="${b.id}">${b.title} (${userState.badgePoints[b.id] || 0}/50 pts)</option>`);
+      } else {
+        selectedEvent.allowedBadgeIds.forEach(id => {
+          const currentPts = userState.badgePoints[id] || 0;
+          if (currentPts < 50) {
+            const b = BADGES.find(badge => badge.id === id);
+            badgeSelect.innerHTML += `<option value="${b.id}">${b.title} (${currentPts}/50 pts)</option>`;
+          }
+        });
+
+        if (badgeSelect.children.length === 0) {
+          badgeSelect.innerHTML = `<option value="">All eligible badges for this activity are capped at 50 pts</option>`;
         }
+      }
+    }
 
-        function saveGoogleUrl() {
-            const url = document.getElementById('settings-url-input').value.trim();
-            GOOGLE_SCRIPT_URL = url;
-            localStorage.setItem('eh_google_script_url', url);
-            updateSyncStatusUI();
-            toggleSettingsModal(false);
-            showToast("Settings saved successfully!", "success");
+    function handleAllocatePoints() {
+      const badgeId = document.getElementById('alloc-badge-select').value;
+      let pts = parseInt(document.getElementById('alloc-points-input').value, 10);
+
+      if (!badgeId || !pts || pts <= 0 || pts > userState.unallocatedPoints) {
+        alert("Please enter a valid point amount.");
+        return;
+      }
+
+      const currentPts = userState.badgePoints[badgeId] || 0;
+      const neededPts = 50 - currentPts;
+
+      if (neededPts <= 0) {
+        alert("This badge has already reached 50 points!");
+        return;
+      }
+
+      if (pts > neededPts) {
+        alert(`Adjusting allocation to ${neededPts} points to cap badge at 50 points.`);
+        pts = neededPts;
+      }
+
+      userState.unallocatedPoints -= pts;
+      userState.badgePoints[badgeId] = currentPts + pts;
+      
+      const badgeObj = BADGES.find(b => b.id === badgeId);
+      userState.history.unshift({
+        id: 'h_' + Date.now(),
+        title: 'Manual Point Allocation',
+        badgeId: badgeId,
+        points: pts,
+        content: `Assigned ${pts} unallocated pts to ${badgeObj ? badgeObj.title : badgeId}`,
+        status: 'Approved',
+        date: new Date().toISOString().split('T')[0]
+      });
+
+      renderDashboard();
+    }
+
+    async function sendToGoogleSheet(payload) {
+      if (!googleSheetApiUrl) return;
+      
+      try {
+        await fetch(googleSheetApiUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+      } catch (err) {
+        console.warn("Google Sheet sync failed or running offline:", err);
+      }
+    }
+
+    function handleArtifactSubmit(e) {
+      e.preventDefault();
+      const eventId = document.getElementById('form-event-select').value;
+      const badgeId = document.getElementById('form-badge-select').value;
+      const content = document.getElementById('form-reflection').value;
+
+      if (!badgeId) {
+        alert("Target badge is capped or invalid.");
+        return;
+      }
+
+      const eventObj = EXPERIENCE_TYPES.find(ev => ev.id === eventId);
+      const badgeObj = BADGES.find(b => b.id === badgeId);
+
+      const submissionPayload = {
+        id: 'p_' + Date.now(),
+        timestamp: new Date().toLocaleString(),
+        studentName: currentUser ? currentUser.displayName : 'Student',
+        studentEmail: currentUser ? currentUser.email : 'student@emoryhenry.edu',
+        eventTitle: eventObj.title,
+        experienceType: eventObj.title,
+        badgeId: badgeId,
+        targetBadge: badgeObj ? badgeObj.title : badgeId,
+        points: eventObj.defaultPoints,
+        submissionType: 'Activity Artifact',
+        content: content,
+        date: new Date().toISOString().split('T')[0],
+        isFinalReflection: false
+      };
+
+      userState.pendingApprovals.unshift(submissionPayload);
+
+      // Async post to Google Sheet endpoint if configured
+      sendToGoogleSheet(submissionPayload);
+
+      toggleSubmitModal();
+      renderDashboard();
+      alert("Submission received! Sent to the Program Director review queue.");
+    }
+
+    function switchCapstoneTab(type) {
+      document.getElementById('capstone-submission-type').value = type;
+      const writtenTab = document.getElementById('tab-capstone-written');
+      const videoTab = document.getElementById('tab-capstone-video');
+      const writtenContainer = document.getElementById('capstone-written-container');
+      const videoContainer = document.getElementById('capstone-video-container');
+
+      if (type === 'written') {
+        writtenTab.className = 'flex-1 py-2 text-center border-b-2 border-amber-500 text-amber-800 flex items-center justify-center gap-1.5';
+        videoTab.className = 'flex-1 py-2 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1.5';
+        writtenContainer.classList.remove('hidden');
+        videoContainer.classList.add('hidden');
+        document.getElementById('final-reflection-text').required = true;
+        document.getElementById('final-video-url').required = false;
+      } else {
+        videoTab.className = 'flex-1 py-2 text-center border-b-2 border-amber-500 text-amber-800 flex items-center justify-center gap-1.5';
+        writtenTab.className = 'flex-1 py-2 text-center border-b-2 border-transparent text-slate-500 hover:text-slate-800 flex items-center justify-center gap-1.5';
+        videoContainer.classList.remove('hidden');
+        writtenContainer.classList.add('hidden');
+        document.getElementById('final-video-url').required = true;
+        document.getElementById('final-reflection-text').required = false;
+      }
+    }
+
+    function openFinalReflectionModal(badgeId) {
+      const badgeObj = BADGES.find(b => b.id === badgeId);
+      document.getElementById('final-modal-badge-id').value = badgeId;
+      document.getElementById('final-modal-badge-title').textContent = badgeObj ? badgeObj.title : badgeId;
+      switchCapstoneTab('written');
+      toggleFinalReflectionModal();
+    }
+
+    function handleFinalReflectionSubmit(e) {
+      e.preventDefault();
+      const badgeId = document.getElementById('final-modal-badge-id').value;
+      const subType = document.getElementById('capstone-submission-type').value;
+      const badgeObj = BADGES.find(b => b.id === badgeId);
+      
+      let finalContent = '';
+      let eventLabel = '';
+
+      if (subType === 'written') {
+        finalContent = document.getElementById('final-reflection-text').value;
+        eventLabel = `Final Capstone Written Reflection - ${badgeObj.title}`;
+      } else {
+        const videoUrl = document.getElementById('final-video-url').value;
+        const videoNotes = document.getElementById('final-video-notes').value;
+        finalContent = `[VIDEO LINK] ${videoUrl}${videoNotes ? ' | Notes: ' + videoNotes : ''}`;
+        eventLabel = `Final Capstone Video - ${badgeObj.title}`;
+      }
+
+      const capstonePayload = {
+        id: 'p_' + Date.now(),
+        timestamp: new Date().toLocaleString(),
+        studentName: currentUser ? currentUser.displayName : 'Student',
+        studentEmail: currentUser ? currentUser.email : 'student@emoryhenry.edu',
+        eventTitle: eventLabel,
+        experienceType: 'Capstone Credential Submission',
+        badgeId: badgeId,
+        targetBadge: badgeObj ? badgeObj.title : badgeId,
+        points: 0,
+        submissionType: `Capstone (${subType.toUpperCase()})`,
+        content: finalContent,
+        date: new Date().toISOString().split('T')[0],
+        isFinalReflection: true
+      };
+
+      userState.pendingApprovals.unshift(capstonePayload);
+      userState.finalReflectionsSubmitted[badgeId] = 'pending';
+
+      // Send to Google Sheet
+      sendToGoogleSheet(capstonePayload);
+
+      toggleFinalReflectionModal();
+      renderDashboard();
+      alert("Capstone reflection submitted! Once reviewed by the Program Director, your badge credential will unlock.");
+    }
+
+    function approveSubmission(pendingId) {
+      const idx = userState.pendingApprovals.findIndex(p => p.id === pendingId);
+      if (idx === -1) return;
+
+      const item = userState.pendingApprovals[idx];
+      
+      if (item.isFinalReflection) {
+        userState.finalReflectionsSubmitted[item.badgeId] = 'approved';
+      } else {
+        if (item.badgeId === 'unallocated') {
+          userState.unallocatedPoints += item.points;
+        } else {
+          const current = userState.badgePoints[item.badgeId] || 0;
+          userState.badgePoints[item.badgeId] = Math.min(50, current + item.points);
         }
+      }
 
-        function clearGoogleUrl() {
-            GOOGLE_SCRIPT_URL = "";
-            localStorage.removeItem('eh_google_script_url');
-            updateSyncStatusUI();
-            toggleSettingsModal(false);
-            showToast("Switched back to local mode.", "info");
-        }
+      userState.history.unshift({
+        id: 'h_' + Date.now(),
+        title: item.eventTitle,
+        badgeId: item.badgeId,
+        points: item.points,
+        content: item.content,
+        status: 'Approved',
+        date: item.date
+      });
 
-        function toggleSettingsModal(show) {
-            document.getElementById('settings-modal').classList.toggle('hidden', !show);
-        }
+      userState.pendingApprovals.splice(idx, 1);
+      renderDashboard();
+    }
 
-        // Send submission payload to Google Sheets Apps Script endpoint
-        async function postToGoogleSheets(payload) {
-            if (!GOOGLE_SCRIPT_URL || GOOGLE_SCRIPT_URL.trim() === "") {
-                return false; // Skip network call if not configured
-            }
+    function toggleSubmitModal() {
+      document.getElementById('modal-submit').classList.toggle('hidden');
+    }
 
-            try {
-                // Using no-cors mode to safely post cross-origin to Apps Script Web App
-                await fetch(GOOGLE_SCRIPT_URL, {
-                    method: 'POST',
-                    mode: 'no-cors',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
-                });
-                return true;
-            } catch (err) {
-                console.warn("Google Sheets Sync failed, fallback to local state:", err);
-                return false;
-            }
-        }
-
-        function populateCompetencyDropdown() {
-            const select = document.getElementById('form-badge-select');
-            select.innerHTML = '<option value="" disabled selected>Select Competency...</option>';
-            NACE_COMPETENCIES.forEach(c => {
-                const opt = document.createElement('option');
-                opt.value = c.id;
-                opt.textContent = `${c.name} (${state.student.points[c.id]}/50 pts)`;
-                select.appendChild(opt);
-            });
-        }
-
-        async function handleArtifactSubmit(e) {
-            e.preventDefault();
-            const badgeId = document.getElementById('form-badge-select').value;
-            const expType = document.getElementById('form-exp-type').value;
-            const requestedPoints = parseInt(document.getElementById('form-points').value, 10);
-            const description = document.getElementById('form-description').value;
-
-            const currentPts = state.student.points[badgeId] || 0;
-            if (currentPts >= 50) {
-                showToast("This badge has reached the 50-point cap! Submit your capstone instead.", "warning");
-                return;
-            }
-
-            // Cap math check
-            const allowedPoints = Math.min(requestedPoints, 50 - currentPts);
-
-            const payload = {
-                studentName: state.student.name,
-                studentEmail: state.student.email,
-                targetBadge: NACE_COMPETENCIES.find(c => c.id === badgeId)?.name || badgeId,
-                experienceType: expType,
-                points: allowedPoints,
-                content: description,
-                submissionType: "Activity / Artifact",
-                timestamp: new Date().toLocaleString()
-            };
-
-            const submitBtn = document.getElementById('submit-artifact-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Sending...</span>`;
-
-            // Attempt Google Sheets API Post
-            const synced = await postToGoogleSheets(payload);
-
-            // Update Local State
-            state.student.points[badgeId] += allowedPoints;
-            state.submissions.unshift({
-                id: Date.now(),
-                ...payload,
-                status: 'Approved'
-            });
-
-            // Reset UI
-            document.getElementById('artifact-form').reset();
-            populateCompetencyDropdown();
-            renderBadges();
-            renderStudentHistory();
-            renderAdminQueue();
-
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fa-solid fa-paper-plane"></i> <span>Submit Entry</span>`;
-
-            if (synced) {
-                showToast("Saved locally and synced to Google Sheets!", "success");
-            } else {
-                showToast("Saved locally in browser session.", "info");
-            }
-        }
-
-        function openCapstoneModal(badgeId) {
-            const comp = NACE_COMPETENCIES.find(c => c.id === badgeId);
-            document.getElementById('modal-badge-id').value = badgeId;
-            document.getElementById('modal-badge-name').textContent = comp ? comp.name : badgeId;
-            toggleCapstoneModal(true);
-        }
-
-        function toggleCapstoneModal(show) {
-            document.getElementById('capstone-modal').classList.toggle('hidden', !show);
-        }
-
-        function setCapstoneTab(tab) {
-            state.capstoneType = tab;
-            const writtenBtn = document.getElementById('tab-written-btn');
-            const videoBtn = document.getElementById('tab-video-btn');
-            const writtenContainer = document.getElementById('capstone-written-container');
-            const videoContainer = document.getElementById('capstone-video-container');
-
-            if (tab === 'written') {
-                writtenBtn.className = "flex-1 py-2 rounded-lg text-indigo-900 bg-white shadow text-center font-bold";
-                videoBtn.className = "flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 text-center font-bold";
-                writtenContainer.classList.remove('hidden');
-                videoContainer.classList.add('hidden');
-            } else {
-                videoBtn.className = "flex-1 py-2 rounded-lg text-indigo-900 bg-white shadow text-center font-bold";
-                writtenBtn.className = "flex-1 py-2 rounded-lg text-slate-500 hover:text-slate-800 text-center font-bold";
-                videoContainer.classList.remove('hidden');
-                writtenContainer.classList.add('hidden');
-            }
-        }
-
-        async function handleFinalReflectionSubmit(e) {
-            e.preventDefault();
-            const badgeId = document.getElementById('modal-badge-id').value;
-            const comp = NACE_COMPETENCIES.find(c => c.id === badgeId);
-
-            let content = "";
-            if (state.capstoneType === 'written') {
-                content = document.getElementById('capstone-text').value;
-                if (!content || content.trim().length < 20) {
-                    showToast("Please write a complete reflection before submitting.", "warning");
-                    return;
-                }
-            } else {
-                content = document.getElementById('capstone-video-url').value;
-                if (!content || !content.startsWith('http')) {
-                    showToast("Please enter a valid video URL.", "warning");
-                    return;
-                }
-            }
-
-            const payload = {
-                studentName: state.student.name,
-                studentEmail: state.student.email,
-                targetBadge: comp ? comp.name : badgeId,
-                experienceType: "Capstone Credential",
-                points: 0,
-                content: `[${state.capstoneType.toUpperCase()}] ${content}`,
-                submissionType: "Capstone Reflection",
-                timestamp: new Date().toLocaleString()
-            };
-
-            const submitBtn = document.getElementById('submit-capstone-btn');
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = `<i class="fa-solid fa-spinner animate-spin"></i> <span>Sending...</span>`;
-
-            const synced = await postToGoogleSheets(payload);
-
-            state.student.capstones[badgeId] = 'Pending Admin Review';
-            state.submissions.unshift({
-                id: Date.now(),
-                ...payload,
-                status: 'Pending Admin Review'
-            });
-
-            toggleCapstoneModal(false);
-            document.getElementById('capstone-form').reset();
-            renderBadges();
-            renderStudentHistory();
-            renderAdminQueue();
-
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = `<i class="fa-solid fa-award"></i> <span>Submit Capstone</span>`;
-
-            if (synced) {
-                showToast("Capstone reflection synced to Google Sheets!", "success");
-            } else {
-                showToast("Capstone submitted for Admin review!", "info");
-            }
-        }
-
-        function renderBadges() {
-            const grid = document.getElementById('badges-grid');
-            grid.innerHTML = "";
-
-            let grandTotal = 0;
-
-            NACE_COMPETENCIES.forEach(c => {
-                const pts = state.student.points[c.id] || 0;
-                grandTotal += pts;
-                const percent = Math.min(100, (pts / 50) * 100);
-                const capstoneStatus = state.student.capstones[c.id];
-
-                let actionArea = "";
-                if (pts >= 50) {
-                    if (capstoneStatus === 'Approved') {
-                        actionArea = `<span class="inline-flex items-center text-xs font-extrabold text-emerald-700 bg-emerald-100 px-3 py-1.5 rounded-full"><i class="fa-solid fa-check-double mr-1.5"></i> Credential Earned</span>`;
-                    } else if (capstoneStatus === 'Pending Admin Review') {
-                        actionArea = `<span class="inline-flex items-center text-xs font-bold text-amber-800 bg-amber-100 px-3 py-1.5 rounded-full"><i class="fa-solid fa-hourglass-half mr-1.5"></i> Review Pending</span>`;
-                    } else {
-                        actionArea = `<button onclick="openCapstoneModal('${c.id}')" class="w-full bg-amber-500 hover:bg-amber-400 text-indigo-950 text-xs font-black py-2 rounded-lg shadow transition-all"><i class="fa-solid fa-crown mr-1"></i> Submit Capstone</button>`;
-                    }
-                } else {
-                    actionArea = `<span class="text-xs text-slate-400 font-medium">${50 - pts} points needed for Capstone</span>`;
-                }
-
-                const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl p-5 shadow-sm border border-slate-200 flex flex-col justify-between space-y-4 hover:shadow-md transition-shadow";
-                card.innerHTML = `
-                    <div>
-                        <div class="flex items-center justify-between mb-3">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-50 text-indigo-900 flex items-center justify-center text-lg">
-                                <i class="fa-solid ${c.icon}"></i>
-                            </div>
-                            <span class="text-xs font-extrabold px-2.5 py-1 rounded-full ${pts >= 50 ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-700'}">${pts} / 50 pts</span>
-                        </div>
-                        <h4 class="font-bold text-slate-900 text-sm mb-1">${c.name}</h4>
-                        <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden mt-2">
-                            <div class="bg-indigo-900 h-2 rounded-full transition-all duration-300" style="width: ${percent}%"></div>
-                        </div>
-                    </div>
-                    <div class="pt-2 border-t border-slate-100 flex items-center justify-center">
-                        ${actionArea}
-                    </div>
-                `;
-                grid.appendChild(card);
-            });
-
-            // Update Total Header Display
-            document.getElementById('total-points-display').textContent = `${grandTotal} / 400`;
-            const overallPct = (grandTotal / 400) * 100;
-            document.getElementById('total-progress-bar').style.width = `${overallPct}%`;
-        }
-
-        function renderStudentHistory() {
-            const table = document.getElementById('student-history-table');
-            const countTag = document.getElementById('submission-count-tag');
-            table.innerHTML = "";
-
-            countTag.textContent = `${state.submissions.length} Entries`;
-
-            if (state.submissions.length === 0) {
-                table.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-xs">No activity entries logged yet.</td></tr>`;
-                return;
-            }
-
-            state.submissions.forEach(sub => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition-colors";
-                row.innerHTML = `
-                    <td class="p-3.5 text-xs text-slate-500">${sub.timestamp}</td>
-                    <td class="p-3.5 font-bold text-slate-800 text-xs">${sub.targetBadge}</td>
-                    <td class="p-3.5 text-xs text-slate-600">${sub.experienceType}</td>
-                    <td class="p-3.5 text-xs text-slate-600 max-w-xs truncate">${sub.content}</td>
-                    <td class="p-3.5 text-xs font-extrabold text-center text-indigo-900">+${sub.points}</td>
-                    <td class="p-3.5 text-center">
-                        <span class="inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${sub.status === 'Approved' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${sub.status}</span>
-                    </td>
-                `;
-                table.appendChild(row);
-            });
-        }
-
-        function renderAdminQueue() {
-            const table = document.getElementById('admin-queue-table');
-            table.innerHTML = "";
-
-            let pendingCount = 0;
-            let approvedCount = 0;
-            let capstoneCount = 0;
-
-            state.submissions.forEach(sub => {
-                if (sub.status === 'Pending Admin Review') pendingCount++;
-                if (sub.status === 'Approved') approvedCount++;
-                if (sub.submissionType === 'Capstone Reflection' && sub.status === 'Approved') capstoneCount++;
-            });
-
-            document.getElementById('admin-pending-count').textContent = pendingCount;
-            document.getElementById('admin-approved-count').textContent = approvedCount;
-            document.getElementById('admin-capstone-count').textContent = capstoneCount;
-
-            if (state.submissions.length === 0) {
-                table.innerHTML = `<tr><td colspan="6" class="p-6 text-center text-slate-400 text-xs">No pending items in queue.</td></tr>`;
-                return;
-            }
-
-            state.submissions.forEach(sub => {
-                const row = document.createElement('tr');
-                row.className = "hover:bg-slate-50 transition-colors";
-
-                let actionBtn = "";
-                if (sub.status === 'Pending Admin Review') {
-                    actionBtn = `<button onclick="approveSubmission(${sub.id})" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded shadow"><i class="fa-solid fa-check mr-1"></i> Approve</button>`;
-                } else {
-                    actionBtn = `<span class="text-xs font-bold text-slate-400"><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i> Verified</span>`;
-                }
-
-                row.innerHTML = `
-                    <td class="p-3.5 text-xs">
-                        <div class="font-bold text-slate-900">${sub.studentName}</div>
-                        <div class="text-slate-400">${sub.studentEmail}</div>
-                    </td>
-                    <td class="p-3.5 text-xs font-semibold text-slate-700">${sub.submissionType}</td>
-                    <td class="p-3.5 text-xs font-bold text-indigo-900">${sub.targetBadge}</td>
-                    <td class="p-3.5 text-xs text-slate-600 max-w-sm">${sub.content}</td>
-                    <td class="p-3.5 text-xs font-extrabold text-center">+${sub.points}</td>
-                    <td class="p-3.5 text-center">${actionBtn}</td>
-                `;
-                table.appendChild(row);
-            });
-        }
-
-        function approveSubmission(subId) {
-            const sub = state.submissions.find(s => s.id === subId);
-            if (sub) {
-                sub.status = 'Approved';
-                // If this was a capstone, unlock full status for student
-                const comp = NACE_COMPETENCIES.find(c => c.name === sub.targetBadge);
-                if (comp) {
-                    state.student.capstones[comp.id] = 'Approved';
-                }
-                renderBadges();
-                renderStudentHistory();
-                renderAdminQueue();
-                showToast(`Approved capstone for ${sub.targetBadge}!`, "success");
-            }
-        }
-
-        function refreshData() {
-            showToast("Queue refreshed.", "info");
-            renderAdminQueue();
-        }
-
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-
-            let colors = "bg-slate-900 text-white";
-            let icon = "fa-circle-info";
-
-            if (type === 'success') { colors = "bg-emerald-800 text-white"; icon = "fa-circle-check"; }
-            if (type === 'warning') { colors = "bg-amber-600 text-white"; icon = "fa-triangle-exclamation"; }
-
-            toast.className = `pointer-events-auto flex items-center space-x-2 px-4 py-3 rounded-xl shadow-lg ${colors} text-xs font-bold transition-all transform translate-y-2 opacity-0`;
-            toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
-
-            setTimeout(() => {
-                toast.classList.add('opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-    </script>
+    function toggleFinalReflectionModal() {
+      document.getElementById('modal-final-reflection').classList.toggle('hidden');
+    }
+  </script>
 </body>
 </html>
