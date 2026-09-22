@@ -4,6 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>E&H Career Competency Tracker</title>
+  <!-- Tailwind CSS & Lucide Icons -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <style>
@@ -27,19 +28,19 @@
       </div>
       
       <div id="nav-user-area" class="hidden flex items-center space-x-4">
-        <!-- Live Connection Status Badge -->
-        <div id="sync-status-badge" class="hidden items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30">
-          <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-          <span>Local Storage</span>
+        <!-- Live Sync Status Indicator -->
+        <div id="sync-status-badge" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30">
+          <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+          <span id="sync-status-text">Local Memory</span>
         </div>
 
-        <!-- Settings Button (Google Sheet API Integration) -->
-        <button onclick="toggleSettingsModal()" class="p-2 text-indigo-200 hover:text-white transition rounded-lg hover:bg-indigo-800" title="Google Sheet Database Settings">
+        <!-- Google Sheet Endpoint Settings Modal Trigger -->
+        <button onclick="toggleSettingsModal()" class="p-2 text-indigo-200 hover:text-white transition rounded-lg hover:bg-indigo-800" title="Database Settings">
           <i data-lucide="settings" class="w-4 h-4"></i>
         </button>
 
-        <!-- View Switcher -->
-        <div class="bg-indigo-950 p-1 rounded-lg flex text-xs font-medium border border-indigo-800">
+        <!-- View Switcher (ADMIN ONLY) -->
+        <div id="admin-view-switcher" class="hidden bg-indigo-950 p-1 rounded-lg flex text-xs font-medium border border-indigo-800">
           <button id="btn-view-student" onclick="switchView('student')" class="px-3 py-1.5 rounded-md bg-indigo-700 text-white shadow-sm transition">Student Portal</button>
           <button id="btn-view-admin" onclick="switchView('admin')" class="px-3 py-1.5 rounded-md text-indigo-200 hover:text-white transition flex items-center gap-1.5">
             Admin Review
@@ -69,7 +70,7 @@
       </div>
       <div>
         <h2 class="text-2xl font-bold text-slate-900">Career Badging Portal</h2>
-        <p class="text-slate-500 text-sm mt-1">Earn 50-point NACE Competency Badging credentials through campus experiences.</p>
+        <p class="text-slate-500 text-sm mt-1">Earn 50-point NACE Competency credentials through campus experiences.</p>
       </div>
 
       <div id="auth-error-box" class="hidden bg-rose-50 border border-rose-200 text-rose-700 text-xs rounded-lg p-3 text-left">
@@ -77,20 +78,30 @@
         <p id="auth-error-msg" class="mt-0.5">Please sign in using your official @emoryhenry.edu or @ehc.edu institutional account.</p>
       </div>
 
-      <div class="space-y-3">
-        <button onclick="handleGoogleSignIn()" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-medium py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2">
-          <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24"><path d="M12.24 10.285V13.4h6.887c-.58 2.319-2.72 4.041-5.887 4.041-3.66 0-6.627-2.967-6.627-6.627s2.967-6.627 6.627-6.627c1.62 0 3.1.56 4.26 1.49l2.42-2.42C18.24 1.7 15.38 1 12.24 1 6.143 1 1.2 5.943 1.2 12s4.943 11 11.04 11c6.33 0 10.53-4.45 10.53-10.72 0-.72-.08-1.42-.2-2.005H12.24z"/></svg>
-          Sign in with Emory & Henry Email
-        </button>
-
-        <div class="relative my-4">
-          <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
-          <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-slate-400">Testing Sandbox</span></div>
+      <form onsubmit="handleEmailSignIn(event)" class="space-y-4 text-left">
+        <div>
+          <label class="block text-xs font-semibold text-slate-700 mb-1">Emory & Henry Email Address</label>
+          <input type="email" id="auth-email-input" required placeholder="username@emoryhenry.edu" class="w-full text-xs rounded-xl border-slate-300 border p-3 focus:ring-2 focus:ring-indigo-900 focus:outline-none">
         </div>
 
-        <button onclick="enterSandboxMode()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2.5 px-4 rounded-xl border border-slate-300 transition text-sm flex items-center justify-center gap-2">
-          <i data-lucide="play-circle" class="w-4 h-4 text-slate-500"></i>
-          Enter Sandbox Mode
+        <button type="submit" class="w-full bg-indigo-900 hover:bg-indigo-800 text-white font-medium py-3 px-4 rounded-xl shadow-md transition flex items-center justify-center gap-2 text-xs">
+          <i data-lucide="log-in" class="w-4 h-4"></i> Sign In to Personal Dashboard
+        </button>
+      </form>
+
+      <div class="relative my-4">
+        <div class="absolute inset-0 flex items-center"><div class="w-full border-t border-slate-200"></div></div>
+        <div class="relative flex justify-center text-xs uppercase"><span class="bg-white px-2 text-slate-400">Testing & Quick Views</span></div>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <button onclick="enterSandboxMode('student')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-2 px-3 rounded-xl border border-slate-300 transition text-xs flex items-center justify-center gap-1.5">
+          <i data-lucide="user" class="w-3.5 h-3.5 text-slate-500"></i>
+          Test Student
+        </button>
+        <button onclick="enterSandboxMode('admin')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-900 font-medium py-2 px-3 rounded-xl border border-indigo-200 transition text-xs flex items-center justify-center gap-1.5">
+          <i data-lucide="shield-check" class="w-3.5 h-3.5 text-indigo-700"></i>
+          Test Admin
         </button>
       </div>
     </div>
@@ -106,7 +117,7 @@
       <div class="bg-gradient-to-r from-indigo-900 via-indigo-850 to-slate-900 text-white rounded-2xl p-6 shadow-lg flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border border-indigo-800">
         <div>
           <h2 class="text-2xl font-bold">Welcome Back, <span id="student-name-heading">Student</span>!</h2>
-          <p class="text-indigo-200 text-sm mt-1">Earn 50 points per NACE badge, then submit a capstone reflection or video to unlock your official credential.</p>
+          <p class="text-indigo-200 text-sm mt-1">Accumulate 50 points per NACE badge, then submit a capstone reflection or video to unlock your official credential.</p>
         </div>
       </div>
 
@@ -118,7 +129,7 @@
               <i data-lucide="award" class="w-5 h-5 text-indigo-900"></i>
               NACE Career Competency Badges (50 Points Each)
             </h3>
-            <p class="text-xs text-slate-500">Accumulate 50 points, then submit a capstone reflection or video to unlock each badge.</p>
+            <p class="text-xs text-slate-500">Earn points through verified coursework, employment, leadership, and campus activities.</p>
           </div>
           <button onclick="toggleSubmitModal()" class="bg-indigo-900 hover:bg-indigo-800 text-white text-xs font-semibold px-4 py-2.5 rounded-xl shadow transition flex items-center gap-1.5">
             <i data-lucide="plus-circle" class="w-4 h-4"></i> Submit Experience Artifact
@@ -127,26 +138,6 @@
 
         <div id="badges-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <!-- Dynamically populated 8 NACE badges -->
-        </div>
-      </div>
-
-      <!-- UNALLOCATED POINTS DISTRIBUTOR PANEL -->
-      <div id="allocation-panel" class="bg-amber-50 border border-amber-200 rounded-2xl p-5 hidden space-y-3 shadow-sm">
-        <div class="flex items-center justify-between">
-          <h4 class="font-bold text-amber-950 flex items-center gap-2 text-sm">
-            <i data-lucide="arrow-right-left" class="w-4 h-4 text-amber-700"></i>
-            Distribute Unallocated Points
-          </h4>
-          <span class="text-xs font-semibold bg-amber-200 text-amber-900 px-2.5 py-0.5 rounded-full">Flexible Allocation</span>
-        </div>
-        <p class="text-xs text-amber-800">Assign unallocated points to any badge that has not yet reached its 50-point cap.</p>
-        
-        <div class="flex flex-col sm:flex-row gap-3 items-center pt-2">
-          <select id="alloc-badge-select" class="w-full sm:w-auto flex-1 text-xs rounded-lg border-amber-300 p-2.5 bg-white focus:ring-amber-500 focus:border-amber-500">
-            <!-- Options populated dynamically -->
-          </select>
-          <input type="number" id="alloc-points-input" min="1" max="50" placeholder="Pts" class="w-24 text-xs rounded-lg border-amber-300 p-2.5 bg-white">
-          <button onclick="handleAllocatePoints()" class="w-full sm:w-auto bg-amber-600 hover:bg-amber-700 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition">Assign Points</button>
         </div>
       </div>
 
@@ -161,7 +152,7 @@
           <table class="w-full text-left text-xs text-slate-600">
             <thead class="bg-slate-50 text-slate-500 font-semibold uppercase tracking-wider border-b border-slate-200">
               <tr>
-                <th class="p-3">Submission Type</th>
+                <th class="p-3">Submission / Experience</th>
                 <th class="p-3">Target Badge</th>
                 <th class="p-3">Points</th>
                 <th class="p-3">Reflection / Link</th>
@@ -335,7 +326,7 @@
       </div>
 
       <div class="space-y-3 text-xs">
-        <p class="text-slate-600">Paste your deployed **Google Apps Script Web App URL** below to send student submissions straight to a Google Sheet.</p>
+        <p class="text-slate-600">Paste your deployed **Google Apps Script Web App URL** below to connect cross-device student tracking to your Google Sheet.</p>
         
         <div>
           <label class="block font-semibold text-slate-700 mb-1">Google Web App Endpoint URL</label>
@@ -343,7 +334,7 @@
         </div>
 
         <div class="bg-indigo-50 border border-indigo-200 text-indigo-900 p-3 rounded-lg text-[11px] space-y-1">
-          <p class="font-bold">Need help deploying your script?</p>
+          <p class="font-bold">Required Setup Instructions:</p>
           <p>1. Open Google Sheets $\rightarrow$ Extensions $\rightarrow$ Apps Script.</p>
           <p>2. Deploy as Web App set to "Execute as: Me" and "Who has access: Anyone".</p>
         </div>
@@ -357,7 +348,17 @@
   </div>
 
   <script>
-    // --- 8 NACE COMPETENCY BADGES ---
+    // --- 1. CONFIGURATION & ADMIN PERMISSIONS LIST ---
+    let googleSheetApiUrl = localStorage.getItem('eh_google_api_url') || '';
+    
+    // Designated emails with administrator review access
+    const ADMIN_EMAILS = [
+      "careercenter@emoryhenry.edu",
+      "admin@emoryhenry.edu",
+      "pdirector@emoryhenry.edu"
+    ];
+
+    // --- 2. 8 NACE COMPETENCY BADGES DEFINITION ---
     const BADGES = [
       { id: 'career-dev', title: 'Career & Self-Development', icon: 'trending-up', targetPoints: 50, desc: 'Proactively develop oneself through continual learning and career navigation.' },
       { id: 'communication', title: 'Communication', icon: 'message-square', targetPoints: 50, desc: 'Clearly exchange information across written, oral, and digital channels.' },
@@ -369,7 +370,7 @@
       { id: 'technology', title: 'Technology', icon: 'cpu', targetPoints: 50, desc: 'Leverage modern digital technologies ethically and efficiently.' }
     ];
 
-    // --- EXPANDED EXPERIENCE TYPES MATCHING EXACT REQUIREMENTS ---
+    // --- 3. EXPANDED EXPERIENCE TYPES MATCHING EXACT REQUIREMENTS ---
     const EXPERIENCE_TYPES = [
       // --- ANY BADGE CATEGORY ---
       {
@@ -660,38 +661,27 @@
       }
     ];
 
+    // --- 4. APPLICATION STATE ---
     let currentUser = null;
     let currentView = 'student';
-    let googleSheetApiUrl = localStorage.getItem('eh_google_api_url') || '';
     
-    // Application State
     let userState = {
-      unallocatedPoints: 0,
       badgePoints: { 
-        'career-dev': 10, 
+        'career-dev': 0, 
         'communication': 0, 
-        'critical-thinking': 50, 
-        'cultural-awareness': 50, 
-        'leadership': 15, 
+        'critical-thinking': 0, 
+        'cultural-awareness': 0, 
+        'leadership': 0, 
         'professionalism': 0, 
         'teamwork': 0, 
         'technology': 0 
       },
-      finalReflectionsSubmitted: {
-        'cultural-awareness': 'approved'
-      },
-      history: [
-        { id: 'h1', title: 'Old Core: CORE 100', badgeId: 'critical-thinking', points: 25, content: 'https://docs.google.com/document/d/sample-core100', status: 'Approved', date: '2026-09-12' },
-        { id: 'h2', title: 'One-Semester Study Abroad in Costa Rica', badgeId: 'cultural-awareness', points: 50, content: 'Completed cross-cultural immersion coursework.', status: 'Approved', date: '2026-09-14' },
-        { id: 'h3', title: 'Final Capstone Reflection - Cultural Awareness', badgeId: 'cultural-awareness', points: 0, content: '[VIDEO LINK] https://loom.com/share/sample-reflection', status: 'Approved', date: '2026-09-15' }
-      ],
-      pendingApprovals: [
-        { id: 'p1', userEmail: 'mismith23@emoryhenry.edu', eventTitle: 'Meeting with a Career Advisor', badgeId: 'career-dev', points: 10, content: 'Discussed resume formatting and goal setting.', date: '2026-09-20', isFinalReflection: false },
-        { id: 'p2', userEmail: 'jdoe22@emoryhenry.edu', eventTitle: 'Final Capstone Video - Critical Thinking', badgeId: 'critical-thinking', points: 0, content: '[VIDEO LINK] https://loom.com/share/critical-thinking-capstone', date: '2026-09-21', isFinalReflection: true }
-      ]
+      finalReflectionsSubmitted: {},
+      history: [],
+      pendingApprovals: []
     };
 
-    // --- INITIALIZATION ---
+    // --- STREAMING_CHUNK:Initializing Application Listeners & Apps Script Sync Handlers... ---
     document.addEventListener('DOMContentLoaded', () => {
       lucide.createIcons();
       populateEventSelect();
@@ -700,14 +690,14 @@
 
     function updateSyncBadge() {
       const badge = document.getElementById('sync-status-badge');
+      const text = document.getElementById('sync-status-text');
       if (googleSheetApiUrl) {
         badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-emerald-500/20 text-emerald-300 border border-emerald-400/30";
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> Google Sheets Sync`;
+        text.textContent = "Google Sheets Sync";
       } else {
         badge.className = "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-medium bg-amber-500/20 text-amber-300 border border-amber-400/30";
-        badge.innerHTML = `<span class="w-2 h-2 rounded-full bg-amber-400"></span> Local Memory`;
+        text.textContent = "Local Memory";
       }
-      badge.classList.remove('hidden');
     }
 
     function toggleSettingsModal() {
@@ -726,30 +716,95 @@
       alert("Google Sheets Web App endpoint saved!");
     }
 
-    // --- AUTHENTICATION HANDLERS ---
-    function handleGoogleSignIn() {
-      const userEmail = "mismith23@emoryhenry.edu";
-      if (userEmail.endsWith('@emoryhenry.edu') || userEmail.endsWith('@ehc.edu')) {
-        loginUser({ displayName: 'Morgan Smith', email: userEmail });
-      } else {
+    // --- 5. AUTHENTICATION & PERSONAL DATA LOADING ---
+    async function handleEmailSignIn(e) {
+      e.preventDefault();
+      const emailInput = document.getElementById('auth-email-input').value.trim().toLowerCase();
+      
+      if (!emailInput.endsWith('@emoryhenry.edu') && !emailInput.endsWith('@ehc.edu')) {
         document.getElementById('auth-error-box').classList.remove('hidden');
+        return;
+      }
+
+      document.getElementById('auth-error-box').classList.add('hidden');
+      const namePart = emailInput.split('@')[0].replace('.', ' ');
+      const formattedName = namePart.charAt(0).toUpperCase() + namePart.slice(1);
+
+      await loginUser({ displayName: formattedName, email: emailInput });
+    }
+
+    async function enterSandboxMode(role) {
+      if (role === 'admin') {
+        await loginUser({ displayName: 'Career Admin', email: 'careercenter@emoryhenry.edu' });
+      } else {
+        await loginUser({ displayName: 'Test Student', email: 'teststudent@emoryhenry.edu' });
       }
     }
 
-    function enterSandboxMode() {
-      loginUser({ displayName: 'Test Student', email: 'teststudent@emoryhenry.edu' });
-    }
-
-    function loginUser(userObj) {
+    async function loginUser(userObj) {
       currentUser = userObj;
+      const userEmail = currentUser.email.toLowerCase();
+
+      // ADMIN ACCESS CONTROL CHECK
+      const isAdmin = ADMIN_EMAILS.includes(userEmail);
+      const adminSwitcher = document.getElementById('admin-view-switcher');
+
+      if (isAdmin) {
+        adminSwitcher.classList.remove('hidden');
+      } else {
+        adminSwitcher.classList.add('hidden');
+        currentView = 'student';
+      }
+
+      // UI Switch
       document.getElementById('auth-screen').classList.add('hidden');
       document.getElementById('app-screen').classList.remove('hidden');
       document.getElementById('nav-user-area').classList.remove('hidden');
       document.getElementById('user-display-name').textContent = currentUser.displayName;
       document.getElementById('user-display-email').textContent = currentUser.email;
       document.getElementById('student-name-heading').textContent = currentUser.displayName.split(' ')[0];
-      
+
+      // Fetch dynamic student data from Google Apps Script endpoint if configured
+      if (googleSheetApiUrl) {
+        await fetchStudentDataFromGoogleSheet(userEmail);
+      }
+
+      switchView(currentView);
       renderDashboard();
+    }
+
+    async function fetchStudentDataFromGoogleSheet(email) {
+      try {
+        const response = await fetch(`${googleSheetApiUrl}?action=getStudent&email=${encodeURIComponent(email)}`);
+        const data = await response.json();
+        
+        if (data && data.status === "success") {
+          // Reset badge points for fresh calculation
+          BADGES.forEach(b => userState.badgePoints[b.id] = 0);
+          userState.history = [];
+
+          if (data.submissions && Array.isArray(data.submissions)) {
+            data.submissions.forEach(sub => {
+              if (sub.status === "Approved") {
+                const current = userState.badgePoints[sub.badge] || 0;
+                userState.badgePoints[sub.badge] = Math.min(50, current + Number(sub.points));
+                
+                userState.history.unshift({
+                  id: 'h_' + Date.now(),
+                  title: sub.eventTitle || 'Verified Experience',
+                  badgeId: sub.badge,
+                  points: sub.points,
+                  content: sub.content || '',
+                  status: 'Approved',
+                  date: sub.date || new Date().toISOString().split('T')[0]
+                });
+              }
+            });
+          }
+        }
+      } catch (err) {
+        console.warn("Unable to fetch remote student profile from Google Sheet:", err);
+      }
     }
 
     function handleSignOut() {
@@ -777,10 +832,9 @@
       }
     }
 
-    // --- RENDER FUNCTIONS ---
+    // --- 6. RENDER FUNCTIONS ---
     function renderDashboard() {
       renderBadges();
-      renderUnallocated();
       renderHistoryTable();
       renderAdminQueue();
       lucide.createIcons();
@@ -837,28 +891,18 @@
       });
     }
 
-    function renderUnallocated() {
-      const panel = document.getElementById('allocation-panel');
-      const select = document.getElementById('alloc-badge-select');
-
-      if (userState.unallocatedPoints > 0) {
-        panel.classList.remove('hidden');
-        select.innerHTML = '<option value="">-- Select Target Badge (<50 pts) --</option>';
-        BADGES.filter(b => (userState.badgePoints[b.id] || 0) < 50).forEach(b => {
-          select.innerHTML += `<option value="${b.id}">${b.title} (${userState.badgePoints[b.id] || 0}/50 pts)</option>`;
-        });
-      } else {
-        panel.classList.add('hidden');
-      }
-    }
-
     function renderHistoryTable() {
       const tbody = document.getElementById('student-history-table');
       tbody.innerHTML = '';
 
+      if (userState.history.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 text-xs">No experience submissions logged yet. Click "Submit Experience Artifact" above to begin!</td></tr>`;
+        return;
+      }
+
       userState.history.forEach(item => {
         const badgeObj = BADGES.find(b => b.id === item.badgeId);
-        const badgeLabel = badgeObj ? badgeObj.title : 'Unallocated';
+        const badgeLabel = badgeObj ? badgeObj.title : 'General';
 
         tbody.innerHTML += `
           <tr class="hover:bg-slate-50 transition">
@@ -889,6 +933,11 @@
         pendingBadge.classList.add('hidden');
       }
 
+      if (count === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" class="p-4 text-center text-slate-400 text-xs">No submissions currently awaiting review.</td></tr>`;
+        return;
+      }
+
       userState.pendingApprovals.forEach(item => {
         const badgeObj = BADGES.find(b => b.id === item.badgeId);
         
@@ -899,7 +948,7 @@
               ${item.isFinalReflection ? '<span class="bg-amber-200 text-amber-900 font-bold px-1.5 py-0.5 rounded text-[10px]">CAPSTONE</span>' : ''}
               ${item.eventTitle}
             </td>
-            <td class="p-3"><span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-900 font-medium">${badgeObj ? badgeObj.title : 'Unallocated'}</span></td>
+            <td class="p-3"><span class="px-2 py-0.5 rounded bg-indigo-50 text-indigo-900 font-medium">${badgeObj ? badgeObj.title : 'General'}</span></td>
             <td class="p-3 font-bold text-slate-800">${item.points > 0 ? '+' + item.points : 'Unlock'}</td>
             <td class="p-3 text-slate-600 max-w-xs truncate" title="${item.content}">${item.content}</td>
             <td class="p-3">
@@ -910,12 +959,10 @@
       });
     }
 
-    // --- FORM & EVENT HANDLERS ---
     function populateEventSelect() {
       const select = document.getElementById('form-event-select');
       select.innerHTML = '<option value="">-- Choose Experience Type --</option>';
 
-      // Group activities by category
       const categories = [...new Set(EXPERIENCE_TYPES.map(e => e.category))];
       categories.forEach(cat => {
         const group = document.createElement('optgroup');
@@ -946,7 +993,6 @@
       label.textContent = selectedEvent.promptLabel;
       subtext.textContent = selectedEvent.promptSubtext;
 
-      // FILTER OUT BADGES CAPPED AT 50 PTS
       const eligibleBadges = BADGES.filter(b => (userState.badgePoints[b.id] || 0) < 50);
 
       if (selectedEvent.allowedBadgeIds.length === 0) {
@@ -964,45 +1010,6 @@
           badgeSelect.innerHTML = `<option value="">All eligible badges for this activity are capped at 50 pts</option>`;
         }
       }
-    }
-
-    function handleAllocatePoints() {
-      const badgeId = document.getElementById('alloc-badge-select').value;
-      let pts = parseInt(document.getElementById('alloc-points-input').value, 10);
-
-      if (!badgeId || !pts || pts <= 0 || pts > userState.unallocatedPoints) {
-        alert("Please enter a valid point amount.");
-        return;
-      }
-
-      const currentPts = userState.badgePoints[badgeId] || 0;
-      const neededPts = 50 - currentPts;
-
-      if (neededPts <= 0) {
-        alert("This badge has already reached 50 points!");
-        return;
-      }
-
-      if (pts > neededPts) {
-        alert(`Adjusting allocation to ${neededPts} points to cap badge at 50 points.`);
-        pts = neededPts;
-      }
-
-      userState.unallocatedPoints -= pts;
-      userState.badgePoints[badgeId] = currentPts + pts;
-      
-      const badgeObj = BADGES.find(b => b.id === badgeId);
-      userState.history.unshift({
-        id: 'h_' + Date.now(),
-        title: 'Manual Point Allocation',
-        badgeId: badgeId,
-        points: pts,
-        content: `Assigned ${pts} unallocated pts to ${badgeObj ? badgeObj.title : badgeId}`,
-        status: 'Approved',
-        date: new Date().toISOString().split('T')[0]
-      });
-
-      renderDashboard();
     }
 
     async function sendToGoogleSheet(payload) {
@@ -1052,7 +1059,7 @@
 
       userState.pendingApprovals.unshift(submissionPayload);
 
-      // Async post to Google Sheet endpoint if configured
+      // Async post to Google Sheet Web App
       sendToGoogleSheet(submissionPayload);
 
       toggleSubmitModal();
@@ -1130,7 +1137,6 @@
       userState.pendingApprovals.unshift(capstonePayload);
       userState.finalReflectionsSubmitted[badgeId] = 'pending';
 
-      // Send to Google Sheet
       sendToGoogleSheet(capstonePayload);
 
       toggleFinalReflectionModal();
@@ -1147,12 +1153,8 @@
       if (item.isFinalReflection) {
         userState.finalReflectionsSubmitted[item.badgeId] = 'approved';
       } else {
-        if (item.badgeId === 'unallocated') {
-          userState.unallocatedPoints += item.points;
-        } else {
-          const current = userState.badgePoints[item.badgeId] || 0;
-          userState.badgePoints[item.badgeId] = Math.min(50, current + item.points);
-        }
+        const current = userState.badgePoints[item.badgeId] || 0;
+        userState.badgePoints[item.badgeId] = Math.min(50, current + item.points);
       }
 
       userState.history.unshift({
