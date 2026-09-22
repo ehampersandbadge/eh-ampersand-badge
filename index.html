@@ -479,6 +479,16 @@
 
     <!-- APPLICATION LOGIC JavaScript -->
     <script>
+        // UNIVERSAL OPTIONS AVAILABLE UNDER ALL BADGES
+        const UNIVERSAL_OPTIONS = [
+            { type: 'student_employment', title: 'Student Employment', points: 10 },
+            { type: 'emory_grow', title: 'Emory GROW Conversation', points: 5 },
+            { type: 'club_sport', title: 'Club or Sport Participation', points: 5 },
+            { type: 'internship_research', title: 'Internship or Major Research Project', points: 25 },
+            { type: 'volunteer', title: 'Volunteer Opportunity', points: 5 },
+            { type: 'advisor_meeting', title: 'Career Advisor Meeting', points: 10 }
+        ];
+
         // MASTER DATA: NACE BADGES & ACTIVITY RULES
         const NACE_BADGES = [
             {
@@ -487,10 +497,10 @@
                 icon: 'compass',
                 desc: 'Proactively develop self and career through continual personal and professional learning.',
                 rules: [
-                    { type: 'core_course', title: 'Core Career Course (e.g., CORE 101/201)', points: 20 },
-                    { type: 'workshop', title: 'Attended Career Fair or Workshop', points: 10 },
-                    { type: 'resume_review', title: 'Resume Review with Career Center', points: 15 },
-                    { type: 'internship', title: 'Career Exploration / Shadowing (10+ hrs)', points: 15 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 },
+                    { type: 'success_looks_like_me', title: 'Success Looks Like Me Event', points: 10 }
                 ]
             },
             {
@@ -499,10 +509,9 @@
                 icon: 'message-square',
                 desc: 'Clearly and effectively exchange information, ideas, and facts with diverse audiences.',
                 rules: [
-                    { type: 'public_speaking', title: 'Public Presentation / Symposium Speaker', points: 20 },
-                    { type: 'writing_course', title: 'Advanced Writing / Communication Intensive Course', points: 15 },
-                    { type: 'publication', title: 'Published Article, Blog, or Campus Paper', points: 15 },
-                    { type: 'debate_club', title: 'Active Role in Speech/Debate/Student Media', points: 15 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 }
                 ]
             },
             {
@@ -511,22 +520,22 @@
                 icon: 'brain',
                 desc: 'Identify and respond to needs based upon an understanding of situational context and facts.',
                 rules: [
-                    { type: 'research_project', title: 'Undergraduate Research Project', points: 25 },
-                    { type: 'lab_course', title: 'Upper-Level Quantitative/Scientific Lab', points: 15 },
-                    { type: 'case_study', title: 'Case Study Competition or Data Project', points: 15 },
-                    { type: 'problem_solving', title: 'Complex Problem Solving Assignment', points: 10 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 }
                 ]
             },
             {
-                id: 'equity_inclusion',
-                title: 'Equity & Inclusion',
+                id: 'cultural_awareness',
+                title: 'Cultural Awareness',
                 icon: 'users',
                 desc: 'Demonstrate awareness, attitude, knowledge, and skills required to engage equitably with all.',
                 rules: [
-                    { type: 'dei_workshop', title: 'DEI Training or Cultural Awareness Workshop', points: 15 },
-                    { type: 'study_abroad', title: 'Study Abroad / Cultural Immersion Trip', points: 25 },
-                    { type: 'community_service', title: 'Diverse Community Service Engagement', points: 15 },
-                    { type: 'dei_course', title: 'Core Course with Global/Inclusive Focus', points: 15 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 },
+                    { type: 'study_abroad_2wk', title: 'Two-week Study Abroad', points: 25 },
+                    { type: 'study_abroad_sem', title: 'Full-semester+ Study Abroad', points: 50 }
                 ]
             },
             {
@@ -535,10 +544,10 @@
                 icon: 'award',
                 desc: 'Recognize and capitalize on personal and team strengths to achieve organizational goals.',
                 rules: [
-                    { type: 'sga_officer', title: 'Student Org Officer / SGA Representative', points: 25 },
-                    { type: 'team_captain', title: 'Athletic Team Captain / Resident Advisor (RA)', points: 25 },
-                    { type: 'project_lead', title: 'Lead Coordinator for Campus Event', points: 15 },
-                    { type: 'leadership_course', title: 'Leadership Seminar or Certificate', points: 15 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 },
+                    { type: 'leadership_role', title: 'Club/Sport Leadership Role', points: 15 }
                 ]
             },
             {
@@ -547,10 +556,10 @@
                 icon: 'briefcase',
                 desc: 'Knowing work habits and understanding the impact of actions on external organizations.',
                 rules: [
-                    { type: 'internship_full', title: 'Completed Formal Internship or Co-op', points: 30 },
-                    { type: 'campus_job', title: 'Campus Student Employment (1+ Semester)', points: 20 },
-                    { type: 'ethics_course', title: 'Ethics or Professional Practice Course', points: 15 },
-                    { type: 'cert', title: 'Professional Certification / Micro-credential', points: 15 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 },
+                    { type: 'etiquette_dinner', title: 'Etiquette Dinner', points: 15 }
                 ]
             },
             {
@@ -559,10 +568,9 @@
                 icon: 'users-round',
                 desc: 'Build and maintain collaborative relationships to work effectively toward common goals.',
                 rules: [
-                    { type: 'group_project', title: 'Major Semester Group Project / Presentation', points: 15 },
-                    { type: 'athletics', title: 'Varsity/Intramural Athletics Participation', points: 15 },
-                    { type: 'greek_life', title: 'Active Service/Greek Life Team Role', points: 15 },
-                    { type: 'ensemble', title: 'Band, Choir, or Theater Cast Ensemble', points: 15 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 }
                 ]
             },
             {
@@ -571,10 +579,9 @@
                 icon: 'cpu',
                 desc: 'Understand and leverage technologies ethically to enhance efficiencies and solve problems.',
                 rules: [
-                    { type: 'tech_course', title: 'CS, Data Analytics, or Tech Intensive Course', points: 20 },
-                    { type: 'software_cert', title: 'Software Certification (Excel, Python, GIS, etc.)', points: 20 },
-                    { type: 'web_design', title: 'Website, App, or Digital Media Creation', points: 15 },
-                    { type: 'tech_project', title: 'Applied Tech Project for Client/Campus', points: 15 }
+                    ...UNIVERSAL_OPTIONS,
+                    { type: 'new_core', title: 'New Core', points: 25 },
+                    { type: 'old_core', title: 'Old Core', points: 25 }
                 ]
             }
         ];
