@@ -782,6 +782,14 @@
                 activeNavBtn.classList.remove('text-slate-200');
             }
 
+            // UPDATE 1: Auto-populate logged in student's name when opening the activity tab
+            if (tabName === 'activities') {
+                const nameInput = document.getElementById('form-user-fullname');
+                if (nameInput && currentUser) {
+                    nameInput.value = `${currentUser.firstName} ${currentUser.lastName}`;
+                }
+            }
+
             refreshAppData();
         }
 
@@ -1312,12 +1320,14 @@
                 NACE_BADGES.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
         }
 
+        // UPDATE 2: Embed data-linkreq onto custom experience dropdown options
         function updateActivityOptions() {
             const badgeId = document.getElementById('form-badge-select').value;
             const typeSelect = document.getElementById('form-activity-type');
             
             if (!badgeId) {
                 typeSelect.innerHTML = '<option value="">-- Select Badge First --</option>';
+                handleActivityTypeChange();
                 return;
             }
 
@@ -1325,18 +1335,23 @@
 
             if (relevantExps.length === 0) {
                 typeSelect.innerHTML = '<option value="">-- No Activities Available --</option>';
+                handleActivityTypeChange();
                 return;
             }
 
             typeSelect.innerHTML = '<option value="">-- Choose Experience/Activity --</option>' + 
-                relevantExps.map(r => `<option value="${r.id}" data-pts="${r.points}" data-req="${r.linkRequired ? 'true' : 'false'}">${r.title} (+${r.points} Pts)</option>`).join('');
+                relevantExps.map(r => `<option value="${r.id}" data-pts="${r.points}" data-linkreq="${r.linkRequired ? 'true' : 'false'}">${r.title} (+${r.points} Pts)</option>`).join('');
+
+            handleActivityTypeChange();
         }
 
+        // UPDATE 2: Dynamically toggle the required status and visual badge for proof URLs based on admin settings
         function handleActivityTypeChange() {
             const select = document.getElementById('form-activity-type');
             const selectedOpt = select.options[select.selectedIndex];
-            const pts = selectedOpt.getAttribute('data-pts');
-            const isReq = selectedOpt.getAttribute('data-req') === 'true';
+            
+            const pts = selectedOpt ? selectedOpt.getAttribute('data-pts') : null;
+            const isLinkReq = selectedOpt ? selectedOpt.getAttribute('data-linkreq') === 'true' : false;
 
             const hint = document.getElementById('activity-point-hint');
             const proofInput = document.getElementById('form-proof-url');
@@ -1349,7 +1364,7 @@
                 hint.classList.add('hidden');
             }
 
-            if (isReq) {
+            if (isLinkReq) {
                 proofInput.required = true;
                 proofReqTag.textContent = '(Required)';
                 proofReqTag.className = 'text-rose-600 font-bold';
