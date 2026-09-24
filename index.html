@@ -76,7 +76,7 @@
                     </button>
                     <!-- Admin Tab (Hidden by default, shown for admin emails) -->
                     <button onclick="switchTab('admin')" id="nav-admin" class="hidden px-3 py-2 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
-                        <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Review
+                        <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Dashboard
                         <span id="admin-pending-count" class="ml-1.5 px-1.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full font-bold">0</span>
                     </button>
                 </nav>
@@ -170,7 +170,7 @@
         <div id="tab-activities" class="hidden max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
             <div class="border-b border-slate-100 pb-4 mb-6">
                 <h2 class="text-2xl font-bold text-eh-blue flex items-center">
-                    <i data-lucide="file-plus" class="w-6 h-6 mr-2 text-eh-gold"></i> Submit Career Activity
+                    <i data-lucide="file-plus" class="w-6 h-6 mr-2 text-eh-gold"></i> Submit Activity
                 </h2>
                 <p class="text-sm text-slate-500 mt-1">Submit coursework, campus leadership, internships, or experiences for points review.</p>
             </div>
@@ -182,7 +182,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Select Target Competency Badge *</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Select Target Badge *</label>
                     <select id="form-badge-select" onchange="updateActivityOptions()" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-eh-blue focus:border-eh-blue">
                         <option value="">-- Choose a NACE Badge --</option>
                         <!-- Dynamic options -->
@@ -190,7 +190,7 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-semibold text-slate-700 mb-2">Activity Type / Rule Option *</label>
+                    <label class="block text-sm font-semibold text-slate-700 mb-2">Experience/Activity *</label>
                     <select id="form-activity-type" onchange="handleActivityTypeChange()" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-eh-blue focus:border-eh-blue">
                         <option value="">-- Select Badge First --</option>
                     </select>
@@ -255,7 +255,69 @@
         </div>
 
         <!-- TAB 4: ADMIN REVIEW PORTAL (RESTRICTED TO ADMINS) -->
-        <div id="tab-admin" class="hidden space-y-6">
+        <div id="tab-admin" class="hidden space-y-8">
+            <!-- Add New Custom Experience Section -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <div class="border-b border-slate-100 pb-4 mb-4">
+                    <h3 class="text-lg font-bold text-eh-blue flex items-center">
+                        <i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-eh-gold"></i> Add New Custom Experience / Activity
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Create new submission options for students. Choose a specific badge or make it available across all badges.</p>
+                </div>
+                <form onsubmit="handleCreateExperience(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Target Badge *</label>
+                        <select id="admin-exp-badge" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                            <option value="all">-- All Badges (Universal) --</option>
+                            <option value="career">Career & Self-Development</option>
+                            <option value="communication">Communication</option>
+                            <option value="critical_thinking">Critical Thinking</option>
+                            <option value="cultural_awareness">Cultural Awareness</option>
+                            <option value="leadership">Leadership</option>
+                            <option value="professionalism">Professionalism</option>
+                            <option value="teamwork">Teamwork</option>
+                            <option value="technology">Technology</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Experience Title *</label>
+                        <input type="text" id="admin-exp-title" required placeholder="e.g. Workshop Attendance" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Default Points *</label>
+                        <input type="number" id="admin-exp-points" required min="1" max="50" placeholder="10" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div class="flex items-end">
+                        <button type="submit" class="w-full py-2.5 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow flex items-center justify-center">
+                            <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Add Experience
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Manage Active Custom Experiences -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
+                <h3 class="text-lg font-bold text-eh-blue mb-4 flex items-center">
+                    <i data-lucide="list" class="w-5 h-5 mr-2 text-eh-gold"></i> Active Custom Experiences
+                </h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-bold tracking-wider">
+                                <th class="p-3">Title</th>
+                                <th class="p-3">Assigned Badge</th>
+                                <th class="p-3">Points</th>
+                                <th class="p-3 text-right">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-exp-list-body" class="divide-y divide-slate-100 text-xs">
+                            <!-- Dynamic Content -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Student Submissions Review Panel -->
             <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <span class="px-2.5 py-0.5 bg-amber-400 text-slate-950 rounded font-bold text-xs uppercase tracking-wider">Admin Control Panel</span>
@@ -479,111 +541,16 @@
 
     <!-- APPLICATION LOGIC JavaScript -->
     <script>
-        // UNIVERSAL OPTIONS AVAILABLE UNDER ALL BADGES
-        const UNIVERSAL_OPTIONS = [
-            { type: 'student_employment', title: 'Student Employment', points: 10 },
-            { type: 'emory_grow', title: 'Emory GROW Conversation', points: 5 },
-            { type: 'club_sport', title: 'Club or Sport Participation', points: 5 },
-            { type: 'internship_research', title: 'Internship or Major Research Project', points: 25 },
-            { type: 'volunteer', title: 'Volunteer Opportunity', points: 5 },
-            { type: 'advisor_meeting', title: 'Career Advisor Meeting', points: 10 }
-        ];
-
-        // MASTER DATA: NACE BADGES & ACTIVITY RULES
+        // MASTER DATA: NACE BADGES
         const NACE_BADGES = [
-            {
-                id: 'career',
-                title: 'Career & Self-Development',
-                icon: 'compass',
-                desc: 'Proactively develop self and career through continual personal and professional learning.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 },
-                    { type: 'success_looks_like_me', title: 'Success Looks Like Me Event', points: 10 }
-                ]
-            },
-            {
-                id: 'communication',
-                title: 'Communication',
-                icon: 'message-square',
-                desc: 'Clearly and effectively exchange information, ideas, and facts with diverse audiences.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 }
-                ]
-            },
-            {
-                id: 'critical_thinking',
-                title: 'Critical Thinking',
-                icon: 'brain',
-                desc: 'Identify and respond to needs based upon an understanding of situational context and facts.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 }
-                ]
-            },
-            {
-                id: 'cultural_awareness',
-                title: 'Cultural Awareness',
-                icon: 'users',
-                desc: 'Demonstrate awareness, attitude, knowledge, and skills required to engage equitably with all.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 },
-                    { type: 'study_abroad_2wk', title: 'Two-week Study Abroad', points: 25 },
-                    { type: 'study_abroad_sem', title: 'Full-semester+ Study Abroad', points: 50 }
-                ]
-            },
-            {
-                id: 'leadership',
-                title: 'Leadership',
-                icon: 'award',
-                desc: 'Recognize and capitalize on personal and team strengths to achieve organizational goals.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 },
-                    { type: 'leadership_role', title: 'Club/Sport Leadership Role', points: 15 }
-                ]
-            },
-            {
-                id: 'professionalism',
-                title: 'Professionalism',
-                icon: 'briefcase',
-                desc: 'Knowing work habits and understanding the impact of actions on external organizations.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 },
-                    { type: 'etiquette_dinner', title: 'Etiquette Dinner', points: 15 }
-                ]
-            },
-            {
-                id: 'teamwork',
-                title: 'Teamwork',
-                icon: 'users-round',
-                desc: 'Build and maintain collaborative relationships to work effectively toward common goals.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 }
-                ]
-            },
-            {
-                id: 'technology',
-                title: 'Technology',
-                icon: 'cpu',
-                desc: 'Understand and leverage technologies ethically to enhance efficiencies and solve problems.',
-                rules: [
-                    ...UNIVERSAL_OPTIONS,
-                    { type: 'new_core', title: 'New Core', points: 25 },
-                    { type: 'old_core', title: 'Old Core', points: 25 }
-                ]
-            }
+            { id: 'career', title: 'Career & Self-Development', icon: 'compass', desc: 'Proactively develop self and career through continual personal and professional learning.' },
+            { id: 'communication', title: 'Communication', icon: 'message-square', desc: 'Clearly and effectively exchange information, ideas, and facts with diverse audiences.' },
+            { id: 'critical_thinking', title: 'Critical Thinking', icon: 'brain', desc: 'Identify and respond to needs based upon an understanding of situational context and facts.' },
+            { id: 'cultural_awareness', title: 'Cultural Awareness', icon: 'users', desc: 'Demonstrate awareness, attitude, knowledge, and skills required to engage equitably with all.' },
+            { id: 'leadership', title: 'Leadership', icon: 'award', desc: 'Recognize and capitalize on personal and team strengths to achieve organizational goals.' },
+            { id: 'professionalism', title: 'Professionalism', icon: 'briefcase', desc: 'Knowing work habits and understanding the impact of actions on external organizations.' },
+            { id: 'teamwork', title: 'Teamwork', icon: 'users-round', desc: 'Build and maintain collaborative relationships to work effectively toward common goals.' },
+            { id: 'technology', title: 'Technology', icon: 'cpu', desc: 'Understand and leverage technologies ethically to enhance efficiencies and solve problems.' }
         ];
 
         // MASTER LIST OF AUTHORIZED ADMIN EMAILS
@@ -597,6 +564,7 @@
         let currentUser = null;
         let registeredUsers = JSON.parse(localStorage.getItem('eh_users')) || [];
         let allSubmissions = JSON.parse(localStorage.getItem('eh_submissions')) || [];
+        let customExperiences = JSON.parse(localStorage.getItem('eh_custom_experiences')) || [];
         let appsScriptEndpoint = localStorage.getItem('eh_script_url') || '';
         let pendingAuthEmail = '';
         let adminFilterMode = 'all';
@@ -698,6 +666,7 @@
             renderBadgesGrid();
             renderStudentHistory();
             renderAdminPortal();
+            renderAdminExperienceList();
             updateAdminPendingBadge();
             lucide.createIcons();
         }
@@ -886,6 +855,72 @@
             }).join('');
         }
 
+        // DYNAMIC EXPERIENCE MANAGEMENT
+        function handleCreateExperience(e) {
+            e.preventDefault();
+            const badgeId = document.getElementById('admin-exp-badge').value;
+            const title = document.getElementById('admin-exp-title').value.trim();
+            const points = parseInt(document.getElementById('admin-exp-points').value);
+
+            if (!title || isNaN(points)) return;
+
+            const newExp = {
+                id: 'exp_' + Date.now(),
+                badgeId: badgeId,
+                title: title,
+                points: points
+            };
+
+            customExperiences.push(newExp);
+            saveCustomExperiences();
+            
+            document.getElementById('admin-exp-title').value = '';
+            document.getElementById('admin-exp-points').value = '';
+            
+            refreshAppData();
+            syncToGoogleSheet('CREATE_EXPERIENCE', newExp);
+        }
+
+        function deleteExperience(id) {
+            if (!confirm('Are you sure you want to delete this experience? It will no longer be available for student submissions.')) return;
+            customExperiences = customExperiences.filter(exp => exp.id !== id);
+            saveCustomExperiences();
+            refreshAppData();
+            syncToGoogleSheet('DELETE_EXPERIENCE', { id });
+        }
+
+        function renderAdminExperienceList() {
+            const listBody = document.getElementById('admin-exp-list-body');
+            if (!listBody) return;
+
+            if (customExperiences.length === 0) {
+                listBody.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="text-center py-4 text-slate-400 italic">
+                            No custom experiences added yet. Add one using the form above.
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            listBody.innerHTML = customExperiences.map(exp => {
+                const badge = NACE_BADGES.find(b => b.id === exp.badgeId);
+                const badgeName = exp.badgeId === 'all' ? 'All Badges (Universal)' : (badge ? badge.title : exp.badgeId);
+
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-semibold text-slate-800">${exp.title}</td>
+                        <td class="p-3 text-slate-600">${badgeName}</td>
+                        <td class="p-3 font-bold text-slate-700">${exp.points} Pts</td>
+                        <td class="p-3 text-right">
+                            <button onclick="deleteExperience('${exp.id}')" class="text-rose-600 hover:text-rose-800 font-bold">Delete</button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
         function filterAdminSubmissions(mode) {
             adminFilterMode = mode;
             renderAdminPortal();
@@ -1032,11 +1067,15 @@
                 return;
             }
 
-            const badge = NACE_BADGES.find(b => b.id === badgeId);
-            if (!badge) return;
+            const relevantExps = customExperiences.filter(exp => exp.badgeId === 'all' || exp.badgeId === badgeId);
 
-            typeSelect.innerHTML = '<option value="">-- Choose Activity Category --</option>' + 
-                badge.rules.map(r => `<option value="${r.type}" data-pts="${r.points}">${r.title} (+${r.points} Pts)</option>`).join('');
+            if (relevantExps.length === 0) {
+                typeSelect.innerHTML = '<option value="">-- No Activities Available --</option>';
+                return;
+            }
+
+            typeSelect.innerHTML = '<option value="">-- Choose Experience/Activity --</option>' + 
+                relevantExps.map(r => `<option value="${r.id}" data-pts="${r.points}">${r.title} (+${r.points} Pts)</option>`).join('');
         }
 
         function handleActivityTypeChange() {
@@ -1168,6 +1207,10 @@
 
         function saveSubmissions() {
             localStorage.setItem('eh_submissions', JSON.stringify(allSubmissions));
+        }
+
+        function saveCustomExperiences() {
+            localStorage.setItem('eh_custom_experiences', JSON.stringify(customExperiences));
         }
 
         function syncToGoogleSheet(action, payload) {
