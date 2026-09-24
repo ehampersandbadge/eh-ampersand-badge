@@ -1458,6 +1458,29 @@
             localStorage.setItem('eh_custom_experiences', JSON.stringify(customExperiences));
         }
 
+        function fetchUserDataFromSheet() {
+            if (!appsScriptEndpoint) return;
+
+            fetch(appsScriptEndpoint)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.submissions) {
+                        allSubmissions = data.submissions;
+                        saveSubmissions();
+                        refreshAppData(); // Recalculates points and re-renders badges
+                    }
+                })
+                .catch(err => console.error("Error recalling progress:", err));
+        }
+
+        function saveSubmissions() {
+            localStorage.setItem('eh_submissions', JSON.stringify(allSubmissions));
+        }
+
+        function saveCustomExperiences() {
+            localStorage.setItem('eh_custom_experiences', JSON.stringify(customExperiences));
+            
+        }
         function syncToGoogleSheet(action, payload) {
             if (!appsScriptEndpoint) return;
 
