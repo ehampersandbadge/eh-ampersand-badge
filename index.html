@@ -314,7 +314,7 @@
                 <!-- ALL USER ACCOUNTS (VIEW AS STUDENT & DELETION CONTROL) -->
                 <div>
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-3 flex items-center justify-between">
-                        <span>Registered Student Accounts (Synced with Google Sheet)</span>
+                        <span>Registered Student Accounts</span>
                         <span class="text-slate-400 font-normal">View-as student portal or delete account</span>
                     </h4>
                     <div class="overflow-x-auto">
@@ -902,11 +902,11 @@
                             }
                         }
                     }
-                    if (data.submissions && Array.isArray(data.submissions)) {
+                    if (data.submissions) {
                         allSubmissions = data.submissions;
                         saveSubmissions();
                     }
-                    if (data.customExperiences && Array.isArray(data.customExperiences)) {
+                    if (data.customExperiences) {
                         customExperiences = data.customExperiences;
                         saveCustomExperiences();
                     }
@@ -914,7 +914,7 @@
                         refreshAppData();
                     }
                 })
-                .catch(err => console.error("Error fetching user data from Google Sheet:", err));
+                .catch(err => console.error("Error recalling progress from Google Sheet:", err));
         }
 
         function syncToGoogleSheet(action, payload) {
@@ -1976,5 +1976,7 @@
             }
         }
     </script>
+</body>
+</html>
 </body>
 </html>
