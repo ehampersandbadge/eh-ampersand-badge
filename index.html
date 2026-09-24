@@ -1023,6 +1023,11 @@
                 activeNavBtn.classList.remove('text-slate-200');
             }
 
+            // Auto-fill logged-in user details in form
+            if (tabName === 'activities' && currentUser) {
+                document.getElementById('form-user-fullname').value = `${currentUser.firstName} ${currentUser.lastName} (${currentUser.email})`;
+            }
+
             refreshAppData();
         }
 
