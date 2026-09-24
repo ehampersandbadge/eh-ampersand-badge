@@ -95,6 +95,9 @@
                             <p id="user-display-name" class="text-sm font-bold text-white leading-tight">Student Name</p>
                             <p id="user-display-email" class="text-xs text-slate-300">student@emoryhenry.edu</p>
                         </div>
+                        <button onclick="openChangePasswordModal()" class="p-2 text-slate-300 hover:text-amber-300 hover:bg-eh-lightBlue rounded-lg transition" title="Change Password">
+                            <i data-lucide="key-round" class="w-5 h-5"></i>
+                        </button>
                         <button onclick="handleSignOut()" class="p-2 text-slate-300 hover:text-rose-300 hover:bg-rose-950/40 rounded-lg transition" title="Sign Out">
                             <i data-lucide="log-out" class="w-5 h-5"></i>
                         </button>
@@ -168,7 +171,7 @@
             </div>
         </div>
 
-        <!-- TAB: WORK EXAMPLES (NEW TAB) -->
+        <!-- TAB: WORK EXAMPLES -->
         <div id="tab-work-examples" class="hidden space-y-6">
             <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
                 <h2 class="text-2xl font-bold text-eh-blue flex items-center">
@@ -505,18 +508,19 @@
                         <input type="password" id="auth-password-input" required placeholder="••••••••" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-eh-blue">
                     </div>
                     <div id="password-error-box" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden">
-                        Incorrect password. Please try again.
+                        Incorrect password or account status disabled. Please try again.
                     </div>
                     <div class="flex items-center justify-between">
                         <button type="button" onclick="showAuthStep('email')" class="text-xs text-slate-500 hover:text-slate-800">&larr; Change Email</button>
-                        <button type="submit" class="px-6 py-2.5 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition">
-                            Sign In
-                        </button>
+                        <button type="button" onclick="showAuthStep('reset')" class="text-xs text-eh-blue hover:underline font-semibold">Forgot / Change Password?</button>
                     </div>
+                    <button type="submit" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
+                        Sign In
+                    </button>
                 </form>
             </div>
 
-            <!-- STEP 3: FIRST TIME REGISTRATION (NAME + CREATE PASSWORD) -->
+            <!-- STEP 3: FIRST TIME REGISTRATION -->
             <div id="auth-step-register" class="hidden">
                 <div class="text-center mb-6">
                     <div class="w-10 h-10 bg-yellow-100 text-eh-gold rounded-full flex items-center justify-center mx-auto mb-2">
@@ -555,10 +559,77 @@
                     </button>
                 </form>
             </div>
+
+            <!-- STEP 4: SELF-SERVICE PASSWORD RESET / CHANGE -->
+            <div id="auth-step-reset" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="w-10 h-10 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i data-lucide="key" class="w-5 h-5"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-eh-blue">Reset Password</h3>
+                    <p id="reset-email-display" class="text-xs text-slate-500 mt-1">Update password for user@emoryhenry.edu</p>
+                </div>
+
+                <form onsubmit="handleSelfPasswordReset(event)" class="space-y-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
+                        <input type="password" id="reset-new-password" minlength="6" required placeholder="Minimum 6 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                    </div>
+
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
+                        <input type="password" id="reset-confirm-password" minlength="6" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                    </div>
+
+                    <div id="reset-error-box" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
+
+                    <div class="flex items-center justify-between pt-2">
+                        <button type="button" onclick="showAuthStep('password')" class="text-xs text-slate-500 hover:text-slate-800">&larr; Back to Login</button>
+                        <button type="submit" class="px-6 py-2.5 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
+                            Save & Sign In
+                        </button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 
-    <!-- MODAL: CAPSTONE REFLECTION (WRITTEN VS VIDEO) -->
+    <!-- MODAL: LOGGED-IN STUDENT PASSWORD CHANGE -->
+    <div id="change-password-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative">
+            <button onclick="closeChangePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <div class="w-10 h-10 bg-eh-gold/20 text-eh-blue rounded-full flex items-center justify-center mx-auto mb-2">
+                    <i data-lucide="shield-lock" class="w-5 h-5"></i>
+                </div>
+                <h3 class="text-xl font-bold text-eh-blue">Change Your Password</h3>
+                <p class="text-xs text-slate-500 mt-1">Enter a new password for your account.</p>
+            </div>
+
+            <form onsubmit="handleStudentPasswordChange(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
+                    <input type="password" id="student-new-password" minlength="6" required placeholder="Minimum 6 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
+                    <input type="password" id="student-confirm-password" minlength="6" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                </div>
+
+                <div id="student-password-error" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
+
+                <button type="submit" class="w-full py-2.5 bg-eh-blue text-white rounded-lg text-xs font-bold hover:bg-eh-lightBlue transition shadow">
+                    Update Password
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CAPSTONE REFLECTION -->
     <div id="capstone-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeCapstoneModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -650,7 +721,7 @@
             { id: 'technology', title: 'Technology', icon: 'cpu', desc: 'Understand and leverage technologies ethically to enhance efficiencies and solve problems.' }
         ];
 
-        // MASTER LIST OF AUTHORIZED ADMIN EMAILS (Stored in LocalStorage to allow dynamic edits)
+        // MASTER LIST OF AUTHORIZED ADMIN EMAILS
         let adminEmails = JSON.parse(localStorage.getItem('eh_admin_emails')) || [
             'admin@emoryhenry.edu',
             'careers@emoryhenry.edu',
@@ -701,10 +772,20 @@
             fetch(appsScriptEndpoint)
                 .then(response => response.json())
                 .then(data => {
-                    // Sync User Accounts from Spreadsheet
+                    // Sync User Accounts from Spreadsheet & Filter out 'Disabled' Accounts
                     if (data.users && Array.isArray(data.users)) {
-                        registeredUsers = data.users;
+                        registeredUsers = data.users.filter(u => !u.status || u.status.toLowerCase() !== 'disabled');
                         localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+
+                        // Revoke active user session if their status was toggled to Disabled on the Sheet
+                        if (currentUser) {
+                            const isStillActive = registeredUsers.some(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
+                            if (!isStillActive) {
+                                alert('Your account access has been revoked or disabled.');
+                                handleSignOut();
+                                return;
+                            }
+                        }
                     }
                     if (data.submissions) {
                         allSubmissions = data.submissions;
@@ -715,7 +796,7 @@
                         saveCustomExperiences();
                     }
                     if (currentUser) {
-                        refreshAppData(); // Recalculates points and re-renders view with latest sheet data
+                        refreshAppData();
                     }
                 })
                 .catch(err => console.error("Error recalling progress from Google Sheet:", err));
@@ -783,7 +864,6 @@
                 return;
             }
 
-            // Restrict admin tab to authorized personnel
             const isAdmin = adminEmails.map(e => e.toLowerCase()).includes(currentUser.email.toLowerCase());
             if (tabName === 'admin' && !isAdmin) {
                 alert('Access restricted to authorized administrators.');
@@ -853,7 +933,6 @@
                 const pts = badgePoints[badge.id] || 0;
                 totalPoints += pts;
                 
-                // Check capstone status
                 const capstoneSub = allSubmissions.find(s => 
                     s.userEmail.toLowerCase() === currentUser.email.toLowerCase() && 
                     s.badgeId === badge.id && 
@@ -882,7 +961,6 @@
                         </div>
 
                         <div>
-                            <!-- Progress Bar -->
                             <div class="w-full bg-slate-100 rounded-full h-2 mb-3 overflow-hidden">
                                 <div class="bg-eh-gold h-2 rounded-full transition-all duration-500" style="width: ${progressPct}%"></div>
                             </div>
@@ -910,7 +988,6 @@
             document.getElementById('welcome-title').textContent = `Welcome, ${currentUser.firstName}!`;
         }
 
-        // WORK EXAMPLES TAB RENDER
         function renderWorkExamples() {
             const grid = document.getElementById('work-examples-grid');
             if (!grid) return;
@@ -1246,11 +1323,16 @@
             document.getElementById('auth-step-email').classList.add('hidden');
             document.getElementById('auth-step-password').classList.add('hidden');
             document.getElementById('auth-step-register').classList.add('hidden');
+            document.getElementById('auth-step-reset').classList.add('hidden');
             document.getElementById('auth-error-box').classList.add('hidden');
 
             if (step === 'email') document.getElementById('auth-step-email').classList.remove('hidden');
             if (step === 'password') document.getElementById('auth-step-password').classList.remove('hidden');
             if (step === 'register') document.getElementById('auth-step-register').classList.remove('hidden');
+            if (step === 'reset') {
+                document.getElementById('reset-email-display').textContent = `Update password for ${pendingAuthEmail}`;
+                document.getElementById('auth-step-reset').classList.remove('hidden');
+            }
         }
 
         function handleEmailLookup(e) {
@@ -1268,6 +1350,12 @@
             const existingUser = registeredUsers.find(u => u.email.toLowerCase() === emailInput);
 
             if (existingUser) {
+                // Check if account status is disabled
+                if (existingUser.status && existingUser.status.toLowerCase() === 'disabled') {
+                    errorBox.classList.remove('hidden');
+                    document.getElementById('auth-error-msg').textContent = 'Account disabled. Please contact system administrator.';
+                    return;
+                }
                 document.getElementById('welcome-back-email').textContent = emailInput;
                 showAuthStep('password');
             } else {
@@ -1280,7 +1368,7 @@
             const password = document.getElementById('auth-password-input').value;
             const user = registeredUsers.find(u => u.email.toLowerCase() === pendingAuthEmail);
 
-            if (user && user.password === password) {
+            if (user && user.password === password && (!user.status || user.status.toLowerCase() === 'active')) {
                 currentUser = user;
                 localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
                 closeLoginModal();
@@ -1311,6 +1399,7 @@
                 firstName,
                 lastName,
                 password,
+                status: 'Active', // Automatically sets Status to Active
                 createdAt: new Date().toISOString()
             };
 
@@ -1323,6 +1412,71 @@
             closeLoginModal();
             setupLoggedInView();
             syncToGoogleSheet('REGISTER_USER', newUser);
+        }
+
+        // SELF-SERVICE PASSWORD RESET / CHANGE MECHANIC
+        function handleSelfPasswordReset(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('reset-new-password').value;
+            const confirmPassword = document.getElementById('reset-confirm-password').value;
+            const errBox = document.getElementById('reset-error-box');
+
+            if (newPassword !== confirmPassword) {
+                errBox.textContent = 'Passwords do not match.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            const user = registeredUsers.find(u => u.email.toLowerCase() === pendingAuthEmail);
+
+            if (user) {
+                user.password = newPassword;
+                localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+                currentUser = user;
+                localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+
+                syncToGoogleSheet('UPDATE_PASSWORD', { email: user.email, password: newPassword });
+
+                closeLoginModal();
+                setupLoggedInView();
+                alert('Password updated successfully!');
+            } else {
+                errBox.textContent = 'Account not found.';
+                errBox.classList.remove('hidden');
+            }
+        }
+
+        function openChangePasswordModal() {
+            document.getElementById('change-password-modal').classList.remove('hidden');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('change-password-modal').classList.add('hidden');
+        }
+
+        function handleStudentPasswordChange(e) {
+            e.preventDefault();
+            const newPassword = document.getElementById('student-new-password').value;
+            const confirmPassword = document.getElementById('student-confirm-password').value;
+            const errBox = document.getElementById('student-password-error');
+
+            if (newPassword !== confirmPassword) {
+                errBox.textContent = 'Passwords do not match.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            currentUser.password = newPassword;
+            const targetUser = registeredUsers.find(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
+            if (targetUser) targetUser.password = newPassword;
+
+            localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+            localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+
+            syncToGoogleSheet('UPDATE_PASSWORD', { email: currentUser.email, password: newPassword });
+
+            closeChangePasswordModal();
+            alert('Your password has been changed successfully!');
         }
 
         function handleSignOut() {
