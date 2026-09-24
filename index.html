@@ -701,6 +701,11 @@
             fetch(appsScriptEndpoint)
                 .then(response => response.json())
                 .then(data => {
+                    // Sync User Accounts from Spreadsheet
+                    if (data.users && Array.isArray(data.users)) {
+                        registeredUsers = data.users;
+                        localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+                    }
                     if (data.submissions) {
                         allSubmissions = data.submissions;
                         saveSubmissions();
