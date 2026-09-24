@@ -88,7 +88,7 @@
                     <button onclick="switchTab('my-submissions')" id="nav-my-submissions" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
                         <i data-lucide="history" class="w-4 h-4 inline mr-1.5"></i> My History
                     </button>
-                    <!-- Admin Tab (Hidden by default, shown for admin emails) -->
+                    <!-- Admin Tab -->
                     <button onclick="switchTab('admin')" id="nav-admin" class="hidden px-3 py-2 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
                         <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Dashboard
                         <span id="admin-pending-count" class="ml-1.5 px-1.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full font-bold">0</span>
@@ -97,7 +97,6 @@
 
                 <!-- User Profile / Auth Area -->
                 <div class="flex items-center space-x-3">
-                    <!-- Settings Button (RESTRICTED TO ADMINS ONLY) -->
                     <button id="admin-settings-btn" onclick="openSettingsModal()" class="hidden text-slate-300 hover:text-white p-2 rounded-lg hover:bg-eh-lightBlue transition" title="Sync & API Settings (Admin Only)">
                         <i data-lucide="settings" class="w-5 h-5"></i>
                     </button>
@@ -145,9 +144,8 @@
             <p class="mt-4 text-xs text-slate-400">Requires an official <span class="font-semibold text-slate-500">@emoryhenry.edu</span> or <span class="font-semibold text-slate-500">@ehc.edu</span> email address.</p>
         </div>
 
-        <!-- TAB 1: DASHBOARD (STUDENT VIEW) -->
+        <!-- TAB 1: DASHBOARD -->
         <div id="tab-dashboard" class="hidden space-y-8">
-            <!-- Top Summary Banner -->
             <div class="bg-gradient-to-r from-eh-blue to-eh-lightBlue text-white rounded-2xl p-6 sm:p-8 shadow-md">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
                     <div>
@@ -169,7 +167,6 @@
                 </div>
             </div>
 
-            <!-- NACE Badges Grid -->
             <div>
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-eh-blue flex items-center">
@@ -177,9 +174,7 @@
                     </h3>
                 </div>
 
-                <div id="badges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Dynamic Badges Inserted Here -->
-                </div>
+                <div id="badges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"></div>
             </div>
         </div>
 
@@ -192,9 +187,7 @@
                 <p class="text-sm text-slate-500 mt-1">Review examples of student work and submission formats that meet the criteria to receive points for badges.</p>
             </div>
 
-            <div id="work-examples-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                <!-- Dynamic Content Inserted Here -->
-            </div>
+            <div id="work-examples-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
         <!-- TAB 2: SUBMIT ACTIVITY FORM -->
@@ -229,7 +222,7 @@
 
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Activity Title / Organization / Course *</label>
-                    <input type="text" id="form-title" required placeholder="e.g., MATH 121, SGA Vice President, Summer Internship at Ballad Health" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-eh-blue focus:border-eh-blue">
+                    <input type="text" id="form-title" required placeholder="e.g., MATH 121, SGA Vice President, Summer Internship" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-eh-blue focus:border-eh-blue">
                 </div>
 
                 <div>
@@ -278,17 +271,14 @@
                                 <th class="p-4 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="student-history-table" class="divide-y divide-slate-100 text-sm">
-                            <!-- Dynamic Content -->
-                        </tbody>
+                        <tbody id="student-history-table" class="divide-y divide-slate-100 text-sm"></tbody>
                     </table>
                 </div>
             </div>
         </div>
 
-        <!-- TAB 4: ADMIN REVIEW PORTAL (RESTRICTED TO ADMINS) -->
+        <!-- TAB 4: ADMIN REVIEW PORTAL -->
         <div id="tab-admin" class="hidden space-y-8">
-            <!-- Manage Admin Users & Account Control Panel -->
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <div class="border-b border-slate-100 pb-4 mb-4">
                     <h3 class="text-lg font-bold text-eh-blue flex items-center">
@@ -306,12 +296,9 @@
 
                 <div class="mb-6">
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Current Administrators</h4>
-                    <div id="admin-users-list" class="flex flex-wrap gap-2">
-                        <!-- Dynamic Admins List -->
-                    </div>
+                    <div id="admin-users-list" class="flex flex-wrap gap-2"></div>
                 </div>
 
-                <!-- ALL USER ACCOUNTS (VIEW AS STUDENT & DELETION CONTROL) -->
                 <div>
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-3 flex items-center justify-between">
                         <span>Registered Student Accounts</span>
@@ -327,21 +314,19 @@
                                     <th class="p-3 text-right">Account Actions</th>
                                 </tr>
                             </thead>
-                            <tbody id="admin-registered-users-body" class="divide-y divide-slate-100 text-xs">
-                                <!-- Dynamic Student Accounts -->
-                            </tbody>
+                            <tbody id="admin-registered-users-body" class="divide-y divide-slate-100 text-xs"></tbody>
                         </table>
                     </div>
                 </div>
             </div>
 
-            <!-- Add New Custom Experience Section -->
+            <!-- Add Custom Experience -->
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <div class="border-b border-slate-100 pb-4 mb-4">
                     <h3 class="text-lg font-bold text-eh-blue flex items-center">
                         <i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-eh-gold"></i> Add New Custom Experience / Activity
                     </h3>
-                    <p class="text-xs text-slate-500 mt-1">Create new submission options for students. Choose a specific badge or make it available across all badges.</p>
+                    <p class="text-xs text-slate-500 mt-1">Create new submission options for students.</p>
                 </div>
                 <form onsubmit="handleCreateExperience(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
                     <div>
@@ -381,7 +366,7 @@
                 </form>
             </div>
 
-            <!-- Manage Active Custom Experiences -->
+            <!-- Manage Experiences -->
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <h3 class="text-lg font-bold text-eh-blue mb-4 flex items-center">
                     <i data-lucide="list" class="w-5 h-5 mr-2 text-eh-gold"></i> Active Custom Experiences
@@ -397,14 +382,12 @@
                                 <th class="p-3 text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-exp-list-body" class="divide-y divide-slate-100 text-xs">
-                            <!-- Dynamic Content -->
-                        </tbody>
+                        <tbody id="admin-exp-list-body" class="divide-y divide-slate-100 text-xs"></tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Add & Manage Work Examples Section -->
+            <!-- Add Work Examples -->
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
                 <div class="border-b border-slate-100 pb-4">
                     <h3 class="text-lg font-bold text-eh-blue flex items-center">
@@ -441,15 +424,13 @@
                     </div>
                     <div class="sm:col-span-2 lg:col-span-4">
                         <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Description / Guidelines *</label>
-                        <textarea id="admin-example-desc" required rows="2" placeholder="Explain why this work meets the criteria for points..." class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue"></textarea>
+                        <textarea id="admin-example-desc" required rows="2" placeholder="Explain why this work meets criteria..." class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue"></textarea>
                     </div>
                 </form>
 
                 <div>
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-3">Existing Work Examples</h4>
-                    <div id="admin-examples-list" class="space-y-2">
-                        <!-- Dynamic Work Examples Admin View -->
-                    </div>
+                    <div id="admin-examples-list" class="space-y-2"></div>
                 </div>
             </div>
 
@@ -480,9 +461,7 @@
                                 <th class="p-4 text-right">Review Action</th>
                             </tr>
                         </thead>
-                        <tbody id="admin-table-body" class="divide-y divide-slate-100 text-sm">
-                            <!-- Dynamic Admin Content -->
-                        </tbody>
+                        <tbody id="admin-table-body" class="divide-y divide-slate-100 text-sm"></tbody>
                     </table>
                 </div>
             </div>
@@ -498,14 +477,15 @@
         </div>
     </footer>
 
-    <!-- MODAL: AUTHENTICATION / PASSWORD & FIRST TIME REGISTRATION -->
+    <!-- MODALS -->
+    <!-- AUTH MODAL -->
     <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative">
             <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
 
-            <!-- STEP 1: EMAIL ENTRY -->
+            <!-- STEP 1: EMAIL -->
             <div id="auth-step-email">
                 <div class="text-center mb-6">
                     <div class="w-12 h-12 bg-yellow-100 text-eh-blue rounded-full flex items-center justify-center mx-auto mb-3 font-extrabold text-lg">E&H</div>
@@ -516,7 +496,7 @@
                 <form onsubmit="handleEmailLookup(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">E&H Email Address</label>
-                        <input type="email" id="auth-email-input" required placeholder="username@emoryhenry.edu" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-eh-blue focus:border-eh-blue">
+                        <input type="email" id="auth-email-input" required placeholder="username@emoryhenry.edu" class="w-full border border-slate-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-eh-blue">
                     </div>
                     <div id="auth-error-box" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden flex items-start">
                         <i data-lucide="alert-circle" class="w-4 h-4 mr-1.5 shrink-0 mt-0.5"></i>
@@ -528,7 +508,7 @@
                 </form>
             </div>
 
-            <!-- STEP 2: RETURNING USER PASSWORD -->
+            <!-- STEP 2: PASSWORD -->
             <div id="auth-step-password" class="hidden">
                 <div class="text-center mb-6">
                     <div class="w-10 h-10 bg-slate-100 text-eh-blue rounded-full flex items-center justify-center mx-auto mb-2">
@@ -548,7 +528,6 @@
                     </div>
                     <div class="flex items-center justify-between">
                         <button type="button" onclick="showAuthStep('email')" class="text-xs text-slate-500 hover:text-slate-800">&larr; Change Email</button>
-                        <button type="button" onclick="requestVerificationLink()" class="text-xs text-eh-blue hover:underline font-semibold">Forgot / Change Password?</button>
                     </div>
                     <button type="submit" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
                         Sign In
@@ -556,7 +535,7 @@
                 </form>
             </div>
 
-            <!-- STEP 3: FIRST TIME REGISTRATION -->
+            <!-- STEP 3: REGISTER -->
             <div id="auth-step-register" class="hidden">
                 <div class="text-center mb-6">
                     <div class="w-10 h-10 bg-yellow-100 text-eh-gold rounded-full flex items-center justify-center mx-auto mb-2">
@@ -595,74 +574,10 @@
                     </button>
                 </form>
             </div>
-
-            <!-- STEP 4: EMAIL VERIFICATION NOTICE (FORGOT PASSWORD) -->
-            <div id="auth-step-verification-sent" class="hidden">
-                <div class="text-center mb-6">
-                    <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-3">
-                        <i data-lucide="mail-check" class="w-6 h-6"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-eh-blue">Verification Email Sent</h3>
-                    <p class="text-xs text-slate-600 mt-2">
-                        A password reset verification link has been dispatched to:
-                        <strong id="sent-verification-email" class="block text-eh-blue font-bold mt-1"></strong>
-                    </p>
-                    <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                        Please check your student email inbox to complete your reset link. The verification token is valid for 15 minutes.
-                    </p>
-                </div>
-
-                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
-                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enter / Paste Reset Verification Token</label>
-                    <div class="flex gap-2">
-                        <input type="text" id="manual-verify-token" placeholder="Paste Token From Verification Link" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-eh-blue">
-                        <button onclick="verifyResetToken()" class="px-4 py-2 bg-eh-blue text-white text-xs font-bold rounded-lg hover:bg-eh-lightBlue transition">
-                            Verify
-                        </button>
-                    </div>
-                    <p id="token-error-msg" class="text-[11px] text-rose-600 font-semibold mt-1.5 hidden"></p>
-                </div>
-
-                <button type="button" onclick="showAuthStep('password')" class="w-full py-2.5 border border-slate-300 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-50 transition">
-                    &larr; Return to Sign In
-                </button>
-            </div>
-
-            <!-- STEP 5: VERIFIED PASSWORD RESET FORM -->
-            <div id="auth-step-reset" class="hidden">
-                <div class="text-center mb-6">
-                    <div class="w-10 h-10 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <i data-lucide="shield-check" class="w-5 h-5"></i>
-                    </div>
-                    <h3 class="text-xl font-bold text-eh-blue">Reset Password</h3>
-                    <p id="reset-email-display" class="text-xs text-slate-500 mt-1">Email Verified: user@emoryhenry.edu</p>
-                </div>
-
-                <form onsubmit="handleSelfPasswordReset(event)" class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
-                        <input type="password" id="reset-new-password" minlength="6" required placeholder="Minimum 6 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
-                    </div>
-
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
-                        <input type="password" id="reset-confirm-password" minlength="6" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
-                    </div>
-
-                    <div id="reset-error-box" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
-
-                    <div class="flex items-center justify-between pt-2">
-                        <button type="button" onclick="showAuthStep('password')" class="text-xs text-slate-500 hover:text-slate-800">&larr; Back to Login</button>
-                        <button type="submit" class="px-6 py-2.5 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
-                            Save & Sign In
-                        </button>
-                    </div>
-                </form>
-            </div>
         </div>
     </div>
 
-    <!-- MODAL: SAFETY VERIFIED ACCOUNT DELETION (ADMIN CONTROL) -->
+    <!-- DELETE USER MODAL -->
     <div id="delete-user-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-rose-100 relative">
             <button onclick="closeDeleteUserModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -674,7 +589,7 @@
                     <i data-lucide="triangle-alert" class="w-6 h-6"></i>
                 </div>
                 <h3 class="text-xl font-bold text-rose-700">Permanent Account Deletion</h3>
-                <p class="text-xs text-slate-600 mt-1">This action cannot be undone. All user data and badge submissions will be permanently purged.</p>
+                <p class="text-xs text-slate-600 mt-1">This action cannot be undone.</p>
             </div>
 
             <form onsubmit="confirmUserDeletion(event)" class="space-y-4">
@@ -686,12 +601,12 @@
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">To confirm, type "<span class="text-rose-600 font-bold">DELETE</span>" below *</label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Type "<span class="text-rose-600 font-bold">DELETE</span>" to confirm *</label>
                     <input type="text" id="delete-confirm-text" required placeholder="DELETE" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500">
                 </div>
 
                 <div>
-                    <label class="block text-xs font-semibold text-slate-700 mb-1">Re-type student email address to verify *</label>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Re-type student email address *</label>
                     <input type="email" id="delete-confirm-email" required placeholder="student@emoryhenry.edu" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500">
                 </div>
 
@@ -707,7 +622,7 @@
         </div>
     </div>
 
-    <!-- MODAL: LOGGED-IN STUDENT PASSWORD CHANGE -->
+    <!-- CHANGE PASSWORD MODAL -->
     <div id="change-password-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative">
             <button onclick="closeChangePasswordModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -719,7 +634,6 @@
                     <i data-lucide="shield-lock" class="w-5 h-5"></i>
                 </div>
                 <h3 class="text-xl font-bold text-eh-blue">Change Your Password</h3>
-                <p class="text-xs text-slate-500 mt-1">Enter a new password for your account.</p>
             </div>
 
             <form onsubmit="handleStudentPasswordChange(event)" class="space-y-4">
@@ -742,7 +656,7 @@
         </div>
     </div>
 
-    <!-- MODAL: CAPSTONE REFLECTION -->
+    <!-- CAPSTONE MODAL -->
     <div id="capstone-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
             <button onclick="closeCapstoneModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -752,7 +666,7 @@
             <div class="border-b border-slate-100 pb-4 mb-6">
                 <span class="px-2.5 py-0.5 bg-yellow-100 text-eh-blue font-bold text-xs rounded-full uppercase tracking-wider">Final Step for Badge</span>
                 <h3 id="capstone-modal-badge-title" class="text-2xl font-bold text-eh-blue mt-1">Submit Capstone Reflection</h3>
-                <p class="text-xs text-slate-500 mt-1">You have reached 50 points! Choose your preferred reflection format to earn your official NACE Badge.</p>
+                <p class="text-xs text-slate-500 mt-1">You have reached 50 points! Choose your reflection format to earn your badge.</p>
             </div>
 
             <form id="capstone-form" onsubmit="handleCapstoneSubmit(event)" class="space-y-6">
@@ -765,28 +679,23 @@
                             <input type="radio" name="capstone_format" value="written" checked onchange="toggleCapstoneFormat('written')" class="sr-only">
                             <i data-lucide="file-text" class="w-6 h-6 mx-auto mb-2 text-eh-blue"></i>
                             <span class="block font-bold text-sm text-slate-800">Written Essay</span>
-                            <span class="block text-xs text-slate-500 mt-0.5">300-500 word reflection</span>
                         </label>
                         <label class="cursor-pointer border-2 border-slate-200 rounded-xl p-4 text-center hover:border-eh-blue transition" id="format-label-video">
                             <input type="radio" name="capstone_format" value="video" onchange="toggleCapstoneFormat('video')" class="sr-only">
                             <i data-lucide="video" class="w-6 h-6 mx-auto mb-2 text-rose-600"></i>
                             <span class="block font-bold text-sm text-slate-800">Video Reflection</span>
-                            <span class="block text-xs text-slate-500 mt-0.5">2-3 min Loom / YouTube link</span>
                         </label>
                     </div>
                 </div>
 
-                <!-- Written Option -->
                 <div id="capstone-written-area">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Written Reflection Essay *</label>
-                    <textarea id="capstone-text" rows="6" placeholder="Reflect on how your experiences at Emory & Henry helped build this competency and how you will apply it in your future career..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
+                    <textarea id="capstone-text" rows="6" placeholder="Reflect on your experiences..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
                 </div>
 
-                <!-- Video Option -->
                 <div id="capstone-video-area" class="hidden">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Video Reflection URL *</label>
-                    <input type="url" id="capstone-video-url" placeholder="https://www.loom.com/share/... or YouTube link" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue">
-                    <p class="text-xs text-slate-500 mt-1">Ensure permissions are set to 'Anyone with link can view'.</p>
+                    <input type="url" id="capstone-video-url" placeholder="https://www.loom.com/share/..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue">
                 </div>
 
                 <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
@@ -799,14 +708,14 @@
         </div>
     </div>
 
-    <!-- MODAL: GOOGLE APPS SCRIPT SETTINGS (RESTRICTED ACCESS) -->
+    <!-- SETTINGS MODAL -->
     <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
             <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </button>
             <h3 class="text-xl font-bold text-eh-blue mb-2">Data Syncing Settings</h3>
-            <p class="text-xs text-slate-500 mb-4">Connect this app to a Google Apps Script Web App URL to persist user accounts, submissions, and point approvals across devices.</p>
+            <p class="text-xs text-slate-500 mb-4">Connect to a Google Apps Script Web App URL to persist user data.</p>
 
             <div class="space-y-4">
                 <div>
@@ -820,9 +729,8 @@
         </div>
     </div>
 
-    <!-- APPLICATION LOGIC JavaScript -->
+    <!-- JS LOGIC -->
     <script>
-        // MASTER DATA: NACE BADGES
         const NACE_BADGES = [
             { id: 'career', title: 'Career & Self-Development', icon: 'compass', desc: 'Proactively develop self and career through continual personal and professional learning.' },
             { id: 'communication', title: 'Communication', icon: 'message-square', desc: 'Clearly and effectively exchange information, ideas, and facts with diverse audiences.' },
@@ -834,40 +742,33 @@
             { id: 'technology', title: 'Technology', icon: 'cpu', desc: 'Understand and leverage technologies ethically to enhance efficiencies and solve problems.' }
         ];
 
-        // MASTER LIST OF AUTHORIZED ADMIN EMAILS
         let adminEmails = JSON.parse(localStorage.getItem('eh_admin_emails')) || [
             'admin@emoryhenry.edu',
             'careers@emoryhenry.edu',
             'jwbennett@emoryhenry.edu'
         ];
 
-        // MASTER LIST OF WORK EXAMPLES
         let workExamples = JSON.parse(localStorage.getItem('eh_work_examples')) || [
             { id: 'we_1', badgeId: 'communication', title: 'Research Presentation Deck', description: 'Sample pitch deck presenting research findings clearly.', url: 'https://drive.google.com' }
         ];
 
-        // APP STATE
         let currentUser = null;
-        let realAdminUser = null; // Stores real admin user when in View-As / Impersonation mode
+        let realAdminUser = null;
         let registeredUsers = JSON.parse(localStorage.getItem('eh_users')) || [];
         let allSubmissions = JSON.parse(localStorage.getItem('eh_submissions')) || [];
         let customExperiences = JSON.parse(localStorage.getItem('eh_custom_experiences')) || [];
         let appsScriptEndpoint = localStorage.getItem('eh_script_url') || '';
         let pendingAuthEmail = '';
-        let activeResetToken = '';
         let adminFilterMode = 'all';
 
-        // INITIALIZATION
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             populateBadgeDropdown();
             
-            // Sync Settings UI
             if (appsScriptEndpoint) {
                 document.getElementById('apps-script-url').value = appsScriptEndpoint;
             }
 
-            // Restore Session
             const savedUser = localStorage.getItem('eh_current_user');
             if (savedUser) {
                 currentUser = JSON.parse(savedUser);
@@ -876,23 +777,19 @@
                 setupLoggedOutView();
             }
 
-            // Fetch remote data from Google Sheet if configured
             fetchUserDataFromSheet();
         });
 
-        // DATA SYNC WITH GOOGLE APPS SCRIPT
         function fetchUserDataFromSheet() {
             if (!appsScriptEndpoint) return;
 
             fetch(appsScriptEndpoint)
                 .then(response => response.json())
                 .then(data => {
-                    // Sync User Accounts from Spreadsheet & Filter out 'Disabled' Accounts
                     if (data.users && Array.isArray(data.users)) {
                         registeredUsers = data.users.filter(u => !u.status || u.status.toLowerCase() !== 'disabled');
                         localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
 
-                        // Revoke active user session if their status was toggled to Disabled on the Sheet
                         if (currentUser) {
                             const isStillActive = registeredUsers.some(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
                             if (!isStillActive) {
@@ -928,7 +825,6 @@
             }).catch(err => console.log('Sync Error:', err));
         }
 
-        // STORAGE HELPERS
         function saveSubmissions() {
             localStorage.setItem('eh_submissions', JSON.stringify(allSubmissions));
         }
@@ -937,7 +833,6 @@
             localStorage.setItem('eh_custom_experiences', JSON.stringify(customExperiences));
         }
 
-        // VIEW ROUTING
         function setupLoggedOutView() {
             document.getElementById('hero-view').classList.remove('hidden');
             document.getElementById('tab-dashboard').classList.add('hidden');
@@ -961,14 +856,12 @@
             document.getElementById('user-display-name').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
             document.getElementById('user-display-email').textContent = currentUser.email;
 
-            // Check admin status against real user session if in impersonation mode
             const effectiveEmail = realAdminUser ? realAdminUser.email : currentUser.email;
             const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
             
             const adminTabBtn = document.getElementById('nav-admin');
             const adminSettingsBtn = document.getElementById('admin-settings-btn');
 
-            // Control Data Syncing Settings visibility strictly for Admins
             if (isRealAdmin) {
                 adminSettingsBtn.classList.remove('hidden');
             } else {
@@ -978,10 +871,6 @@
             if (isRealAdmin && !realAdminUser) {
                 adminTabBtn.classList.remove('hidden');
                 switchTab('admin');
-            } else if (realAdminUser) {
-                // Currently in View-As Mode
-                adminTabBtn.classList.add('hidden');
-                switchTab('dashboard');
             } else {
                 adminTabBtn.classList.add('hidden');
                 switchTab('dashboard');
@@ -1023,15 +912,9 @@
                 activeNavBtn.classList.remove('text-slate-200');
             }
 
-            // Auto-fill logged-in user details in form
-            if (tabName === 'activities' && currentUser) {
-                document.getElementById('form-user-fullname').value = `${currentUser.firstName} ${currentUser.lastName} (${currentUser.email})`;
-            }
-
             refreshAppData();
         }
 
-        // REFRESH & RENDER DATA
         function refreshAppData() {
             if (!currentUser) return;
 
@@ -1192,14 +1075,13 @@
                         <td class="p-4 text-xs text-slate-500">${new Date(s.timestamp).toLocaleDateString()}</td>
                         <td class="p-4">${statusBadge}</td>
                         <td class="p-4 text-right">
-                            <button onclick="viewSubmissionDetail('${s.id}')" class="text-xs text-eh-blue font-bold hover:underline">Details</button>
+                            <button onclick="alert('Submission ID: ' + '${s.id}' + '\\nDescription: ' + '${s.description}')" class="text-xs text-eh-blue font-bold hover:underline">Details</button>
                         </td>
                     </tr>
                 `;
             }).join('');
         }
 
-        // ADMIN PORTAL LOGIC & REGISTERED USERS MANAGEMENT
         function handleAddAdmin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-new-email').value.trim().toLowerCase();
@@ -1272,7 +1154,6 @@
             }).join('');
         }
 
-        // IMPERSONATION / VIEW AS STUDENT
         function impersonateUser(targetEmail) {
             const targetUser = registeredUsers.find(u => u.email.toLowerCase() === targetEmail.toLowerCase());
             if (!targetUser) {
@@ -1306,7 +1187,6 @@
             switchTab('admin');
         }
 
-        // SAFETY VERIFIED ACCOUNT DELETION
         function openDeleteUserModal(email) {
             const targetUser = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
             if (!targetUser) return;
@@ -1344,20 +1224,16 @@
                 return;
             }
 
-            // Perform Deletion
             registeredUsers = registeredUsers.filter(u => u.email.toLowerCase() !== targetEmail);
             localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
 
-            // Also remove user submissions
             allSubmissions = allSubmissions.filter(s => s.userEmail.toLowerCase() !== targetEmail);
             saveSubmissions();
 
-            // Sync Deletion action to Google Sheet API
             syncToGoogleSheet('DELETE_USER', { email: targetEmail });
 
             closeDeleteUserModal();
 
-            // If admin deleted their currently impersonated account, exit impersonation
             if (currentUser && currentUser.email.toLowerCase() === targetEmail) {
                 exitImpersonation();
             } else {
@@ -1425,7 +1301,6 @@
             }).join('');
         }
 
-        // DYNAMIC EXPERIENCE MANAGEMENT
         function handleCreateExperience(e) {
             e.preventDefault();
             const badgeId = document.getElementById('admin-exp-badge').value;
@@ -1455,7 +1330,7 @@
         }
 
         function deleteExperience(id) {
-            if (!confirm('Are you sure you want to delete this experience? It will no longer be available for student submissions.')) return;
+            if (!confirm('Are you sure you want to delete this experience?')) return;
             customExperiences = customExperiences.filter(exp => exp.id !== id);
             saveCustomExperiences();
             refreshAppData();
@@ -1470,7 +1345,7 @@
                 listBody.innerHTML = `
                     <tr>
                         <td colspan="5" class="text-center py-4 text-slate-400 italic">
-                            No custom experiences added yet. Add one using the form above.
+                            No custom experiences added yet.
                         </td>
                     </tr>
                 `;
@@ -1497,7 +1372,6 @@
             }).join('');
         }
 
-        // WORK EXAMPLE ADMIN LOGIC
         function handleCreateWorkExample(e) {
             e.preventDefault();
             const badgeId = document.getElementById('admin-example-badge').value;
@@ -1576,7 +1450,6 @@
             syncToGoogleSheet('REVIEW_SUBMISSION', sub);
         }
 
-        // AUTHENTICATION MODAL & LOGIC
         function openLoginModal() {
             document.getElementById('auth-modal').classList.remove('hidden');
             showAuthStep('email');
@@ -1590,21 +1463,11 @@
             document.getElementById('auth-step-email').classList.add('hidden');
             document.getElementById('auth-step-password').classList.add('hidden');
             document.getElementById('auth-step-register').classList.add('hidden');
-            document.getElementById('auth-step-verification-sent').classList.add('hidden');
-            document.getElementById('auth-step-reset').classList.add('hidden');
             document.getElementById('auth-error-box').classList.add('hidden');
 
             if (step === 'email') document.getElementById('auth-step-email').classList.remove('hidden');
             if (step === 'password') document.getElementById('auth-step-password').classList.remove('hidden');
             if (step === 'register') document.getElementById('auth-step-register').classList.remove('hidden');
-            if (step === 'verification-sent') {
-                document.getElementById('sent-verification-email').textContent = pendingAuthEmail;
-                document.getElementById('auth-step-verification-sent').classList.remove('hidden');
-            }
-            if (step === 'reset') {
-                document.getElementById('reset-email-display').textContent = `Email Verified: ${pendingAuthEmail}`;
-                document.getElementById('auth-step-reset').classList.remove('hidden');
-            }
         }
 
         function handleEmailLookup(e) {
@@ -1665,13 +1528,11 @@
             }
 
             const newUser = {
-                id: 'u_' + Date.now(),
                 email: pendingAuthEmail,
-                firstName,
-                lastName,
-                password,
-                status: 'Active',
-                createdAt: new Date().toISOString()
+                firstName: firstName,
+                lastName: lastName,
+                password: password,
+                status: 'active'
             };
 
             registeredUsers.push(newUser);
@@ -1680,75 +1541,17 @@
             currentUser = newUser;
             localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
 
+            syncToGoogleSheet('REGISTER_USER', newUser);
+
             closeLoginModal();
             setupLoggedInView();
-            syncToGoogleSheet('REGISTER_USER', newUser);
         }
 
-        // FORGOT PASSWORD EMAIL VERIFICATION MECHANIC
-        function requestVerificationLink() {
-            if (!pendingAuthEmail) return;
-
-            // Generate temporary verification token
-            activeResetToken = 'tok_' + Math.random().toString(36).substring(2, 10);
-            
-            // Dispatch payload to Google Apps Script / Email Dispatcher
-            syncToGoogleSheet('SEND_VERIFICATION_LINK', {
-                email: pendingAuthEmail,
-                token: activeResetToken,
-                verificationUrl: window.location.origin + window.location.pathname + '?reset_token=' + activeResetToken + '&email=' + encodeURIComponent(pendingAuthEmail)
-            });
-
-            // Pre-fill manual token field for testing
-            const manualTokenInput = document.getElementById('manual-verify-token');
-            if (manualTokenInput) manualTokenInput.value = activeResetToken;
-
-            showAuthStep('verification-sent');
-        }
-
-        function verifyResetToken() {
-            const inputToken = document.getElementById('manual-verify-token').value.trim();
-            const errEl = document.getElementById('token-error-msg');
-
-            if (!inputToken || inputToken !== activeResetToken) {
-                errEl.textContent = 'Invalid or expired verification token.';
-                errEl.classList.remove('hidden');
-                return;
-            }
-
-            errEl.classList.add('hidden');
-            showAuthStep('reset');
-        }
-
-        function handleSelfPasswordReset(e) {
-            e.preventDefault();
-            const newPassword = document.getElementById('reset-new-password').value;
-            const confirmPassword = document.getElementById('reset-confirm-password').value;
-            const errBox = document.getElementById('reset-error-box');
-
-            if (newPassword !== confirmPassword) {
-                errBox.textContent = 'Passwords do not match.';
-                errBox.classList.remove('hidden');
-                return;
-            }
-
-            const user = registeredUsers.find(u => u.email.toLowerCase() === pendingAuthEmail);
-
-            if (user) {
-                user.password = newPassword;
-                localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
-                currentUser = user;
-                localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
-
-                syncToGoogleSheet('UPDATE_PASSWORD', { email: user.email, password: newPassword });
-
-                closeLoginModal();
-                setupLoggedInView();
-                alert('Password updated successfully!');
-            } else {
-                errBox.textContent = 'Account not found.';
-                errBox.classList.remove('hidden');
-            }
+        function handleSignOut() {
+            currentUser = null;
+            realAdminUser = null;
+            localStorage.removeItem('eh_current_user');
+            setupLoggedOutView();
         }
 
         function openChangePasswordModal() {
@@ -1761,37 +1564,31 @@
 
         function handleStudentPasswordChange(e) {
             e.preventDefault();
-            const newPassword = document.getElementById('student-new-password').value;
-            const confirmPassword = document.getElementById('student-confirm-password').value;
+            const newPass = document.getElementById('student-new-password').value;
+            const confirmPass = document.getElementById('student-confirm-password').value;
             const errBox = document.getElementById('student-password-error');
 
-            if (newPassword !== confirmPassword) {
+            if (newPass !== confirmPass) {
                 errBox.textContent = 'Passwords do not match.';
                 errBox.classList.remove('hidden');
                 return;
             }
 
-            currentUser.password = newPassword;
-            const targetUser = registeredUsers.find(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
-            if (targetUser) targetUser.password = newPassword;
-
-            localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+            currentUser.password = newPass;
             localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
 
-            syncToGoogleSheet('UPDATE_PASSWORD', { email: currentUser.email, password: newPassword });
+            const idx = registeredUsers.findIndex(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
+            if (idx !== -1) {
+                registeredUsers[idx].password = newPass;
+                localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+            }
+
+            syncToGoogleSheet('UPDATE_USER', currentUser);
 
             closeChangePasswordModal();
-            alert('Your password has been changed successfully!');
+            alert('Password successfully updated!');
         }
 
-        function handleSignOut() {
-            currentUser = null;
-            realAdminUser = null;
-            localStorage.removeItem('eh_current_user');
-            setupLoggedOutView();
-        }
-
-        // SUBMISSION & CAPSTONE LOGIC
         function populateBadgeDropdown() {
             const select = document.getElementById('form-badge-select');
             if (!select) return;
@@ -1809,70 +1606,81 @@
                 return;
             }
 
-            const relevantExps = customExperiences.filter(exp => exp.badgeId === 'all' || exp.badgeId === badgeId);
+            const availableExps = customExperiences.filter(e => e.badgeId === 'all' || e.badgeId === badgeId);
 
-            if (relevantExps.length === 0) {
-                typeSelect.innerHTML = '<option value="">-- No Activities Available --</option>';
-                return;
-            }
+            let optionsHtml = '<option value="">-- Select Activity Type --</option>';
+            optionsHtml += '<option value="default_course" data-pts="15" data-link="false">Relevant Coursework (15 Pts)</option>';
+            optionsHtml += '<option value="default_leadership" data-pts="20" data-link="false">Leadership / Club Role (20 Pts)</option>';
+            optionsHtml += '<option value="default_internship" data-pts="25" data-link="true">Internship / Campus Employment (25 Pts)</option>';
 
-            typeSelect.innerHTML = '<option value="">-- Choose Experience/Activity --</option>' + 
-                relevantExps.map(r => `<option value="${r.id}" data-pts="${r.points}" data-req="${r.linkRequired ? 'true' : 'false'}">${r.title} (+${r.points} Pts)</option>`).join('');
+            availableExps.forEach(exp => {
+                optionsHtml += `<option value="${exp.id}" data-pts="${exp.points}" data-link="${exp.linkRequired}">${exp.title} (${exp.points} Pts)</option>`;
+            });
+
+            typeSelect.innerHTML = optionsHtml;
+            handleActivityTypeChange();
         }
 
         function handleActivityTypeChange() {
             const select = document.getElementById('form-activity-type');
-            const selectedOpt = select.options[select.selectedIndex];
-            const pts = selectedOpt.getAttribute('data-pts');
-            const isReq = selectedOpt.getAttribute('data-req') === 'true';
-
+            const selectedOption = select.options[select.selectedIndex];
             const hint = document.getElementById('activity-point-hint');
+            const proofTag = document.getElementById('proof-req-tag');
             const proofInput = document.getElementById('form-proof-url');
-            const proofReqTag = document.getElementById('proof-req-tag');
 
-            if (pts) {
-                hint.textContent = `This activity option is eligible for ${pts} points upon approval.`;
-                hint.classList.remove('hidden');
-            } else {
+            if (!selectedOption || !selectedOption.value) {
                 hint.classList.add('hidden');
+                proofTag.textContent = '(Optional)';
+                proofInput.required = false;
+                return;
             }
 
-            if (isReq) {
+            const pts = selectedOption.getAttribute('data-pts');
+            const linkReq = selectedOption.getAttribute('data-link') === 'true';
+
+            hint.textContent = `Awardable Points: +${pts} Pts`;
+            hint.classList.remove('hidden');
+
+            if (linkReq) {
+                proofTag.textContent = '* (Required for this activity)';
+                proofTag.className = 'text-rose-600 font-bold';
                 proofInput.required = true;
-                proofReqTag.textContent = '(Required)';
-                proofReqTag.className = 'text-rose-600 font-bold';
             } else {
+                proofTag.textContent = '(Optional)';
+                proofTag.className = 'text-slate-500 font-normal';
                 proofInput.required = false;
-                proofReqTag.textContent = '(Optional)';
-                proofReqTag.className = 'text-slate-500 font-normal';
             }
         }
 
         function quickSubmitForBadge(badgeId) {
             switchTab('activities');
-            const select = document.getElementById('form-badge-select');
-            select.value = badgeId;
-            updateActivityOptions();
+            const badgeSelect = document.getElementById('form-badge-select');
+            if (badgeSelect) {
+                badgeSelect.value = badgeId;
+                updateActivityOptions();
+            }
         }
 
         function handleActivitySubmit(e) {
             e.preventDefault();
-            if (!currentUser) return;
-
+            
             const badgeId = document.getElementById('form-badge-select').value;
-            const typeSelect = document.getElementById('form-activity-type');
-            const selectedOpt = typeSelect.options[typeSelect.selectedIndex];
-            const ptsRequested = parseInt(selectedOpt.getAttribute('data-pts')) || 15;
+            const activityTypeSelect = document.getElementById('form-activity-type');
+            const selectedOpt = activityTypeSelect.options[activityTypeSelect.selectedIndex];
+            const title = document.getElementById('form-title').value.trim();
+            const desc = document.getElementById('form-description').value.trim();
+            const proofUrl = document.getElementById('form-proof-url').value.trim();
+
+            const ptsRequested = parseInt(selectedOpt.getAttribute('data-pts')) || 10;
 
             const newSubmission = {
                 id: 'sub_' + Date.now(),
                 userEmail: currentUser.email,
                 userName: `${currentUser.firstName} ${currentUser.lastName}`,
                 badgeId: badgeId,
-                activityType: typeSelect.value,
-                title: document.getElementById('form-title').value.trim(),
-                description: document.getElementById('form-description').value.trim(),
-                proofUrl: document.getElementById('form-proof-url').value.trim(),
+                title: title,
+                description: desc,
+                proofUrl: proofUrl,
                 pointsRequested: ptsRequested,
                 pointsGranted: 0,
                 status: 'pending',
@@ -1880,19 +1688,19 @@
                 timestamp: new Date().toISOString()
             };
 
-            allSubmissions.unshift(newSubmission);
+            allSubmissions.push(newSubmission);
             saveSubmissions();
+            syncToGoogleSheet('SUBMIT_ACTIVITY', newSubmission);
 
             document.getElementById('activity-form').reset();
+            alert('Activity submitted successfully and pending admin review!');
             switchTab('my-submissions');
-            syncToGoogleSheet('NEW_SUBMISSION', newSubmission);
         }
 
-        // CAPSTONE MODAL LOGIC
         function openCapstoneModal(badgeId) {
             const badge = NACE_BADGES.find(b => b.id === badgeId);
             document.getElementById('capstone-badge-id').value = badgeId;
-            document.getElementById('capstone-modal-badge-title').textContent = `Capstone Reflection: ${badge ? badge.title : ''}`;
+            document.getElementById('capstone-modal-badge-title').textContent = badge ? badge.title : 'Badge Capstone';
             document.getElementById('capstone-modal').classList.remove('hidden');
         }
 
@@ -1915,11 +1723,16 @@
             const badgeId = document.getElementById('capstone-badge-id').value;
             const format = document.querySelector('input[name="capstone_format"]:checked').value;
             
-            let content = format === 'written' ? document.getElementById('capstone-text').value.trim() : document.getElementById('capstone-video-url').value.trim();
+            let desc = '';
+            let proofUrl = '';
 
-            if (!content) {
-                alert('Please provide your reflection content or video link.');
-                return;
+            if (format === 'written') {
+                desc = document.getElementById('capstone-text').value.trim();
+                if (!desc) return alert('Please enter your written reflection.');
+            } else {
+                proofUrl = document.getElementById('capstone-video-url').value.trim();
+                if (!proofUrl) return alert('Please provide a video reflection URL.');
+                desc = 'Video Reflection Capstone';
             }
 
             const capstoneSub = {
@@ -1927,9 +1740,9 @@
                 userEmail: currentUser.email,
                 userName: `${currentUser.firstName} ${currentUser.lastName}`,
                 badgeId: badgeId,
-                title: `Capstone Reflection (${format.toUpperCase()})`,
-                description: content,
-                proofUrl: format === 'video' ? content : '',
+                title: 'Capstone Reflection',
+                description: desc,
+                proofUrl: proofUrl,
                 pointsRequested: 0,
                 pointsGranted: 0,
                 status: 'pending',
@@ -1937,22 +1750,16 @@
                 timestamp: new Date().toISOString()
             };
 
-            allSubmissions.unshift(capstoneSub);
+            allSubmissions.push(capstoneSub);
             saveSubmissions();
+            syncToGoogleSheet('SUBMIT_ACTIVITY', capstoneSub);
+
             closeCapstoneModal();
+            alert('Capstone submitted! Once approved by an admin, your badge will be unlocked.');
             switchTab('my-submissions');
-            syncToGoogleSheet('NEW_SUBMISSION', capstoneSub);
         }
 
-        // SETTINGS MODAL LOGIC (RESTRICTED TO ADMINS ONLY)
         function openSettingsModal() {
-            const effectiveEmail = realAdminUser ? realAdminUser.email : (currentUser ? currentUser.email : '');
-            const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
-
-            if (!isRealAdmin) {
-                alert('Access Restricted: Only system administrators have access to Data Syncing Settings.');
-                return;
-            }
             document.getElementById('settings-modal').classList.remove('hidden');
         }
 
@@ -1965,15 +1772,8 @@
             appsScriptEndpoint = url;
             localStorage.setItem('eh_script_url', url);
             closeSettingsModal();
-            alert('Settings saved!');
+            alert('Google Apps Script endpoint saved!');
             fetchUserDataFromSheet();
-        }
-
-        function viewSubmissionDetail(id) {
-            const sub = allSubmissions.find(s => s.id === id);
-            if (sub) {
-                alert(`Activity: ${sub.title}\nStatus: ${sub.status.toUpperCase()}\nPoints Granted: ${sub.pointsGranted}\nReflection: ${sub.description}`);
-            }
         }
     </script>
 </body>
