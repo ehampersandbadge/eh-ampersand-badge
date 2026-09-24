@@ -48,6 +48,17 @@
 </head>
 <body class="h-full flex flex-col justify-between text-slate-800 antialiased">
 
+    <!-- IMPERSONATION / VIEW-AS BANNER -->
+    <div id="impersonation-banner" class="hidden bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-between shadow-inner">
+        <div class="flex items-center space-x-2">
+            <i data-lucide="eye" class="w-4 h-4"></i>
+            <span>ADMIN VIEW MODE: Currently viewing system as student <strong id="impersonated-user-name" class="underline"></strong> (<span id="impersonated-user-email"></span>)</span>
+        </div>
+        <button onclick="exitImpersonation()" class="px-3 py-1 bg-slate-900 text-white rounded hover:bg-slate-800 transition text-[11px] font-bold">
+            Exit View-As Mode & Return to Admin
+        </button>
+    </div>
+
     <!-- NAVIGATION BAR -->
     <header class="bg-eh-blue text-white shadow-md sticky top-0 z-30">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -86,7 +97,8 @@
 
                 <!-- User Profile / Auth Area -->
                 <div class="flex items-center space-x-3">
-                    <button onclick="openSettingsModal()" class="text-slate-300 hover:text-white p-2 rounded-lg hover:bg-eh-lightBlue transition" title="Sync & API Settings">
+                    <!-- Settings Button (RESTRICTED TO ADMINS ONLY) -->
+                    <button id="admin-settings-btn" onclick="openSettingsModal()" class="hidden text-slate-300 hover:text-white p-2 rounded-lg hover:bg-eh-lightBlue transition" title="Sync & API Settings (Admin Only)">
                         <i data-lucide="settings" class="w-5 h-5"></i>
                     </button>
 
@@ -204,7 +216,6 @@
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Select Target Badge *</label>
                     <select id="form-badge-select" onchange="updateActivityOptions()" required class="w-full bg-white border border-slate-300 rounded-lg px-4 py-2.5 text-slate-800 font-medium text-sm focus:ring-2 focus:ring-eh-blue focus:border-eh-blue">
                         <option value="">-- Choose a NACE Badge --</option>
-                        <!-- Dynamic options -->
                     </select>
                 </div>
 
@@ -277,24 +288,49 @@
 
         <!-- TAB 4: ADMIN REVIEW PORTAL (RESTRICTED TO ADMINS) -->
         <div id="tab-admin" class="hidden space-y-8">
-            <!-- Manage Admin Users Section -->
+            <!-- Manage Admin Users & Account Control Panel -->
             <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm">
                 <div class="border-b border-slate-100 pb-4 mb-4">
                     <h3 class="text-lg font-bold text-eh-blue flex items-center">
-                        <i data-lucide="user-check" class="w-5 h-5 mr-2 text-eh-gold"></i> Manage Administrator Privileges
+                        <i data-lucide="user-check" class="w-5 h-5 mr-2 text-eh-gold"></i> Manage Accounts & Administrative Privileges
                     </h3>
-                    <p class="text-xs text-slate-500 mt-1">Grant or revoke admin access by typing an email address below.</p>
+                    <p class="text-xs text-slate-500 mt-1">Grant admin privileges, view student accounts, or perform account management.</p>
                 </div>
+                
                 <form onsubmit="handleAddAdmin(event)" class="flex flex-col sm:flex-row gap-4 mb-6">
                     <input type="email" id="admin-new-email" required placeholder="user@emoryhenry.edu" class="flex-1 border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
                     <button type="submit" class="px-6 py-2.5 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow flex items-center justify-center">
                         <i data-lucide="user-plus" class="w-4 h-4 mr-1"></i> Grant Admin Rights
                     </button>
                 </form>
-                <div>
+
+                <div class="mb-6">
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-2">Current Administrators</h4>
                     <div id="admin-users-list" class="flex flex-wrap gap-2">
                         <!-- Dynamic Admins List -->
+                    </div>
+                </div>
+
+                <!-- ALL USER ACCOUNTS (VIEW AS STUDENT & DELETION CONTROL) -->
+                <div>
+                    <h4 class="text-xs font-bold text-slate-700 uppercase mb-3 flex items-center justify-between">
+                        <span>Registered Student Accounts</span>
+                        <span class="text-slate-400 font-normal">View-as student portal or delete account</span>
+                    </h4>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="bg-slate-50 border-b border-slate-200 text-[11px] uppercase text-slate-500 font-bold tracking-wider">
+                                    <th class="p-3">Student Name</th>
+                                    <th class="p-3">Email Address</th>
+                                    <th class="p-3">Status</th>
+                                    <th class="p-3 text-right">Account Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="admin-registered-users-body" class="divide-y divide-slate-100 text-xs">
+                                <!-- Dynamic Student Accounts -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -512,7 +548,7 @@
                     </div>
                     <div class="flex items-center justify-between">
                         <button type="button" onclick="showAuthStep('email')" class="text-xs text-slate-500 hover:text-slate-800">&larr; Change Email</button>
-                        <button type="button" onclick="showAuthStep('reset')" class="text-xs text-eh-blue hover:underline font-semibold">Forgot / Change Password?</button>
+                        <button type="button" onclick="requestVerificationLink()" class="text-xs text-eh-blue hover:underline font-semibold">Forgot / Change Password?</button>
                     </div>
                     <button type="submit" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
                         Sign In
@@ -560,14 +596,46 @@
                 </form>
             </div>
 
-            <!-- STEP 4: SELF-SERVICE PASSWORD RESET / CHANGE -->
+            <!-- STEP 4: EMAIL VERIFICATION NOTICE (FORGOT PASSWORD) -->
+            <div id="auth-step-verification-sent" class="hidden">
+                <div class="text-center mb-6">
+                    <div class="w-12 h-12 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-3">
+                        <i data-lucide="mail-check" class="w-6 h-6"></i>
+                    </div>
+                    <h3 class="text-xl font-bold text-eh-blue">Verification Email Sent</h3>
+                    <p class="text-xs text-slate-600 mt-2">
+                        A password reset verification link has been dispatched to:
+                        <strong id="sent-verification-email" class="block text-eh-blue font-bold mt-1"></strong>
+                    </p>
+                    <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">
+                        Please check your student email inbox to complete your reset link. The verification token is valid for 15 minutes.
+                    </p>
+                </div>
+
+                <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
+                    <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enter / Paste Reset Verification Token</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="manual-verify-token" placeholder="Paste Token From Verification Link" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-eh-blue">
+                        <button onclick="verifyResetToken()" class="px-4 py-2 bg-eh-blue text-white text-xs font-bold rounded-lg hover:bg-eh-lightBlue transition">
+                            Verify
+                        </button>
+                    </div>
+                    <p id="token-error-msg" class="text-[11px] text-rose-600 font-semibold mt-1.5 hidden"></p>
+                </div>
+
+                <button type="button" onclick="showAuthStep('password')" class="w-full py-2.5 border border-slate-300 text-slate-600 rounded-lg font-bold text-xs hover:bg-slate-50 transition">
+                    &larr; Return to Sign In
+                </button>
+            </div>
+
+            <!-- STEP 5: VERIFIED PASSWORD RESET FORM -->
             <div id="auth-step-reset" class="hidden">
                 <div class="text-center mb-6">
-                    <div class="w-10 h-10 bg-amber-100 text-amber-800 rounded-full flex items-center justify-center mx-auto mb-2">
-                        <i data-lucide="key" class="w-5 h-5"></i>
+                    <div class="w-10 h-10 bg-emerald-100 text-emerald-800 rounded-full flex items-center justify-center mx-auto mb-2">
+                        <i data-lucide="shield-check" class="w-5 h-5"></i>
                     </div>
                     <h3 class="text-xl font-bold text-eh-blue">Reset Password</h3>
-                    <p id="reset-email-display" class="text-xs text-slate-500 mt-1">Update password for user@emoryhenry.edu</p>
+                    <p id="reset-email-display" class="text-xs text-slate-500 mt-1">Email Verified: user@emoryhenry.edu</p>
                 </div>
 
                 <form onsubmit="handleSelfPasswordReset(event)" class="space-y-4">
@@ -591,6 +659,51 @@
                     </div>
                 </form>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: SAFETY VERIFIED ACCOUNT DELETION (ADMIN CONTROL) -->
+    <div id="delete-user-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-rose-100 relative">
+            <button onclick="closeDeleteUserModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+
+            <div class="text-center mb-6">
+                <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="triangle-alert" class="w-6 h-6"></i>
+                </div>
+                <h3 class="text-xl font-bold text-rose-700">Permanent Account Deletion</h3>
+                <p class="text-xs text-slate-600 mt-1">This action cannot be undone. All user data and badge submissions will be permanently purged.</p>
+            </div>
+
+            <form onsubmit="confirmUserDeletion(event)" class="space-y-4">
+                <input type="hidden" id="delete-target-email">
+
+                <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
+                    <p><strong>Target Student:</strong> <span id="delete-target-name"></span></p>
+                    <p><strong>Target Email:</strong> <span id="delete-target-email-label" class="font-bold text-rose-600"></span></p>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">To confirm, type "<span class="text-rose-600 font-bold">DELETE</span>" below *</label>
+                    <input type="text" id="delete-confirm-text" required placeholder="DELETE" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 mb-1">Re-type student email address to verify *</label>
+                    <input type="email" id="delete-confirm-email" required placeholder="student@emoryhenry.edu" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-rose-500">
+                </div>
+
+                <div id="delete-user-error" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
+
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeDeleteUserModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition shadow">
+                        Permanently Delete Account
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -686,7 +799,7 @@
         </div>
     </div>
 
-    <!-- MODAL: GOOGLE APPS SCRIPT SETTINGS -->
+    <!-- MODAL: GOOGLE APPS SCRIPT SETTINGS (RESTRICTED ACCESS) -->
     <div id="settings-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-100 relative">
             <button onclick="closeSettingsModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -735,11 +848,13 @@
 
         // APP STATE
         let currentUser = null;
+        let realAdminUser = null; // Stores real admin user when in View-As / Impersonation mode
         let registeredUsers = JSON.parse(localStorage.getItem('eh_users')) || [];
         let allSubmissions = JSON.parse(localStorage.getItem('eh_submissions')) || [];
         let customExperiences = JSON.parse(localStorage.getItem('eh_custom_experiences')) || [];
         let appsScriptEndpoint = localStorage.getItem('eh_script_url') || '';
         let pendingAuthEmail = '';
+        let activeResetToken = '';
         let adminFilterMode = 'all';
 
         // INITIALIZATION
@@ -833,6 +948,8 @@
             document.getElementById('main-nav').classList.add('hidden');
             document.getElementById('user-menu').classList.add('hidden');
             document.getElementById('login-button-header').classList.remove('hidden');
+            document.getElementById('admin-settings-btn').classList.add('hidden');
+            document.getElementById('impersonation-banner').classList.add('hidden');
         }
 
         function setupLoggedInView() {
@@ -844,12 +961,27 @@
             document.getElementById('user-display-name').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
             document.getElementById('user-display-email').textContent = currentUser.email;
 
-            const isAdmin = adminEmails.map(e => e.toLowerCase()).includes(currentUser.email.toLowerCase());
+            // Check admin status against real user session if in impersonation mode
+            const effectiveEmail = realAdminUser ? realAdminUser.email : currentUser.email;
+            const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
+            
             const adminTabBtn = document.getElementById('nav-admin');
+            const adminSettingsBtn = document.getElementById('admin-settings-btn');
 
-            if (isAdmin) {
+            // Control Data Syncing Settings visibility strictly for Admins
+            if (isRealAdmin) {
+                adminSettingsBtn.classList.remove('hidden');
+            } else {
+                adminSettingsBtn.classList.add('hidden');
+            }
+
+            if (isRealAdmin && !realAdminUser) {
                 adminTabBtn.classList.remove('hidden');
                 switchTab('admin');
+            } else if (realAdminUser) {
+                // Currently in View-As Mode
+                adminTabBtn.classList.add('hidden');
+                switchTab('dashboard');
             } else {
                 adminTabBtn.classList.add('hidden');
                 switchTab('dashboard');
@@ -864,8 +996,10 @@
                 return;
             }
 
-            const isAdmin = adminEmails.map(e => e.toLowerCase()).includes(currentUser.email.toLowerCase());
-            if (tabName === 'admin' && !isAdmin) {
+            const effectiveEmail = realAdminUser ? realAdminUser.email : currentUser.email;
+            const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
+
+            if (tabName === 'admin' && (!isRealAdmin || realAdminUser)) {
                 alert('Access restricted to authorized administrators.');
                 tabName = 'dashboard';
             }
@@ -902,6 +1036,7 @@
             renderAdminPortal();
             renderAdminExperienceList();
             renderAdminUserList();
+            renderAdminRegisteredUsers();
             renderAdminWorkExamplesList();
             updateAdminPendingBadge();
             lucide.createIcons();
@@ -1059,7 +1194,7 @@
             }).join('');
         }
 
-        // ADMIN PORTAL LOGIC
+        // ADMIN PORTAL LOGIC & REGISTERED USERS MANAGEMENT
         function handleAddAdmin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-new-email').value.trim().toLowerCase();
@@ -1077,7 +1212,8 @@
         }
 
         function removeAdmin(email) {
-            if (email.toLowerCase() === currentUser.email.toLowerCase()) {
+            const activeAdminEmail = realAdminUser ? realAdminUser.email : currentUser.email;
+            if (email.toLowerCase() === activeAdminEmail.toLowerCase()) {
                 alert('You cannot remove admin permissions from yourself.');
                 return;
             }
@@ -1098,6 +1234,132 @@
                     <button onclick="removeAdmin('${email}')" class="ml-2 text-slate-400 hover:text-rose-600 font-bold" title="Revoke Admin">&times;</button>
                 </span>
             `).join('');
+        }
+
+        function renderAdminRegisteredUsers() {
+            const body = document.getElementById('admin-registered-users-body');
+            if (!body) return;
+
+            if (registeredUsers.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No registered student accounts found.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = registeredUsers.map(u => {
+                const isAdmin = adminEmails.map(e => e.toLowerCase()).includes(u.email.toLowerCase());
+                return `
+                    <tr class="hover:bg-slate-50">
+                        <td class="p-3 font-semibold text-slate-800">${u.firstName} ${u.lastName}</td>
+                        <td class="p-3 text-slate-600 font-mono text-[11px]">${u.email}</td>
+                        <td class="p-3">
+                            ${isAdmin ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-900 font-bold rounded text-[10px]">ADMIN</span>' : '<span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-medium rounded text-[10px]">STUDENT</span>'}
+                        </td>
+                        <td class="p-3 text-right space-x-2">
+                            <button onclick="impersonateUser('${u.email}')" class="px-2.5 py-1 bg-eh-blue text-white font-bold rounded hover:bg-eh-lightBlue transition text-[11px]" title="View as student">
+                                View As Student
+                            </button>
+                            <button onclick="openDeleteUserModal('${u.email}')" class="px-2.5 py-1 bg-rose-100 text-rose-700 font-bold rounded hover:bg-rose-200 transition text-[11px]" title="Permanently delete account">
+                                Delete Account
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // IMPERSONATION / VIEW AS STUDENT
+        function impersonateUser(targetEmail) {
+            const targetUser = registeredUsers.find(u => u.email.toLowerCase() === targetEmail.toLowerCase());
+            if (!targetUser) {
+                alert('Account not found.');
+                return;
+            }
+
+            if (!realAdminUser) {
+                realAdminUser = currentUser;
+            }
+
+            currentUser = targetUser;
+            localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+
+            document.getElementById('impersonated-user-name').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
+            document.getElementById('impersonated-user-email').textContent = currentUser.email;
+            document.getElementById('impersonation-banner').classList.remove('hidden');
+
+            setupLoggedInView();
+            switchTab('dashboard');
+        }
+
+        function exitImpersonation() {
+            if (realAdminUser) {
+                currentUser = realAdminUser;
+                realAdminUser = null;
+                localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+            }
+            document.getElementById('impersonation-banner').classList.add('hidden');
+            setupLoggedInView();
+            switchTab('admin');
+        }
+
+        // SAFETY VERIFIED ACCOUNT DELETION
+        function openDeleteUserModal(email) {
+            const targetUser = registeredUsers.find(u => u.email.toLowerCase() === email.toLowerCase());
+            if (!targetUser) return;
+
+            document.getElementById('delete-target-email').value = targetUser.email;
+            document.getElementById('delete-target-email-label').textContent = targetUser.email;
+            document.getElementById('delete-target-name').textContent = `${targetUser.firstName} ${targetUser.lastName}`;
+            document.getElementById('delete-confirm-text').value = '';
+            document.getElementById('delete-confirm-email').value = '';
+            document.getElementById('delete-user-error').classList.add('hidden');
+
+            document.getElementById('delete-user-modal').classList.remove('hidden');
+        }
+
+        function closeDeleteUserModal() {
+            document.getElementById('delete-user-modal').classList.add('hidden');
+        }
+
+        function confirmUserDeletion(e) {
+            e.preventDefault();
+            const targetEmail = document.getElementById('delete-target-email').value.trim().toLowerCase();
+            const confirmText = document.getElementById('delete-confirm-text').value.trim();
+            const confirmEmail = document.getElementById('delete-confirm-email').value.trim().toLowerCase();
+            const errBox = document.getElementById('delete-user-error');
+
+            if (confirmText !== 'DELETE') {
+                errBox.textContent = 'Verification word must match "DELETE" in uppercase.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            if (confirmEmail !== targetEmail) {
+                errBox.textContent = 'Confirmation email address does not match target email.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+
+            // Perform Deletion
+            registeredUsers = registeredUsers.filter(u => u.email.toLowerCase() !== targetEmail);
+            localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+
+            // Also remove user submissions
+            allSubmissions = allSubmissions.filter(s => s.userEmail.toLowerCase() !== targetEmail);
+            saveSubmissions();
+
+            // Sync Deletion action to Google Sheet API
+            syncToGoogleSheet('DELETE_USER', { email: targetEmail });
+
+            closeDeleteUserModal();
+
+            // If admin deleted their currently impersonated account, exit impersonation
+            if (currentUser && currentUser.email.toLowerCase() === targetEmail) {
+                exitImpersonation();
+            } else {
+                refreshAppData();
+            }
+
+            alert(`Account ${targetEmail} and all associated data have been permanently deleted.`);
         }
 
         function renderAdminPortal() {
@@ -1323,14 +1585,19 @@
             document.getElementById('auth-step-email').classList.add('hidden');
             document.getElementById('auth-step-password').classList.add('hidden');
             document.getElementById('auth-step-register').classList.add('hidden');
+            document.getElementById('auth-step-verification-sent').classList.add('hidden');
             document.getElementById('auth-step-reset').classList.add('hidden');
             document.getElementById('auth-error-box').classList.add('hidden');
 
             if (step === 'email') document.getElementById('auth-step-email').classList.remove('hidden');
             if (step === 'password') document.getElementById('auth-step-password').classList.remove('hidden');
             if (step === 'register') document.getElementById('auth-step-register').classList.remove('hidden');
+            if (step === 'verification-sent') {
+                document.getElementById('sent-verification-email').textContent = pendingAuthEmail;
+                document.getElementById('auth-step-verification-sent').classList.remove('hidden');
+            }
             if (step === 'reset') {
-                document.getElementById('reset-email-display').textContent = `Update password for ${pendingAuthEmail}`;
+                document.getElementById('reset-email-display').textContent = `Email Verified: ${pendingAuthEmail}`;
                 document.getElementById('auth-step-reset').classList.remove('hidden');
             }
         }
@@ -1350,7 +1617,6 @@
             const existingUser = registeredUsers.find(u => u.email.toLowerCase() === emailInput);
 
             if (existingUser) {
-                // Check if account status is disabled
                 if (existingUser.status && existingUser.status.toLowerCase() === 'disabled') {
                     errorBox.classList.remove('hidden');
                     document.getElementById('auth-error-msg').textContent = 'Account disabled. Please contact system administrator.';
@@ -1399,7 +1665,7 @@
                 firstName,
                 lastName,
                 password,
-                status: 'Active', // Automatically sets Status to Active
+                status: 'Active',
                 createdAt: new Date().toISOString()
             };
 
@@ -1414,7 +1680,41 @@
             syncToGoogleSheet('REGISTER_USER', newUser);
         }
 
-        // SELF-SERVICE PASSWORD RESET / CHANGE MECHANIC
+        // FORGOT PASSWORD EMAIL VERIFICATION MECHANIC
+        function requestVerificationLink() {
+            if (!pendingAuthEmail) return;
+
+            // Generate temporary verification token
+            activeResetToken = 'tok_' + Math.random().toString(36).substring(2, 10);
+            
+            // Dispatch payload to Google Apps Script / Email Dispatcher
+            syncToGoogleSheet('SEND_VERIFICATION_LINK', {
+                email: pendingAuthEmail,
+                token: activeResetToken,
+                verificationUrl: window.location.origin + window.location.pathname + '?reset_token=' + activeResetToken + '&email=' + encodeURIComponent(pendingAuthEmail)
+            });
+
+            // Pre-fill manual token field for testing
+            const manualTokenInput = document.getElementById('manual-verify-token');
+            if (manualTokenInput) manualTokenInput.value = activeResetToken;
+
+            showAuthStep('verification-sent');
+        }
+
+        function verifyResetToken() {
+            const inputToken = document.getElementById('manual-verify-token').value.trim();
+            const errEl = document.getElementById('token-error-msg');
+
+            if (!inputToken || inputToken !== activeResetToken) {
+                errEl.textContent = 'Invalid or expired verification token.';
+                errEl.classList.remove('hidden');
+                return;
+            }
+
+            errEl.classList.add('hidden');
+            showAuthStep('reset');
+        }
+
         function handleSelfPasswordReset(e) {
             e.preventDefault();
             const newPassword = document.getElementById('reset-new-password').value;
@@ -1481,6 +1781,7 @@
 
         function handleSignOut() {
             currentUser = null;
+            realAdminUser = null;
             localStorage.removeItem('eh_current_user');
             setupLoggedOutView();
         }
@@ -1638,8 +1939,15 @@
             syncToGoogleSheet('NEW_SUBMISSION', capstoneSub);
         }
 
-        // SETTINGS MODAL LOGIC
+        // SETTINGS MODAL LOGIC (RESTRICTED TO ADMINS ONLY)
         function openSettingsModal() {
+            const effectiveEmail = realAdminUser ? realAdminUser.email : (currentUser ? currentUser.email : '');
+            const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
+
+            if (!isRealAdmin) {
+                alert('Access Restricted: Only system administrators have access to Data Syncing Settings.');
+                return;
+            }
             document.getElementById('settings-modal').classList.remove('hidden');
         }
 
