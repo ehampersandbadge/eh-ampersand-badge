@@ -676,6 +676,11 @@
             lucide.createIcons();
             populateBadgeDropdown();
             
+            // Sync Settings UI
+            if (appsScriptEndpoint) {
+                document.getElementById('apps-script-url').value = appsScriptEndpoint;
+            }
+
             // Restore Session
             const savedUser = localStorage.getItem('eh_current_user');
             if (savedUser) {
@@ -685,11 +690,51 @@
                 setupLoggedOutView();
             }
 
-            // Sync Settings UI
-            if (appsScriptEndpoint) {
-                document.getElementById('apps-script-url').value = appsScriptEndpoint;
-            }
+            // Fetch remote data from Google Sheet if configured
+            fetchUserDataFromSheet();
         });
+
+        // DATA SYNC WITH GOOGLE APPS SCRIPT
+        function fetchUserDataFromSheet() {
+            if (!appsScriptEndpoint) return;
+
+            fetch(appsScriptEndpoint)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.submissions) {
+                        allSubmissions = data.submissions;
+                        saveSubmissions();
+                    }
+                    if (data.customExperiences) {
+                        customExperiences = data.customExperiences;
+                        saveCustomExperiences();
+                    }
+                    if (currentUser) {
+                        refreshAppData(); // Recalculates points and re-renders view with latest sheet data
+                    }
+                })
+                .catch(err => console.error("Error recalling progress from Google Sheet:", err));
+        }
+
+        function syncToGoogleSheet(action, payload) {
+            if (!appsScriptEndpoint) return;
+
+            fetch(appsScriptEndpoint, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, payload, timestamp: new Date().toISOString() })
+            }).catch(err => console.log('Sync Error:', err));
+        }
+
+        // STORAGE HELPERS
+        function saveSubmissions() {
+            localStorage.setItem('eh_submissions', JSON.stringify(allSubmissions));
+        }
+
+        function saveCustomExperiences() {
+            localStorage.setItem('eh_custom_experiences', JSON.stringify(customExperiences));
+        }
 
         // VIEW ROUTING
         function setupLoggedOutView() {
@@ -1235,6 +1280,7 @@
                 localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
                 closeLoginModal();
                 setupLoggedInView();
+                fetchUserDataFromSheet();
             } else {
                 document.getElementById('password-error-box').classList.remove('hidden');
             }
@@ -1433,7 +1479,7 @@
             syncToGoogleSheet('NEW_SUBMISSION', capstoneSub);
         }
 
-        // SETTINGS & APPS SCRIPT PERSISTENCE
+        // SETTINGS MODAL LOGIC
         function openSettingsModal() {
             document.getElementById('settings-modal').classList.remove('hidden');
         }
@@ -1448,48 +1494,7 @@
             localStorage.setItem('eh_script_url', url);
             closeSettingsModal();
             alert('Settings saved!');
-        }
-
-        function saveSubmissions() {
-            localStorage.setItem('eh_submissions', JSON.stringify(allSubmissions));
-        }
-
-        function saveCustomExperiences() {
-            localStorage.setItem('eh_custom_experiences', JSON.stringify(customExperiences));
-        }
-
-        function fetchUserDataFromSheet() {
-            if (!appsScriptEndpoint) return;
-
-            fetch(appsScriptEndpoint)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.submissions) {
-                        allSubmissions = data.submissions;
-                        saveSubmissions();
-                        refreshAppData(); // Recalculates points and re-renders badges
-                    }
-                })
-                .catch(err => console.error("Error recalling progress:", err));
-        }
-
-        function saveSubmissions() {
-            localStorage.setItem('eh_submissions', JSON.stringify(allSubmissions));
-        }
-
-        function saveCustomExperiences() {
-            localStorage.setItem('eh_custom_experiences', JSON.stringify(customExperiences));
-            
-        }
-        function syncToGoogleSheet(action, payload) {
-            if (!appsScriptEndpoint) return;
-
-            fetch(appsScriptEndpoint, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, payload, timestamp: new Date().toISOString() })
-            }).catch(err => console.log('Sync Error:', err));
+            fetchUserDataFromSheet();
         }
 
         function viewSubmissionDetail(id) {
