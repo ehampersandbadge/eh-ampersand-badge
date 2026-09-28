@@ -834,17 +834,11 @@
             { id: 'technology', title: 'Technology', icon: 'cpu', desc: 'Understand and leverage technologies ethically to enhance efficiencies and solve problems.' }
         ];
 
-        // MASTER LIST OF AUTHORIZED ADMIN EMAILS
-        let adminEmails = JSON.parse(localStorage.getItem('eh_admin_emails')) || [
-            'admin@emoryhenry.edu',
-            'careers@emoryhenry.edu',
-            'jwbennett@emoryhenry.edu'
-        ];
+        // Admin status now comes from the server (currentUser.isAdmin / registeredUsers[i].isAdmin) -
+        // there is no local admin list anymore, since a client-side list can't be trusted for permissions.
 
-        // MASTER LIST OF WORK EXAMPLES
-        let workExamples = JSON.parse(localStorage.getItem('eh_work_examples')) || [
-            { id: 'we_1', badgeId: 'communication', title: 'Research Presentation Deck', description: 'Sample pitch deck presenting research findings clearly.', url: 'https://drive.google.com' }
-        ];
+        // MASTER LIST OF WORK EXAMPLES (synced from the server; see fetchUserDataFromSheet)
+        let workExamples = [];
 
         // APP STATE
         let currentUser = null;
@@ -901,10 +895,6 @@
             localStorage.setItem('eh_session_token', sessionToken);
             currentUser = result.user;
             localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
-            if (currentUser.isAdmin && !adminEmails.map(e => e.toLowerCase()).includes(currentUser.email.toLowerCase())) {
-                adminEmails.push(currentUser.email);
-                localStorage.setItem('eh_admin_emails', JSON.stringify(adminEmails));
-            }
         }
 
         function clearLocalSession() {
@@ -914,7 +904,9 @@
             registeredUsers = [];
             allSubmissions = [];
             customExperiences = [];
-            ['eh_current_user', 'eh_session_token', 'eh_users', 'eh_submissions', 'eh_custom_experiences']
+            workExamples = [];
+            ['eh_current_user', 'eh_session_token', 'eh_users', 'eh_submissions', 'eh_custom_experiences',
+             'eh_admin_emails', 'eh_work_examples']  // last two are cleanup of data from older versions of this app
                 .forEach(k => localStorage.removeItem(k));
         }
 
@@ -937,6 +929,7 @@
                 registeredUsers = data.users || [];
                 allSubmissions = data.submissions || [];
                 customExperiences = data.customExperiences || [];
+                workExamples = data.workExamples || [];
                 saveSubmissions();
                 saveCustomExperiences();
 
@@ -999,9 +992,8 @@
             document.getElementById('user-display-email').textContent = currentUser.email;
 
             // Check admin status against real user session if in impersonation mode
-            const effectiveEmail = realAdminUser ? realAdminUser.email : currentUser.email;
-            const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
-            
+            const isRealAdmin = (realAdminUser || currentUser).isAdmin;
+
             const adminTabBtn = document.getElementById('nav-admin');
             const adminSettingsBtn = document.getElementById('admin-settings-btn');
 
@@ -1033,8 +1025,7 @@
                 return;
             }
 
-            const effectiveEmail = realAdminUser ? realAdminUser.email : currentUser.email;
-            const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
+            const isRealAdmin = (realAdminUser || currentUser).isAdmin;
 
             if (tabName === 'admin' && (!isRealAdmin || realAdminUser)) {
                 alert('Access restricted to authorized administrators.');
@@ -1237,43 +1228,58 @@
         }
 
         // ADMIN PORTAL LOGIC & REGISTERED USERS MANAGEMENT
-        function handleAddAdmin(e) {
+        // Admin status is granted/revoked on the server (Users sheet "Role" column) so it works
+        // the same way on every device, and can't be spoofed by editing localStorage.
+        async function handleAddAdmin(e) {
             e.preventDefault();
             const emailInput = document.getElementById('admin-new-email').value.trim().toLowerCase();
             if (!emailInput) return;
 
-            if (!adminEmails.includes(emailInput)) {
-                adminEmails.push(emailInput);
-                localStorage.setItem('eh_admin_emails', JSON.stringify(adminEmails));
+            const target = registeredUsers.find(u => u.email.toLowerCase() === emailInput);
+            if (!target) {
+                alert('No registered student account found for that email. They need to sign up first.');
+                return;
+            }
+            if (target.isAdmin) {
+                alert('User is already an administrator.');
+                return;
+            }
+
+            const res = await apiCall('SET_ADMIN', { email: emailInput, isAdmin: true });
+            if (res.status === 'success') {
                 document.getElementById('admin-new-email').value = '';
-                refreshAppData();
+                await fetchUserDataFromSheet();
                 alert(`Granted admin permissions to ${emailInput}`);
             } else {
-                alert('User is already an administrator.');
+                alert(res.message || 'Could not grant admin permissions.');
             }
         }
 
-        function removeAdmin(email) {
-            const activeAdminEmail = realAdminUser ? realAdminUser.email : currentUser.email;
+        async function removeAdmin(email) {
+            const activeAdminEmail = (realAdminUser || currentUser).email;
             if (email.toLowerCase() === activeAdminEmail.toLowerCase()) {
                 alert('You cannot remove admin permissions from yourself.');
                 return;
             }
             if (!confirm(`Revoke admin privileges for ${email}?`)) return;
 
-            adminEmails = adminEmails.filter(e => e.toLowerCase() !== email.toLowerCase());
-            localStorage.setItem('eh_admin_emails', JSON.stringify(adminEmails));
-            refreshAppData();
+            const res = await apiCall('SET_ADMIN', { email, isAdmin: false });
+            if (res.status === 'success') {
+                await fetchUserDataFromSheet();
+            } else {
+                alert(res.message || 'Could not revoke admin permissions.');
+            }
         }
 
         function renderAdminUserList() {
             const listContainer = document.getElementById('admin-users-list');
             if (!listContainer) return;
 
-            listContainer.innerHTML = adminEmails.map(email => `
+            const admins = registeredUsers.filter(u => u.isAdmin);
+            listContainer.innerHTML = admins.map(u => `
                 <span class="inline-flex items-center px-3 py-1 bg-slate-100 border border-slate-300 rounded-full text-xs font-semibold text-slate-800">
-                    <i data-lucide="shield" class="w-3.5 h-3.5 mr-1 text-eh-blue"></i> ${email}
-                    <button onclick="removeAdmin('${email}')" class="ml-2 text-slate-400 hover:text-rose-600 font-bold" title="Revoke Admin">&times;</button>
+                    <i data-lucide="shield" class="w-3.5 h-3.5 mr-1 text-eh-blue"></i> ${u.email}
+                    <button onclick="removeAdmin('${u.email}')" class="ml-2 text-slate-400 hover:text-rose-600 font-bold" title="Revoke Admin">&times;</button>
                 </span>
             `).join('');
         }
@@ -1288,7 +1294,7 @@
             }
 
             body.innerHTML = registeredUsers.map(u => {
-                const isAdmin = adminEmails.map(e => e.toLowerCase()).includes(u.email.toLowerCase());
+                const isAdmin = !!u.isAdmin;
                 return `
                     <tr class="hover:bg-slate-50">
                         <td class="p-3 font-semibold text-slate-800">${u.firstName} ${u.lastName}</td>
@@ -1543,20 +1549,20 @@
 
             const newWE = { id: 'we_' + Date.now(), badgeId, title, url, description: desc };
             workExamples.push(newWE);
-            localStorage.setItem('eh_work_examples', JSON.stringify(workExamples));
 
             document.getElementById('admin-example-title').value = '';
             document.getElementById('admin-example-url').value = '';
             document.getElementById('admin-example-desc').value = '';
 
             refreshAppData();
+            syncToGoogleSheet('ADD_WORK_EXAMPLE', newWE);
         }
 
         function deleteWorkExample(id) {
             if (!confirm('Delete this work example?')) return;
             workExamples = workExamples.filter(w => w.id !== id);
-            localStorage.setItem('eh_work_examples', JSON.stringify(workExamples));
             refreshAppData();
+            syncToGoogleSheet('DELETE_WORK_EXAMPLE', { id });
         }
 
         function renderAdminWorkExamplesList() {
@@ -2022,8 +2028,7 @@
 
         // SETTINGS MODAL LOGIC (RESTRICTED TO ADMINS ONLY)
         function openSettingsModal() {
-            const effectiveEmail = realAdminUser ? realAdminUser.email : (currentUser ? currentUser.email : '');
-            const isRealAdmin = adminEmails.map(e => e.toLowerCase()).includes(effectiveEmail.toLowerCase());
+            const isRealAdmin = !!currentUser && (realAdminUser || currentUser).isAdmin;
 
             if (!isRealAdmin) {
                 alert('Access Restricted: Only system administrators have access to Data Syncing Settings.');
