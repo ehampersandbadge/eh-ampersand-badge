@@ -580,12 +580,12 @@
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Create Account Password *</label>
-                        <input type="password" id="reg-password" minlength="6" required placeholder="Minimum 6 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                        <input type="password" id="reg-password" minlength="8" required placeholder="Minimum 8 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm Password *</label>
-                        <input type="password" id="reg-confirm-password" minlength="6" required placeholder="Re-enter password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                        <input type="password" id="reg-confirm-password" minlength="8" required placeholder="Re-enter password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
                     </div>
 
                     <div id="register-error-box" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
@@ -604,18 +604,18 @@
                     </div>
                     <h3 class="text-xl font-bold text-eh-blue">Verification Email Sent</h3>
                     <p class="text-xs text-slate-600 mt-2">
-                        A password reset verification link has been dispatched to:
+                        A password reset code has been emailed to:
                         <strong id="sent-verification-email" class="block text-eh-blue font-bold mt-1"></strong>
                     </p>
                     <p class="text-[11px] text-slate-400 mt-2 leading-relaxed">
-                        Please check your student email inbox to complete your reset link. The verification token is valid for 15 minutes.
+                        Please check your student email inbox for your reset code, then enter it below. The code is valid for 15 minutes.
                     </p>
                 </div>
 
                 <div class="bg-slate-50 border border-slate-200 rounded-xl p-4 mb-4">
                     <label class="block text-xs font-bold text-slate-700 uppercase mb-1">Enter / Paste Reset Verification Token</label>
                     <div class="flex gap-2">
-                        <input type="text" id="manual-verify-token" placeholder="Paste Token From Verification Link" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-eh-blue">
+                        <input type="text" id="manual-verify-token" placeholder="Enter the code from your email" class="flex-1 border border-slate-300 rounded-lg px-3 py-2 text-xs focus:ring-2 focus:ring-eh-blue">
                         <button onclick="verifyResetToken()" class="px-4 py-2 bg-eh-blue text-white text-xs font-bold rounded-lg hover:bg-eh-lightBlue transition">
                             Verify
                         </button>
@@ -641,12 +641,12 @@
                 <form onsubmit="handleSelfPasswordReset(event)" class="space-y-4">
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
-                        <input type="password" id="reset-new-password" minlength="6" required placeholder="Minimum 6 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                        <input type="password" id="reset-new-password" minlength="8" required placeholder="Minimum 8 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
                     </div>
 
                     <div>
                         <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
-                        <input type="password" id="reset-confirm-password" minlength="6" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                        <input type="password" id="reset-confirm-password" minlength="8" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
                     </div>
 
                     <div id="reset-error-box" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
@@ -725,12 +725,12 @@
             <form onsubmit="handleStudentPasswordChange(event)" class="space-y-4">
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">New Password *</label>
-                    <input type="password" id="student-new-password" minlength="6" required placeholder="Minimum 6 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                    <input type="password" id="student-new-password" minlength="8" required placeholder="Minimum 8 characters" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
                 </div>
 
                 <div>
                     <label class="block text-xs font-semibold text-slate-700 mb-1">Confirm New Password *</label>
-                    <input type="password" id="student-confirm-password" minlength="6" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
+                    <input type="password" id="student-confirm-password" minlength="8" required placeholder="Re-enter new password" class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-eh-blue">
                 </div>
 
                 <div id="student-password-error" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
@@ -849,10 +849,12 @@
         // APP STATE
         let currentUser = null;
         let realAdminUser = null; // Stores real admin user when in View-As / Impersonation mode
-        let registeredUsers = JSON.parse(localStorage.getItem('eh_users')) || [];
+        let registeredUsers = []; // Admin-only list (never contains passwords); loaded from the server after sign-in
         let allSubmissions = JSON.parse(localStorage.getItem('eh_submissions')) || [];
         let customExperiences = JSON.parse(localStorage.getItem('eh_custom_experiences')) || [];
-        let appsScriptEndpoint = localStorage.getItem('eh_script_url') || '';
+        const DEFAULT_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzBb4lhcqLMikLMNMndlSSqDhAqeaErkk_4tbLc_LwEltwPeWWblMOZA_-kBERBX607TA/exec';
+        let appsScriptEndpoint = localStorage.getItem('eh_script_url') || DEFAULT_SCRIPT_URL;
+        let sessionToken = localStorage.getItem('eh_session_token') || '';
         let pendingAuthEmail = '';
         let activeResetToken = '';
         let adminFilterMode = 'all';
@@ -868,8 +870,10 @@
             }
 
             // Restore Session
+            localStorage.removeItem('eh_users'); // legacy: user lists are no longer cached in the browser
+            if (!sessionToken) localStorage.removeItem('eh_current_user');
             const savedUser = localStorage.getItem('eh_current_user');
-            if (savedUser) {
+            if (savedUser && sessionToken) {
                 currentUser = JSON.parse(savedUser);
                 setupLoggedInView();
             } else {
@@ -880,52 +884,85 @@
             fetchUserDataFromSheet();
         });
 
-        // DATA SYNC WITH GOOGLE APPS SCRIPT
-        function fetchUserDataFromSheet() {
-            if (!appsScriptEndpoint) return;
+        // DATA SYNC WITH GOOGLE APPS SCRIPT (every request goes through the authenticated API)
+        async function apiCall(action, payload = {}) {
+            if (!appsScriptEndpoint) throw new Error('Server is not configured.');
+            // No custom headers on purpose: this keeps it a "simple" request so the browser
+            // skips the CORS preflight that Apps Script can't answer.
+            const response = await fetch(appsScriptEndpoint, {
+                method: 'POST',
+                body: JSON.stringify({ action, token: sessionToken, payload })
+            });
+            return await response.json();
+        }
 
-            fetch(appsScriptEndpoint)
-                .then(response => response.json())
-                .then(data => {
-                    // Sync User Accounts from Spreadsheet & Filter out 'Disabled' Accounts
-                    if (data.users && Array.isArray(data.users)) {
-                        registeredUsers = data.users.filter(u => !u.status || u.status.toLowerCase() !== 'disabled');
-                        localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
+        function startSession(result) {
+            sessionToken = result.token;
+            localStorage.setItem('eh_session_token', sessionToken);
+            currentUser = result.user;
+            localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+            if (currentUser.isAdmin && !adminEmails.map(e => e.toLowerCase()).includes(currentUser.email.toLowerCase())) {
+                adminEmails.push(currentUser.email);
+                localStorage.setItem('eh_admin_emails', JSON.stringify(adminEmails));
+            }
+        }
 
-                        // Revoke active user session if their status was toggled to Disabled on the Sheet
-                        if (currentUser) {
-                            const isStillActive = registeredUsers.some(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
-                            if (!isStillActive) {
-                                alert('Your account access has been revoked or disabled.');
-                                handleSignOut();
-                                return;
-                            }
-                        }
-                    }
-                    if (data.submissions) {
-                        allSubmissions = data.submissions;
-                        saveSubmissions();
-                    }
-                    if (data.customExperiences) {
-                        customExperiences = data.customExperiences;
-                        saveCustomExperiences();
-                    }
-                    if (currentUser) {
-                        refreshAppData();
-                    }
-                })
-                .catch(err => console.error("Error recalling progress from Google Sheet:", err));
+        function clearLocalSession() {
+            currentUser = null;
+            realAdminUser = null;
+            sessionToken = '';
+            registeredUsers = [];
+            allSubmissions = [];
+            customExperiences = [];
+            ['eh_current_user', 'eh_session_token', 'eh_users', 'eh_submissions', 'eh_custom_experiences']
+                .forEach(k => localStorage.removeItem(k));
+        }
+
+        function forceSignOut(message) {
+            clearLocalSession();
+            setupLoggedOutView();
+            if (message) alert(message);
+        }
+
+        async function fetchUserDataFromSheet() {
+            if (!appsScriptEndpoint || !sessionToken) return;
+            try {
+                const data = await apiCall('GET_DATA');
+                if (data.status === 'unauthorized') {
+                    forceSignOut('Your session has expired. Please sign in again.');
+                    return;
+                }
+                if (data.status !== 'success') return;
+
+                registeredUsers = data.users || [];
+                allSubmissions = data.submissions || [];
+                customExperiences = data.customExperiences || [];
+                saveSubmissions();
+                saveCustomExperiences();
+
+                if (!realAdminUser && data.user) {
+                    currentUser = data.user;
+                    localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+                }
+                if (currentUser) refreshAppData();
+            } catch (err) {
+                console.error('Error recalling progress from Google Sheet:', err);
+            }
         }
 
         function syncToGoogleSheet(action, payload) {
-            if (!appsScriptEndpoint) return;
-
-            fetch(appsScriptEndpoint, {
-                method: 'POST',
-                mode: 'no-cors',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, payload, timestamp: new Date().toISOString() })
-            }).catch(err => console.log('Sync Error:', err));
+            if (!appsScriptEndpoint || !sessionToken) return Promise.resolve();
+            return apiCall(action, payload).then(res => {
+                if (res.status === 'unauthorized') {
+                    forceSignOut('Your session has expired. Please sign in again.');
+                } else if (res.status !== 'success') {
+                    console.error('Sync rejected:', action, res);
+                    alert('Your change could not be saved to the server. Please refresh and try again.');
+                }
+            }).catch(err => {
+                console.error('Sync Error:', err);
+                alert('Could not reach the server, so your last change may not have been saved.');
+            });
         }
 
         // STORAGE HELPERS
@@ -1346,7 +1383,6 @@
 
             // Perform Deletion
             registeredUsers = registeredUsers.filter(u => u.email.toLowerCase() !== targetEmail);
-            localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
 
             // Also remove user submissions
             allSubmissions = allSubmissions.filter(s => s.userEmail.toLowerCase() !== targetEmail);
@@ -1607,50 +1643,67 @@
             }
         }
 
-        function handleEmailLookup(e) {
+        function showAuthError(message) {
+            document.getElementById('auth-error-msg').textContent = message;
+            document.getElementById('auth-error-box').classList.remove('hidden');
+        }
+
+        async function handleEmailLookup(e) {
             e.preventDefault();
             const emailInput = document.getElementById('auth-email-input').value.trim().toLowerCase();
-            const errorBox = document.getElementById('auth-error-box');
+            document.getElementById('auth-error-box').classList.add('hidden');
 
             if (!emailInput.endsWith('@emoryhenry.edu') && !emailInput.endsWith('@ehc.edu')) {
-                errorBox.classList.remove('hidden');
-                document.getElementById('auth-error-msg').textContent = 'Please use your official @emoryhenry.edu or @ehc.edu email.';
+                showAuthError('Please use your official @emoryhenry.edu or @ehc.edu email.');
                 return;
             }
 
             pendingAuthEmail = emailInput;
-            const existingUser = registeredUsers.find(u => u.email.toLowerCase() === emailInput);
-
-            if (existingUser) {
-                if (existingUser.status && existingUser.status.toLowerCase() === 'disabled') {
-                    errorBox.classList.remove('hidden');
-                    document.getElementById('auth-error-msg').textContent = 'Account disabled. Please contact system administrator.';
-                    return;
+            try {
+                const res = await apiCall('EMAIL_LOOKUP', { email: emailInput });
+                if (res.status !== 'success') {
+                    showAuthError(res.message || 'Something went wrong. Please try again.');
+                } else if (res.exists && res.disabled) {
+                    showAuthError('Account disabled. Please contact system administrator.');
+                } else if (res.exists) {
+                    document.getElementById('welcome-back-email').textContent = emailInput;
+                    showAuthStep('password');
+                } else {
+                    showAuthStep('register');
                 }
-                document.getElementById('welcome-back-email').textContent = emailInput;
-                showAuthStep('password');
-            } else {
-                showAuthStep('register');
+            } catch (err) {
+                console.error(err);
+                showAuthError('Could not reach the server. Please check your connection and try again.');
             }
         }
 
-        function handlePasswordLogin(e) {
+        async function handlePasswordLogin(e) {
             e.preventDefault();
-            const password = document.getElementById('auth-password-input').value;
-            const user = registeredUsers.find(u => u.email.toLowerCase() === pendingAuthEmail);
-
-            if (user && user.password === password && (!user.status || user.status.toLowerCase() === 'active')) {
-                currentUser = user;
-                localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
-                closeLoginModal();
-                setupLoggedInView();
-                fetchUserDataFromSheet();
-            } else {
-                document.getElementById('password-error-box').classList.remove('hidden');
+            const passwordInput = document.getElementById('auth-password-input');
+            const errBox = document.getElementById('password-error-box');
+            errBox.classList.add('hidden');
+            try {
+                const res = await apiCall('LOGIN', { email: pendingAuthEmail, password: passwordInput.value });
+                if (res.status === 'success') {
+                    passwordInput.value = '';
+                    startSession(res);
+                    closeLoginModal();
+                    setupLoggedInView();
+                    fetchUserDataFromSheet();
+                } else {
+                    errBox.textContent = res.status === 'locked'
+                        ? 'Too many failed attempts. Please wait 15 minutes, or use "Forgot password" to reset it.'
+                        : 'Incorrect password or account status disabled. Please try again.';
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                errBox.textContent = 'Could not reach the server. Please try again.';
+                errBox.classList.remove('hidden');
             }
         }
 
-        function handleFirstTimeRegister(e) {
+        async function handleFirstTimeRegister(e) {
             e.preventDefault();
             const firstName = document.getElementById('reg-firstname').value.trim();
             const lastName = document.getElementById('reg-lastname').value.trim();
@@ -1663,64 +1716,68 @@
                 errBox.classList.remove('hidden');
                 return;
             }
-
-            const newUser = {
-                id: 'u_' + Date.now(),
-                email: pendingAuthEmail,
-                firstName,
-                lastName,
-                password,
-                status: 'Active',
-                createdAt: new Date().toISOString()
-            };
-
-            registeredUsers.push(newUser);
-            localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
-
-            currentUser = newUser;
-            localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
-
-            closeLoginModal();
-            setupLoggedInView();
-            syncToGoogleSheet('REGISTER_USER', newUser);
-        }
-
-        // FORGOT PASSWORD EMAIL VERIFICATION MECHANIC
-        function requestVerificationLink() {
-            if (!pendingAuthEmail) return;
-
-            // Generate temporary verification token
-            activeResetToken = 'tok_' + Math.random().toString(36).substring(2, 10);
-            
-            // Dispatch payload to Google Apps Script / Email Dispatcher
-            syncToGoogleSheet('SEND_VERIFICATION_LINK', {
-                email: pendingAuthEmail,
-                token: activeResetToken,
-                verificationUrl: window.location.origin + window.location.pathname + '?reset_token=' + activeResetToken + '&email=' + encodeURIComponent(pendingAuthEmail)
-            });
-
-            // Pre-fill manual token field for testing
-            const manualTokenInput = document.getElementById('manual-verify-token');
-            if (manualTokenInput) manualTokenInput.value = activeResetToken;
-
-            showAuthStep('verification-sent');
-        }
-
-        function verifyResetToken() {
-            const inputToken = document.getElementById('manual-verify-token').value.trim();
-            const errEl = document.getElementById('token-error-msg');
-
-            if (!inputToken || inputToken !== activeResetToken) {
-                errEl.textContent = 'Invalid or expired verification token.';
-                errEl.classList.remove('hidden');
+            if (password.length < 8) {
+                errBox.textContent = 'Password must be at least 8 characters.';
+                errBox.classList.remove('hidden');
                 return;
             }
 
-            errEl.classList.add('hidden');
-            showAuthStep('reset');
+            try {
+                const res = await apiCall('REGISTER', { email: pendingAuthEmail, firstName, lastName, password });
+                if (res.status === 'success') {
+                    errBox.classList.add('hidden');
+                    startSession(res);
+                    closeLoginModal();
+                    setupLoggedInView();
+                    fetchUserDataFromSheet();
+                } else {
+                    errBox.textContent = res.status === 'exists'
+                        ? 'An account already exists for this email. Please go back and sign in.'
+                        : (res.message || 'Registration failed. Please try again.');
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                errBox.textContent = 'Could not reach the server. Please try again.';
+                errBox.classList.remove('hidden');
+            }
         }
 
-        function handleSelfPasswordReset(e) {
+        // FORGOT PASSWORD: the server emails a one-time code to the student's address
+        async function requestVerificationLink() {
+            if (!pendingAuthEmail) return;
+            try {
+                await apiCall('REQUEST_RESET', { email: pendingAuthEmail });
+            } catch (err) {
+                console.error(err);
+                alert('Could not reach the server. Please try again.');
+                return;
+            }
+            document.getElementById('manual-verify-token').value = '';
+            showAuthStep('verification-sent');
+        }
+
+        async function verifyResetToken() {
+            const inputToken = document.getElementById('manual-verify-token').value.trim();
+            const errEl = document.getElementById('token-error-msg');
+            try {
+                const res = inputToken ? await apiCall('CHECK_RESET', { email: pendingAuthEmail, token: inputToken }) : { status: 'invalid' };
+                if (res.status !== 'success') {
+                    errEl.textContent = 'Invalid or expired verification code.';
+                    errEl.classList.remove('hidden');
+                    return;
+                }
+                activeResetToken = inputToken;
+                errEl.classList.add('hidden');
+                showAuthStep('reset');
+            } catch (err) {
+                console.error(err);
+                errEl.textContent = 'Could not reach the server. Please try again.';
+                errEl.classList.remove('hidden');
+            }
+        }
+
+        async function handleSelfPasswordReset(e) {
             e.preventDefault();
             const newPassword = document.getElementById('reset-new-password').value;
             const confirmPassword = document.getElementById('reset-confirm-password').value;
@@ -1731,22 +1788,31 @@
                 errBox.classList.remove('hidden');
                 return;
             }
+            if (newPassword.length < 8) {
+                errBox.textContent = 'Password must be at least 8 characters.';
+                errBox.classList.remove('hidden');
+                return;
+            }
 
-            const user = registeredUsers.find(u => u.email.toLowerCase() === pendingAuthEmail);
-
-            if (user) {
-                user.password = newPassword;
-                localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
-                currentUser = user;
-                localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
-
-                syncToGoogleSheet('UPDATE_PASSWORD', { email: user.email, password: newPassword });
-
-                closeLoginModal();
-                setupLoggedInView();
-                alert('Password updated successfully!');
-            } else {
-                errBox.textContent = 'Account not found.';
+            try {
+                const res = await apiCall('RESET_PASSWORD', { email: pendingAuthEmail, token: activeResetToken, newPassword });
+                if (res.status === 'success') {
+                    errBox.classList.add('hidden');
+                    activeResetToken = null;
+                    startSession(res);
+                    closeLoginModal();
+                    setupLoggedInView();
+                    fetchUserDataFromSheet();
+                    alert('Password updated successfully!');
+                } else {
+                    errBox.textContent = res.status === 'invalid'
+                        ? 'Your verification code expired. Please request a new one.'
+                        : (res.message || 'Could not update password.');
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                errBox.textContent = 'Could not reach the server. Please try again.';
                 errBox.classList.remove('hidden');
             }
         }
@@ -1759,7 +1825,7 @@
             document.getElementById('change-password-modal').classList.add('hidden');
         }
 
-        function handleStudentPasswordChange(e) {
+        async function handleStudentPasswordChange(e) {
             e.preventDefault();
             const newPassword = document.getElementById('student-new-password').value;
             const confirmPassword = document.getElementById('student-confirm-password').value;
@@ -1770,24 +1836,34 @@
                 errBox.classList.remove('hidden');
                 return;
             }
+            if (newPassword.length < 8) {
+                errBox.textContent = 'Password must be at least 8 characters.';
+                errBox.classList.remove('hidden');
+                return;
+            }
 
-            currentUser.password = newPassword;
-            const targetUser = registeredUsers.find(u => u.email.toLowerCase() === currentUser.email.toLowerCase());
-            if (targetUser) targetUser.password = newPassword;
-
-            localStorage.setItem('eh_users', JSON.stringify(registeredUsers));
-            localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
-
-            syncToGoogleSheet('UPDATE_PASSWORD', { email: currentUser.email, password: newPassword });
-
-            closeChangePasswordModal();
-            alert('Your password has been changed successfully!');
+            try {
+                const res = await apiCall('CHANGE_PASSWORD', { newPassword });
+                if (res.status === 'success') {
+                    errBox.classList.add('hidden');
+                    closeChangePasswordModal();
+                    alert('Your password has been changed successfully!');
+                } else if (res.status === 'unauthorized') {
+                    forceSignOut('Your session has expired. Please sign in again.');
+                } else {
+                    errBox.textContent = res.message || 'Could not change password.';
+                    errBox.classList.remove('hidden');
+                }
+            } catch (err) {
+                console.error(err);
+                errBox.textContent = 'Could not reach the server. Please try again.';
+                errBox.classList.remove('hidden');
+            }
         }
 
         function handleSignOut() {
-            currentUser = null;
-            realAdminUser = null;
-            localStorage.removeItem('eh_current_user');
+            if (sessionToken) apiCall('LOGOUT').catch(() => {});
+            clearLocalSession();
             setupLoggedOutView();
         }
 
