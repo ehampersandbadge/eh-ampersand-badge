@@ -861,6 +861,10 @@
             // Sync Settings UI
             if (appsScriptEndpoint) {
                 document.getElementById('apps-script-url').value = appsScriptEndpoint;
+                // Apps Script can be slow to respond to the first request after being idle ("cold start").
+                // Pinging it as soon as the page loads gives it a head start before the user submits the
+                // login form, so the real request is more likely to hit an already-warm instance.
+                fetch(appsScriptEndpoint).catch(() => {});
             }
 
             // Restore Session
@@ -879,22 +883,31 @@
         });
 
         // DATA SYNC WITH GOOGLE APPS SCRIPT (every request goes through the authenticated API)
-        async function apiCall(action, payload = {}) {
+        async function apiCall(action, payload = {}, attempt = 1) {
             if (!appsScriptEndpoint) throw new Error('Server is not configured.');
-            // No custom headers on purpose: this keeps it a "simple" request so the browser
-            // skips the CORS preflight that Apps Script can't answer.
-            const response = await fetch(appsScriptEndpoint, {
-                method: 'POST',
-                body: JSON.stringify({ action, token: sessionToken, payload })
-            });
-            return await response.json();
+            try {
+                // No custom headers on purpose: this keeps it a "simple" request so the browser
+                // skips the CORS preflight that Apps Script can't answer.
+                const response = await fetch(appsScriptEndpoint, {
+                    method: 'POST',
+                    body: JSON.stringify({ action, token: sessionToken, payload })
+                });
+                return await response.json();
+            } catch (err) {
+                // A failed fetch here is usually Apps Script's cold-start flakiness, not a real outage.
+                // One short retry clears up most of those without bothering the user.
+                if (attempt < 2) {
+                    await new Promise(r => setTimeout(r, 1200));
+                    return apiCall(action, payload, attempt + 1);
+                }
+                throw err;
+            }
         }
 
         function startSession(result) {
             sessionToken = result.token;
             localStorage.setItem('eh_session_token', sessionToken);
-            currentUser = result.user;
-            localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+            applyServerData(result); // result already includes user/users/submissions/etc. - no extra round trip needed
         }
 
         function clearLocalSession() {
@@ -916,6 +929,23 @@
             if (message) alert(message);
         }
 
+        // Applies a data payload (from GET_DATA, or from a login/register/reset response that
+        // already bundles the same data) without a separate network round trip.
+        function applyServerData(data) {
+            registeredUsers = data.users || [];
+            allSubmissions = data.submissions || [];
+            customExperiences = data.customExperiences || [];
+            workExamples = data.workExamples || [];
+            saveSubmissions();
+            saveCustomExperiences();
+
+            if (!realAdminUser && data.user) {
+                currentUser = data.user;
+                localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
+            }
+            if (currentUser) refreshAppData();
+        }
+
         async function fetchUserDataFromSheet() {
             if (!appsScriptEndpoint || !sessionToken) return;
             try {
@@ -925,19 +955,7 @@
                     return;
                 }
                 if (data.status !== 'success') return;
-
-                registeredUsers = data.users || [];
-                allSubmissions = data.submissions || [];
-                customExperiences = data.customExperiences || [];
-                workExamples = data.workExamples || [];
-                saveSubmissions();
-                saveCustomExperiences();
-
-                if (!realAdminUser && data.user) {
-                    currentUser = data.user;
-                    localStorage.setItem('eh_current_user', JSON.stringify(currentUser));
-                }
-                if (currentUser) refreshAppData();
+                applyServerData(data);
             } catch (err) {
                 console.error('Error recalling progress from Google Sheet:', err);
             }
@@ -1695,7 +1713,6 @@
                     startSession(res);
                     closeLoginModal();
                     setupLoggedInView();
-                    fetchUserDataFromSheet();
                 } else {
                     errBox.textContent = res.status === 'locked'
                         ? 'Too many failed attempts. Please wait 15 minutes, or use "Forgot password" to reset it.'
@@ -1735,7 +1752,6 @@
                     startSession(res);
                     closeLoginModal();
                     setupLoggedInView();
-                    fetchUserDataFromSheet();
                 } else {
                     errBox.textContent = res.status === 'exists'
                         ? 'An account already exists for this email. Please go back and sign in.'
@@ -1808,7 +1824,6 @@
                     startSession(res);
                     closeLoginModal();
                     setupLoggedInView();
-                    fetchUserDataFromSheet();
                     alert('Password updated successfully!');
                 } else {
                     errBox.textContent = res.status === 'invalid'
