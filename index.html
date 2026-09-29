@@ -962,17 +962,21 @@
         }
 
         function syncToGoogleSheet(action, payload) {
-            if (!appsScriptEndpoint || !sessionToken) return Promise.resolve();
+            if (!appsScriptEndpoint || !sessionToken) return Promise.resolve(false);
             return apiCall(action, payload).then(res => {
                 if (res.status === 'unauthorized') {
                     forceSignOut('Your session has expired. Please sign in again.');
+                    return false;
                 } else if (res.status !== 'success') {
                     console.error('Sync rejected:', action, res);
                     alert('Your change could not be saved to the server. Please refresh and try again.');
+                    return false;
                 }
+                return true;
             }).catch(err => {
                 console.error('Sync Error:', err);
                 alert('Could not reach the server, so your last change may not have been saved.');
+                return false;
             });
         }
 
@@ -1386,7 +1390,7 @@
             document.getElementById('delete-user-modal').classList.add('hidden');
         }
 
-        function confirmUserDeletion(e) {
+        async function confirmUserDeletion(e) {
             e.preventDefault();
             const targetEmail = document.getElementById('delete-target-email').value.trim().toLowerCase();
             const confirmText = document.getElementById('delete-confirm-text').value.trim();
@@ -1405,22 +1409,33 @@
                 return;
             }
 
-            // Perform Deletion
-            registeredUsers = registeredUsers.filter(u => u.email.toLowerCase() !== targetEmail);
+            // Keep a copy in case the server rejects the deletion, so the UI can be restored.
+            const removedUser = registeredUsers.find(u => u.email.toLowerCase() === targetEmail);
+            const removedSubmissions = allSubmissions.filter(s => s.userEmail.toLowerCase() === targetEmail);
+            const wasImpersonating = currentUser && currentUser.email.toLowerCase() === targetEmail;
 
-            // Also remove user submissions
+            // Perform Deletion (optimistic - updates the screen immediately, before the server confirms)
+            registeredUsers = registeredUsers.filter(u => u.email.toLowerCase() !== targetEmail);
             allSubmissions = allSubmissions.filter(s => s.userEmail.toLowerCase() !== targetEmail);
             saveSubmissions();
-
-            // Sync Deletion action to Google Sheet API
-            syncToGoogleSheet('DELETE_USER', { email: targetEmail });
 
             closeDeleteUserModal();
 
             // If admin deleted their currently impersonated account, exit impersonation
-            if (currentUser && currentUser.email.toLowerCase() === targetEmail) {
+            if (wasImpersonating) {
                 exitImpersonation();
             } else {
+                refreshAppData();
+            }
+
+            // Sync deletion to the server; if it didn't actually go through, put the account back.
+            const succeeded = await syncToGoogleSheet('DELETE_USER', { email: targetEmail });
+            if (!succeeded && removedUser) {
+                if (!registeredUsers.some(u => u.email.toLowerCase() === targetEmail)) {
+                    registeredUsers.push(removedUser);
+                }
+                allSubmissions = allSubmissions.concat(removedSubmissions);
+                saveSubmissions();
                 refreshAppData();
             }
 
