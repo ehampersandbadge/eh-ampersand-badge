@@ -31,11 +31,11 @@
     <!-- Google Fonts & Lucide Icons -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
 
     <style>
-        body { font-family: 'Inter', sans-serif; }
+        body { font-family: 'EB Garamond', 'Garamond', 'Georgia', serif; }
         .badge-card { transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1); }
         .badge-card:hover { transform: translateY(-3px); }
 
@@ -54,6 +54,28 @@
             clip-path: inset(calc(100% - var(--fill, 0%)) 0 0 0);
             transition: clip-path 0.6s ease;
         }
+
+        /* Loading spinner shown on auth buttons while waiting on the server */
+        .btn-spinner {
+            width: 1rem; height: 1rem; margin-right: 0.5rem;
+            border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff;
+            border-radius: 50%; animation: btn-spin 0.6s linear infinite; flex-shrink: 0;
+        }
+        @keyframes btn-spin { to { transform: rotate(360deg); } }
+
+        /* Badge-unlock celebration: lightweight confetti, no external library needed */
+        #confetti-container { position: fixed; inset: 0; pointer-events: none; z-index: 70; overflow: hidden; }
+        .confetti-piece {
+            position: fixed; top: -12px; width: 8px; height: 14px; opacity: 0.9;
+            animation-name: confetti-fall; animation-timing-function: ease-in; animation-fill-mode: forwards;
+        }
+        @keyframes confetti-fall { to { transform: translateY(105vh) rotate(720deg); opacity: 0.3; } }
+        @keyframes badge-unlock-pop {
+            0% { transform: scale(0.7); opacity: 0; }
+            60% { transform: scale(1.05); opacity: 1; }
+            100% { transform: scale(1); }
+        }
+        #badge-unlock-card { animation: badge-unlock-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1); }
         .modal-blur { backdrop-filter: blur(4px); }
         /* Custom scrollbar */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -83,8 +105,8 @@
                 <div class="flex items-center space-x-3 cursor-pointer" onclick="switchTab('dashboard')">
                     <img src="assets/brand/ampersand-logo.png" alt="van Vlissingen Center" class="w-12 h-12 object-contain drop-shadow">
                     <div>
-                        <span class="text-xl font-bold tracking-tight text-white block leading-tight">Emory & Henry University</span>
-                        <span class="text-xs text-yellow-400 font-medium tracking-wide uppercase">&amp; Badge Tracker</span>
+                        <span class="hidden sm:block text-xl font-bold tracking-tight text-white leading-tight">Emory & Henry University</span>
+                        <span class="text-base sm:text-xs font-bold sm:font-medium text-yellow-400 tracking-wide uppercase">&amp; Badge Tracker</span>
                     </div>
                 </div>
 
@@ -108,6 +130,11 @@
                         <span id="admin-pending-count" class="ml-1.5 px-1.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full font-bold">0</span>
                     </button>
                 </nav>
+
+                <!-- Mobile Menu Toggle (visible below md, where the tab row above is hidden) -->
+                <button id="mobile-menu-toggle" onclick="toggleMobileMenu()" class="hidden md:hidden p-2 text-slate-200 hover:text-white hover:bg-eh-lightBlue rounded-lg transition" title="Menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
 
                 <!-- User Profile / Auth Area -->
                 <div class="flex items-center space-x-3">
@@ -136,6 +163,25 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Mobile Nav Panel (mirrors #main-nav; only reachable below md via the hamburger above) -->
+            <nav id="mobile-nav" class="hidden md:hidden pb-4 space-y-1 border-t border-white/10 mt-2 pt-3">
+                <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-white bg-eh-lightBlue transition">
+                    <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-1.5"></i> Badges Dashboard
+                </button>
+                <button onclick="switchTab('work-examples')" id="mobile-nav-work-examples" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                    <i data-lucide="file-check" class="w-4 h-4 inline mr-1.5"></i> Work Examples
+                </button>
+                <button onclick="switchTab('activities')" id="mobile-nav-activities" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                    <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1.5"></i> Submit Activity
+                </button>
+                <button onclick="switchTab('my-submissions')" id="mobile-nav-my-submissions" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                    <i data-lucide="history" class="w-4 h-4 inline mr-1.5"></i> My History
+                </button>
+                <button onclick="switchTab('admin')" id="mobile-nav-admin" class="hidden w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
+                    <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Dashboard
+                </button>
+            </nav>
         </div>
     </header>
 
@@ -193,6 +239,12 @@
 
                 <div id="badges-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                     <!-- Dynamic Badges Inserted Here -->
+                </div>
+
+                <div class="text-center mt-6">
+                    <button onclick="switchTab('my-submissions')" class="inline-flex items-center text-sm font-semibold text-eh-blue hover:text-eh-lightBlue transition">
+                        <i data-lucide="history" class="w-4 h-4 mr-1.5"></i> View your full submission history &rarr;
+                    </button>
                 </div>
             </div>
         </div>
@@ -513,6 +565,24 @@
     </footer>
 
     <!-- MODAL: AUTHENTICATION / PASSWORD & FIRST TIME REGISTRATION -->
+    <!-- Confetti layer for the badge-unlock celebration -->
+    <div id="confetti-container"></div>
+
+    <!-- BADGE UNLOCK CELEBRATION -->
+    <div id="badge-unlock-modal" class="fixed inset-0 bg-slate-900/70 modal-blur z-[65] flex items-center justify-center p-4 hidden">
+        <div id="badge-unlock-card" class="bg-white rounded-2xl max-w-sm w-full p-8 shadow-2xl border border-slate-100 text-center">
+            <div class="w-16 h-16 bg-amber-100 text-eh-gold rounded-full flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="party-popper" class="w-8 h-8"></i>
+            </div>
+            <h3 class="text-2xl font-extrabold text-eh-blue mb-1">Badge Unlocked!</h3>
+            <p class="text-sm text-slate-500 mb-4">Congratulations - your capstone was approved for:</p>
+            <div id="badge-unlock-names" class="space-y-1 mb-6 text-lg"></div>
+            <button onclick="closeBadgeUnlockModal()" class="w-full py-3 bg-eh-gold hover:bg-yellow-400 text-eh-blue rounded-lg font-bold text-sm transition shadow">
+                Awesome!
+            </button>
+        </div>
+    </div>
+
     <div id="auth-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative">
             <button onclick="closeLoginModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
@@ -522,8 +592,8 @@
             <!-- STEP 1: EMAIL ENTRY -->
             <div id="auth-step-email">
                 <div class="text-center mb-6">
-                    <div class="w-12 h-12 bg-yellow-100 text-eh-blue rounded-full flex items-center justify-center mx-auto mb-3 font-extrabold text-lg">E&H</div>
-                    <h3 class="text-xl font-bold text-eh-blue">Sign In to E&H Career Tracker</h3>
+                    <img src="assets/brand/ampersand-logo.png" alt="" class="w-14 h-14 object-contain mx-auto mb-3">
+                    <h3 class="text-xl font-bold text-eh-blue">Sign In to &amp; Badge Dashboard</h3>
                     <p class="text-xs text-slate-500 mt-1">Enter your official campus email address to proceed.</p>
                 </div>
 
@@ -536,8 +606,8 @@
                         <i data-lucide="alert-circle" class="w-4 h-4 mr-1.5 shrink-0 mt-0.5"></i>
                         <span id="auth-error-msg">Domain restricted to @emoryhenry.edu or @ehc.edu</span>
                     </div>
-                    <button type="submit" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue shadow transition">
-                        Next &rarr;
+                    <button type="submit" id="auth-email-submit-btn" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue shadow transition flex items-center justify-center">
+                        <span>Next &rarr;</span>
                     </button>
                 </form>
             </div>
@@ -564,8 +634,8 @@
                         <button type="button" onclick="showAuthStep('email')" class="text-xs text-slate-500 hover:text-slate-800">&larr; Change Email</button>
                         <button type="button" onclick="requestVerificationLink()" class="text-xs text-eh-blue hover:underline font-semibold">Forgot / Change Password?</button>
                     </div>
-                    <button type="submit" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
-                        Sign In
+                    <button type="submit" id="auth-password-submit-btn" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow flex items-center justify-center">
+                        <span>Sign In</span>
                     </button>
                 </form>
             </div>
@@ -604,8 +674,8 @@
 
                     <div id="register-error-box" class="p-3 bg-rose-50 border border-rose-200 rounded-lg text-xs text-rose-700 hidden"></div>
 
-                    <button type="submit" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
-                        Complete Registration & Sign In
+                    <button type="submit" id="auth-register-submit-btn" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow flex items-center justify-center">
+                        <span>Complete Registration &amp; Sign In</span>
                     </button>
                 </form>
             </div>
@@ -667,8 +737,8 @@
 
                     <div class="flex items-center justify-between pt-2">
                         <button type="button" onclick="showAuthStep('password')" class="text-xs text-slate-500 hover:text-slate-800">&larr; Back to Login</button>
-                        <button type="submit" class="px-6 py-2.5 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow">
-                            Save & Sign In
+                        <button type="submit" id="auth-reset-submit-btn" class="px-6 py-2.5 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue transition shadow flex items-center justify-center">
+                            <span>Save &amp; Sign In</span>
                         </button>
                     </div>
                 </form>
@@ -1016,6 +1086,8 @@
             document.getElementById('login-button-header').classList.remove('hidden');
             document.getElementById('admin-settings-btn').classList.add('hidden');
             document.getElementById('impersonation-banner').classList.add('hidden');
+            document.getElementById('mobile-menu-toggle').classList.add('hidden');
+            closeMobileMenu();
         }
 
         function setupLoggedInView() {
@@ -1023,6 +1095,7 @@
             document.getElementById('main-nav').classList.remove('hidden');
             document.getElementById('user-menu').classList.remove('hidden');
             document.getElementById('login-button-header').classList.add('hidden');
+            document.getElementById('mobile-menu-toggle').classList.remove('hidden');
 
             document.getElementById('user-display-name').textContent = `${currentUser.firstName} ${currentUser.lastName}`;
             document.getElementById('user-display-email').textContent = currentUser.email;
@@ -1030,7 +1103,8 @@
             // Check admin status against real user session if in impersonation mode
             const isRealAdmin = (realAdminUser || currentUser).isAdmin;
 
-            const adminTabBtn = document.getElementById('nav-admin');
+            // Desktop and mobile admin tab buttons are shown/hidden together.
+            const adminTabBtns = [document.getElementById('nav-admin'), document.getElementById('mobile-nav-admin')];
             const adminSettingsBtn = document.getElementById('admin-settings-btn');
 
             // Control Data Syncing Settings visibility strictly for Admins
@@ -1041,14 +1115,14 @@
             }
 
             if (isRealAdmin && !realAdminUser) {
-                adminTabBtn.classList.remove('hidden');
+                adminTabBtns.forEach(btn => btn.classList.remove('hidden'));
                 switchTab('admin');
             } else if (realAdminUser) {
                 // Currently in View-As Mode
-                adminTabBtn.classList.add('hidden');
+                adminTabBtns.forEach(btn => btn.classList.add('hidden'));
                 switchTab('dashboard');
             } else {
-                adminTabBtn.classList.add('hidden');
+                adminTabBtns.forEach(btn => btn.classList.add('hidden'));
                 switchTab('dashboard');
             }
 
@@ -1070,29 +1144,41 @@
 
             ['dashboard', 'work-examples', 'activities', 'my-submissions', 'admin'].forEach(t => {
                 const el = document.getElementById(`tab-${t}`);
-                const navBtn = document.getElementById(`nav-${t}`);
                 if (el) el.classList.add('hidden');
-                if (navBtn) {
-                    navBtn.classList.remove('bg-eh-lightBlue', 'text-white');
-                    navBtn.classList.add('text-slate-200');
-                }
+                // Desktop and mobile nav buttons for the same tab share this active/inactive styling.
+                [document.getElementById(`nav-${t}`), document.getElementById(`mobile-nav-${t}`)].forEach(navBtn => {
+                    if (navBtn) {
+                        navBtn.classList.remove('bg-eh-lightBlue', 'text-white');
+                        navBtn.classList.add('text-slate-200');
+                    }
+                });
             });
 
             const activeTab = document.getElementById(`tab-${tabName}`);
-            const activeNavBtn = document.getElementById(`nav-${tabName}`);
+            [document.getElementById(`nav-${tabName}`), document.getElementById(`mobile-nav-${tabName}`)].forEach(activeNavBtn => {
+                if (activeNavBtn) {
+                    activeNavBtn.classList.add('bg-eh-lightBlue', 'text-white');
+                    activeNavBtn.classList.remove('text-slate-200');
+                }
+            });
 
             if (activeTab) activeTab.classList.remove('hidden');
-            if (activeNavBtn) {
-                activeNavBtn.classList.add('bg-eh-lightBlue', 'text-white');
-                activeNavBtn.classList.remove('text-slate-200');
-            }
 
             // Auto-fill logged-in user details in form
             if (tabName === 'activities' && currentUser) {
                 document.getElementById('form-user-fullname').value = `${currentUser.firstName} ${currentUser.lastName} (${currentUser.email})`;
             }
 
+            closeMobileMenu();
             refreshAppData();
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-nav').classList.toggle('hidden');
+        }
+
+        function closeMobileMenu() {
+            document.getElementById('mobile-nav').classList.add('hidden');
         }
 
         // REFRESH & RENDER DATA
@@ -1703,6 +1789,60 @@
             }
         }
 
+        // Shows a spinner in place of a submit button's label while an async auth call is in flight,
+        // and disables the button so it can't be submitted twice. Restores the original label after.
+        // Shows the celebration modal + confetti for any badges unlocked since the user's last
+        // login (see the server's PendingUnlocks column, consumed once per sign-in).
+        function showBadgeUnlockCelebration(badgeIds) {
+            if (!badgeIds || !badgeIds.length) return;
+            const titles = badgeIds.map(id => (NACE_BADGES.find(b => b.id === id) || {}).title || id);
+            document.getElementById('badge-unlock-names').innerHTML =
+                titles.map(t => `<div class="font-bold text-eh-blue">${t}</div>`).join('');
+            document.getElementById('badge-unlock-modal').classList.remove('hidden');
+            lucide.createIcons();
+            launchConfetti();
+        }
+
+        function closeBadgeUnlockModal() {
+            document.getElementById('badge-unlock-modal').classList.add('hidden');
+        }
+
+        function launchConfetti() {
+            const container = document.getElementById('confetti-container');
+            const colors = ['#f6c343', '#1d3a6e', '#3b6fd4', '#10b981', '#ef4444', '#ffffff'];
+            for (let i = 0; i < 120; i++) {
+                const piece = document.createElement('div');
+                piece.className = 'confetti-piece';
+                piece.style.left = (Math.random() * 100) + 'vw';
+                piece.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                piece.style.animationDuration = (2 + Math.random() * 1.5) + 's';
+                piece.style.animationDelay = (Math.random() * 0.4) + 's';
+                piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+                container.appendChild(piece);
+                piece.addEventListener('animationend', () => piece.remove());
+            }
+        }
+
+        function setAuthButtonBusy(buttonId, busy) {
+            const btn = document.getElementById(buttonId);
+            if (!btn) return;
+            const label = btn.querySelector('span');
+            if (busy) {
+                btn.disabled = true;
+                btn.classList.add('opacity-80', 'cursor-not-allowed');
+                if (!btn.querySelector('.btn-spinner')) {
+                    const spinner = document.createElement('span');
+                    spinner.className = 'btn-spinner';
+                    btn.insertBefore(spinner, label);
+                }
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-80', 'cursor-not-allowed');
+                const spinner = btn.querySelector('.btn-spinner');
+                if (spinner) spinner.remove();
+            }
+        }
+
         function showAuthError(message) {
             document.getElementById('auth-error-msg').textContent = message;
             document.getElementById('auth-error-box').classList.remove('hidden');
@@ -1719,6 +1859,7 @@
             }
 
             pendingAuthEmail = emailInput;
+            setAuthButtonBusy('auth-email-submit-btn', true);
             try {
                 const res = await apiCall('EMAIL_LOOKUP', { email: emailInput });
                 if (res.status !== 'success') {
@@ -1734,6 +1875,8 @@
             } catch (err) {
                 console.error(err);
                 showAuthError('Could not reach the server. Please check your connection and try again.');
+            } finally {
+                setAuthButtonBusy('auth-email-submit-btn', false);
             }
         }
 
@@ -1742,6 +1885,7 @@
             const passwordInput = document.getElementById('auth-password-input');
             const errBox = document.getElementById('password-error-box');
             errBox.classList.add('hidden');
+            setAuthButtonBusy('auth-password-submit-btn', true);
             try {
                 const res = await apiCall('LOGIN', { email: pendingAuthEmail, password: passwordInput.value });
                 if (res.status === 'success') {
@@ -1750,6 +1894,7 @@
                     closeLoginModal();
                     setupLoggedInView();
                     fetchUserDataFromSheet(); // badges/submissions load in the background so sign-in isn't held up waiting on them
+                    showBadgeUnlockCelebration(res.unlockedBadges);
                 } else {
                     errBox.textContent = res.status === 'locked'
                         ? 'Too many failed attempts. Please wait 15 minutes, or use "Forgot password" to reset it.'
@@ -1760,6 +1905,8 @@
                 console.error(err);
                 errBox.textContent = 'Could not reach the server. Please try again.';
                 errBox.classList.remove('hidden');
+            } finally {
+                setAuthButtonBusy('auth-password-submit-btn', false);
             }
         }
 
@@ -1782,6 +1929,7 @@
                 return;
             }
 
+            setAuthButtonBusy('auth-register-submit-btn', true);
             try {
                 const res = await apiCall('REGISTER', { email: pendingAuthEmail, firstName, lastName, password });
                 if (res.status === 'success') {
@@ -1790,6 +1938,7 @@
                     closeLoginModal();
                     setupLoggedInView();
                     fetchUserDataFromSheet();
+                    showBadgeUnlockCelebration(res.unlockedBadges);
                 } else {
                     errBox.textContent = res.status === 'exists'
                         ? 'An account already exists for this email. Please go back and sign in.'
@@ -1800,6 +1949,8 @@
                 console.error(err);
                 errBox.textContent = 'Could not reach the server. Please try again.';
                 errBox.classList.remove('hidden');
+            } finally {
+                setAuthButtonBusy('auth-register-submit-btn', false);
             }
         }
 
@@ -1854,6 +2005,7 @@
                 return;
             }
 
+            setAuthButtonBusy('auth-reset-submit-btn', true);
             try {
                 const res = await apiCall('RESET_PASSWORD', { email: pendingAuthEmail, token: activeResetToken, newPassword });
                 if (res.status === 'success') {
@@ -1863,6 +2015,7 @@
                     closeLoginModal();
                     setupLoggedInView();
                     fetchUserDataFromSheet();
+                    showBadgeUnlockCelebration(res.unlockedBadges);
                     alert('Password updated successfully!');
                 } else {
                     errBox.textContent = res.status === 'invalid'
@@ -1874,6 +2027,8 @@
                 console.error(err);
                 errBox.textContent = 'Could not reach the server. Please try again.';
                 errBox.classList.remove('hidden');
+            } finally {
+                setAuthButtonBusy('auth-reset-submit-btn', false);
             }
         }
 
