@@ -163,26 +163,30 @@
                     </div>
                 </div>
             </div>
-
-            <!-- Mobile Nav Panel (mirrors #main-nav; only reachable below md via the hamburger above) -->
-            <nav id="mobile-nav" class="hidden lg:hidden pb-4 space-y-1 border-t border-white/10 mt-2 pt-3">
-                <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-white bg-eh-lightBlue transition">
-                    <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-1.5"></i> Badges Dashboard
-                </button>
-                <button onclick="switchTab('work-examples')" id="mobile-nav-work-examples" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                    <i data-lucide="file-check" class="w-4 h-4 inline mr-1.5"></i> Work Examples
-                </button>
-                <button onclick="switchTab('activities')" id="mobile-nav-activities" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                    <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1.5"></i> Submit Activity
-                </button>
-                <button onclick="switchTab('my-submissions')" id="mobile-nav-my-submissions" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                    <i data-lucide="history" class="w-4 h-4 inline mr-1.5"></i> My History
-                </button>
-                <button onclick="switchTab('admin')" id="mobile-nav-admin" class="hidden w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
-                    <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Dashboard
-                </button>
-            </nav>
         </div>
+
+        <!-- Mobile Nav Panel: a detached overlay anchored to the header (not nested inside the
+             max-w-7xl inner container, and not part of the sticky header's own in-flow height).
+             Sitting it directly on <header> (which, being sticky, is a positioning anchor) as a
+             full-width absolutely-positioned dropdown avoids the reflow/overlap glitches that can
+             happen when a sticky element's own box height changes as content toggles inside it. -->
+        <nav id="mobile-nav" class="hidden lg:hidden absolute top-full left-0 right-0 bg-eh-blue border-t border-white/10 shadow-lg px-4 py-3 space-y-1 z-40">
+            <button onclick="switchTab('dashboard')" id="mobile-nav-dashboard" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-white bg-eh-lightBlue transition">
+                <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-1.5"></i> Badges Dashboard
+            </button>
+            <button onclick="switchTab('work-examples')" id="mobile-nav-work-examples" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                <i data-lucide="file-check" class="w-4 h-4 inline mr-1.5"></i> Work Examples
+            </button>
+            <button onclick="switchTab('activities')" id="mobile-nav-activities" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1.5"></i> Submit Activity
+            </button>
+            <button onclick="switchTab('my-submissions')" id="mobile-nav-my-submissions" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                <i data-lucide="history" class="w-4 h-4 inline mr-1.5"></i> My History
+            </button>
+            <button onclick="switchTab('admin')" id="mobile-nav-admin" class="hidden w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
+                <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Dashboard
+            </button>
+        </nav>
     </header>
 
     <!-- MAIN CONTENT CONTAINER -->
