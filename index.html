@@ -110,26 +110,32 @@
                     </div>
                 </div>
 
-                <!-- Navigation Tabs (Only visible when logged in) -->
-                <nav id="main-nav" class="hidden lg:flex space-x-1 lg:space-x-2">
-                    <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-3 py-2 rounded-lg text-sm font-semibold text-white bg-eh-lightBlue transition">
-                        <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-1.5"></i> Badges Dashboard
-                    </button>
-                    <button onclick="switchTab('work-examples')" id="nav-work-examples" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                        <i data-lucide="file-check" class="w-4 h-4 inline mr-1.5"></i> Work Examples
-                    </button>
-                    <button onclick="switchTab('activities')" id="nav-activities" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                        <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1.5"></i> Submit Activity
-                    </button>
-                    <button onclick="switchTab('my-submissions')" id="nav-my-submissions" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                        <i data-lucide="history" class="w-4 h-4 inline mr-1.5"></i> My History
-                    </button>
-                    <!-- Admin Tab (Hidden by default, shown for admin emails) -->
-                    <button onclick="switchTab('admin')" id="nav-admin" class="hidden px-3 py-2 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
-                        <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Dashboard
-                        <span id="admin-pending-count" class="ml-1.5 px-1.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full font-bold">0</span>
-                    </button>
-                </nav>
+                <!-- Navigation Tabs (Only visible when logged in).
+                     main-nav-wrapper is the ONLY thing JS ever toggles for login state. The inner
+                     <nav> keeps its "hidden lg:flex" pair permanently untouched, so the responsive
+                     variant can do its job of hiding it below 1024px no matter what the wrapper's
+                     login-gated visibility is doing. -->
+                <div id="main-nav-wrapper" class="hidden">
+                    <nav id="main-nav" class="hidden lg:flex space-x-1 lg:space-x-2">
+                        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="px-3 py-2 rounded-lg text-sm font-semibold text-white bg-eh-lightBlue transition">
+                            <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-1.5"></i> Badges Dashboard
+                        </button>
+                        <button onclick="switchTab('work-examples')" id="nav-work-examples" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                            <i data-lucide="file-check" class="w-4 h-4 inline mr-1.5"></i> Work Examples
+                        </button>
+                        <button onclick="switchTab('activities')" id="nav-activities" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                            <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1.5"></i> Submit Activity
+                        </button>
+                        <button onclick="switchTab('my-submissions')" id="nav-my-submissions" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
+                            <i data-lucide="history" class="w-4 h-4 inline mr-1.5"></i> My History
+                        </button>
+                        <!-- Admin Tab (Hidden by default, shown for admin emails) -->
+                        <button onclick="switchTab('admin')" id="nav-admin" class="hidden px-3 py-2 rounded-lg text-sm font-semibold text-amber-300 hover:bg-amber-900/40 transition border border-amber-400/40">
+                            <i data-lucide="shield-check" class="w-4 h-4 inline mr-1.5"></i> Admin Dashboard
+                            <span id="admin-pending-count" class="ml-1.5 px-1.5 py-0.5 text-xs bg-amber-400 text-slate-900 rounded-full font-bold">0</span>
+                        </button>
+                    </nav>
+                </div>
 
                 <!-- Mobile Menu Toggle (visible below md, where the tab row above is hidden) -->
                 <button id="mobile-menu-toggle" onclick="toggleMobileMenu()" class="hidden lg:hidden p-2 text-slate-200 hover:text-white hover:bg-eh-lightBlue rounded-lg transition" title="Menu">
@@ -1085,7 +1091,7 @@
             document.getElementById('tab-activities').classList.add('hidden');
             document.getElementById('tab-my-submissions').classList.add('hidden');
             document.getElementById('tab-admin').classList.add('hidden');
-            document.getElementById('main-nav').classList.add('hidden');
+            document.getElementById('main-nav-wrapper').classList.add('hidden');
             document.getElementById('user-menu').classList.add('hidden');
             document.getElementById('login-button-header').classList.remove('hidden');
             document.getElementById('admin-settings-btn').classList.add('hidden');
@@ -1096,7 +1102,7 @@
 
         function setupLoggedInView() {
             document.getElementById('hero-view').classList.add('hidden');
-            document.getElementById('main-nav').classList.remove('hidden');
+            document.getElementById('main-nav-wrapper').classList.remove('hidden');
             document.getElementById('user-menu').classList.remove('hidden');
             document.getElementById('login-button-header').classList.add('hidden');
             document.getElementById('mobile-menu-toggle').classList.remove('hidden');
