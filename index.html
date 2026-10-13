@@ -85,6 +85,19 @@
     </style>
 </head>
 <body class="h-full flex flex-col justify-between text-slate-800 antialiased">
+    <!-- Cover shown while the page checks whether someone is signed in (prevents a flash of the login page) -->
+    <div id="auth-loading-overlay" class="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center">
+        <div class="w-10 h-10 border-4 border-slate-200 border-t-eh-blue rounded-full animate-spin"></div>
+        <p class="mt-4 text-sm font-semibold text-slate-600">Just a moment...</p>
+    </div>
+    <script>
+        // Safety net: never leave the cover up for more than 12 seconds, even if something goes wrong.
+        setTimeout(function () {
+            var el = document.getElementById('auth-loading-overlay');
+            if (el) el.classList.add('hidden');
+        }, 12000);
+    </script>
+
 
     <!-- IMPERSONATION / VIEW-AS BANNER -->
     <div id="impersonation-banner" class="hidden bg-amber-500 text-slate-950 px-4 py-2 text-xs font-bold flex items-center justify-between shadow-inner">
@@ -937,8 +950,23 @@
 
         // Firebase calls this whenever someone signs in or out (including when a returning
         // student reopens the site and is still signed in).
+        function hideAuthLoading() {
+            const el = document.getElementById('auth-loading-overlay');
+            if (el) el.classList.add('hidden');
+        }
+
         let authChangeCounter = 0;
         async function handleAuthChange(fbUser) {
+            const myRun = authChangeCounter + 1; // the number the next line will give this run
+            try {
+                await handleAuthChangeInner(fbUser);
+            } finally {
+                // Only uncover the page if no newer sign-in/out check has started in the meantime.
+                if (myRun === authChangeCounter) hideAuthLoading();
+            }
+        }
+
+        async function handleAuthChangeInner(fbUser) {
             const thisRun = ++authChangeCounter;
 
             if (!fbUser) {
