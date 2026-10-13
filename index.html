@@ -33,6 +33,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         body { font-family: 'EB Garamond', 'Garamond', 'Georgia', serif; }
@@ -585,9 +586,7 @@
                     <i data-lucide="alert-circle" class="w-4 h-4 mr-1.5 shrink-0 mt-0.5"></i>
                     <span id="auth-error-msg"></span>
                 </div>
-                <button type="button" id="auth-google-btn" onclick="handleGoogleSignIn()" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue shadow transition flex items-center justify-center">
-                    <span>Continue with Google</span>
-                </button>
+                <div id="google-signin-button" class="flex justify-center min-h-[44px]"></div>
             </div>
         </div>
     </div>
@@ -697,7 +696,7 @@
     <!-- FIREBASE: sign-in + database connection (replaces the old Google Apps Script backend) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
-        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
+        import { getAuth, signInWithCredential, GoogleAuthProvider, signOut, onAuthStateChanged }
             from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where, writeBatch, arrayUnion }
             from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
@@ -717,19 +716,9 @@
 
         // Everything the main app script needs, in one place.
         window.fb = {
-            signInWithGoogle() {
-                const provider = new GoogleAuthProvider();
-                provider.setCustomParameters({ prompt: 'select_account' });
-                // Phones handle pop-up windows badly (blank page after choosing an account),
-                // so on mobile the whole page goes to Google and comes back instead.
-                const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
-                if (isMobile) return signInWithRedirect(auth, provider);
-                return signInWithPopup(auth, provider).catch(err => {
-                    if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
-                        return signInWithRedirect(auth, provider);
-                    }
-                    throw err;
-                });
+            // Receives the sign-in token from Google's own button and signs in to Firebase with it.
+            signInWithGoogleToken(idToken) {
+                return signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
             },
             signOut() { return signOut(auth); },
 
@@ -822,14 +811,6 @@
         const pageReady = new Promise(resolve => {
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resolve);
             else resolve();
-        });
-        // After coming back from Google on a phone, report any sign-in error.
-        getRedirectResult(auth).catch(err => {
-            console.error(err);
-            pageReady.then(() => {
-                window.openLoginModal();
-                window.showAuthError('Sign-in failed (' + (err.code || 'unknown error') + '). Please try again.');
-            });
         });
         onAuthStateChanged(auth, async (user) => {
             await pageReady;
@@ -1686,6 +1667,7 @@
         // AUTHENTICATION MODAL & LOGIC
         function openLoginModal() {
             document.getElementById('auth-modal').classList.remove('hidden');
+            initGoogleButton();
             document.getElementById('auth-error-box').classList.add('hidden');
         }
 
@@ -1752,26 +1734,43 @@
             document.getElementById('auth-error-box').classList.remove('hidden');
         }
 
-        async function handleGoogleSignIn() {
+        // Google's own sign-in button (works on phones, unlike the pop-up/redirect methods).
+        const GOOGLE_CLIENT_ID = '47291050684-5d8ge42nrc7op08l032vj3ev7svm0642.apps.googleusercontent.com';
+        let googleButtonReady = false;
+
+        function initGoogleButton(attempt = 0) {
+            if (googleButtonReady) return;
+            if (!window.google || !google.accounts || !google.accounts.id) {
+                // Google's library is still loading; try again shortly.
+                if (attempt < 50) setTimeout(() => initGoogleButton(attempt + 1), 200);
+                else showAuthError('Could not load Google sign-in. Please check your connection and reload the page.');
+                return;
+            }
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleCredential,
+                ux_mode: 'popup'
+            });
+            google.accounts.id.renderButton(document.getElementById('google-signin-button'), {
+                theme: 'filled_blue', size: 'large', text: 'continue_with', shape: 'rectangular', width: 280
+            });
+            googleButtonReady = true;
+        }
+
+        async function handleGoogleCredential(response) {
             document.getElementById('auth-error-box').classList.add('hidden');
-            setAuthButtonBusy('auth-google-btn', true);
             try {
                 // On success Firebase calls handleAuthChange(), which loads the data and closes this window.
-                await fb.signInWithGoogle();
+                await fb.signInWithGoogleToken(response.credential);
             } catch (err) {
                 console.error(err);
-                if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
-                    showAuthError(err.code === 'auth/popup-blocked'
-                        ? 'Your browser blocked the sign-in window. Please allow pop-ups for this site and try again.'
-                        : 'Sign-in failed. Please try again.');
-                }
-            } finally {
-                setAuthButtonBusy('auth-google-btn', false);
+                showAuthError('Sign-in failed (' + (err.code || 'unknown error') + '). Please try again.');
             }
         }
 
         async function handleSignOut() {
             try { await fb.signOut(); } catch (err) { console.error(err); }
+            if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
             // handleAuthChange() clears the data and shows the signed-out page.
         }
 
