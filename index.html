@@ -33,7 +33,6 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,600&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
 
     <style>
         body { font-family: 'EB Garamond', 'Garamond', 'Georgia', serif; }
@@ -586,7 +585,9 @@
                     <i data-lucide="alert-circle" class="w-4 h-4 mr-1.5 shrink-0 mt-0.5"></i>
                     <span id="auth-error-msg"></span>
                 </div>
-                <div id="google-signin-button" class="flex justify-center min-h-[44px]"></div>
+                <button type="button" id="auth-google-btn" onclick="handleGoogleSignIn()" class="w-full py-3 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue shadow transition flex items-center justify-center">
+                    <span>Continue with Google</span>
+                </button>
             </div>
         </div>
     </div>
@@ -716,10 +717,6 @@
 
         // Everything the main app script needs, in one place.
         window.fb = {
-            // Receives the sign-in token from Google's own button and signs in to Firebase with it.
-            signInWithGoogleToken(idToken) {
-                return signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
-            },
             signOut() { return signOut(auth); },
 
             async getUserProfile(email) {
@@ -812,6 +809,48 @@
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resolve);
             else resolve();
         });
+        // When Google sends the person back, the sign-in token is in the address after the # sign.
+        // Check it belongs to the sign-in we started, then sign in to Firebase with it.
+        (async function finishGoogleRedirect() {
+            const fragment = new URLSearchParams(location.hash.replace(/^#/, ''));
+            const idToken = fragment.get('id_token');
+            const oauthError = fragment.get('error');
+            if (!idToken && !oauthError) return;
+
+            const savedState = localStorage.getItem('eh_oauth_state');
+            const savedNonce = localStorage.getItem('eh_oauth_nonce');
+            localStorage.removeItem('eh_oauth_state');
+            localStorage.removeItem('eh_oauth_nonce');
+            history.replaceState(null, '', location.pathname + location.search); // remove the token from the address bar
+
+            let problem = '';
+            if (oauthError) {
+                problem = 'Google reported a problem (' + oauthError + '). Please try again.';
+            } else if (!savedState || fragment.get('state') !== savedState) {
+                problem = 'Sign-in could not be verified. Please try again.';
+            } else {
+                try {
+                    const payload = JSON.parse(atob(idToken.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+                    if (!savedNonce || payload.nonce !== savedNonce) problem = 'Sign-in could not be verified. Please try again.';
+                } catch (e) {
+                    problem = 'Sign-in could not be read. Please try again.';
+                }
+            }
+
+            if (!problem) {
+                try {
+                    await signInWithCredential(auth, GoogleAuthProvider.credential(idToken));
+                    return; // onAuthStateChanged below takes it from here
+                } catch (err) {
+                    console.error(err);
+                    problem = 'Sign-in failed (' + (err.code || 'unknown error') + '). Please try again.';
+                }
+            }
+            await pageReady;
+            window.openLoginModal();
+            window.showAuthError(problem);
+        })();
+
         onAuthStateChanged(auth, async (user) => {
             await pageReady;
             window.handleAuthChange(user);
@@ -1667,7 +1706,6 @@
         // AUTHENTICATION MODAL & LOGIC
         function openLoginModal() {
             document.getElementById('auth-modal').classList.remove('hidden');
-            initGoogleButton();
             document.getElementById('auth-error-box').classList.add('hidden');
         }
 
@@ -1734,43 +1772,44 @@
             document.getElementById('auth-error-box').classList.remove('hidden');
         }
 
-        // Google's own sign-in button (works on phones, unlike the pop-up/redirect methods).
+        // Sign-in works by sending the whole page to Google and back (no pop-up window, which phones
+        // block). Google returns to this same address with a sign-in token, which the Firebase script
+        // at the top of the page picks up and uses to sign in.
         const GOOGLE_CLIENT_ID = '47291050684-5d8ge42nrc7op08l032vj3ev7svm0642.apps.googleusercontent.com';
-        let googleButtonReady = false;
 
-        function initGoogleButton(attempt = 0) {
-            if (googleButtonReady) return;
-            if (!window.google || !google.accounts || !google.accounts.id) {
-                // Google's library is still loading; try again shortly.
-                if (attempt < 50) setTimeout(() => initGoogleButton(attempt + 1), 200);
-                else showAuthError('Could not load Google sign-in. Please check your connection and reload the page.');
-                return;
-            }
-            google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: handleGoogleCredential,
-                ux_mode: 'popup'
-            });
-            google.accounts.id.renderButton(document.getElementById('google-signin-button'), {
-                theme: 'filled_blue', size: 'large', text: 'continue_with', shape: 'rectangular', width: 280
-            });
-            googleButtonReady = true;
+        function randomString() {
+            const bytes = new Uint8Array(16);
+            crypto.getRandomValues(bytes);
+            return Array.from(bytes, b => b.toString(16).padStart(2, '0')).join('');
         }
 
-        async function handleGoogleCredential(response) {
+        function handleGoogleSignIn() {
             document.getElementById('auth-error-box').classList.add('hidden');
+            const state = randomString();
+            const nonce = randomString();
             try {
-                // On success Firebase calls handleAuthChange(), which loads the data and closes this window.
-                await fb.signInWithGoogleToken(response.credential);
+                localStorage.setItem('eh_oauth_state', state);
+                localStorage.setItem('eh_oauth_nonce', nonce);
             } catch (err) {
-                console.error(err);
-                showAuthError('Sign-in failed (' + (err.code || 'unknown error') + '). Please try again.');
+                showAuthError('Your browser is blocking site storage, so sign-in cannot continue. Please turn off private browsing and try again.');
+                return;
             }
+            const redirectUri = location.origin + location.pathname.replace(/index\.html$/, '');
+            const params = new URLSearchParams({
+                client_id: GOOGLE_CLIENT_ID,
+                redirect_uri: redirectUri,
+                response_type: 'id_token',
+                scope: 'openid email profile',
+                nonce,
+                state,
+                prompt: 'select_account'
+            });
+            setAuthButtonBusy('auth-google-btn', true);
+            window.location.href = 'https://accounts.google.com/o/oauth2/v2/auth?' + params.toString();
         }
 
         async function handleSignOut() {
             try { await fb.signOut(); } catch (err) { console.error(err); }
-            if (window.google && google.accounts && google.accounts.id) google.accounts.id.disableAutoSelect();
             // handleAuthChange() clears the data and shows the signed-out page.
         }
 
