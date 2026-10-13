@@ -697,7 +697,7 @@
     <!-- FIREBASE: sign-in + database connection (replaces the old Google Apps Script backend) -->
     <script type="module">
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
-        import { getAuth, signInWithPopup, GoogleAuthProvider, signOut, onAuthStateChanged }
+        import { getAuth, signInWithPopup, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signOut, onAuthStateChanged }
             from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
         import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where, writeBatch, arrayUnion }
             from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
@@ -720,7 +720,16 @@
             signInWithGoogle() {
                 const provider = new GoogleAuthProvider();
                 provider.setCustomParameters({ prompt: 'select_account' });
-                return signInWithPopup(auth, provider);
+                // Phones handle pop-up windows badly (blank page after choosing an account),
+                // so on mobile the whole page goes to Google and comes back instead.
+                const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+                if (isMobile) return signInWithRedirect(auth, provider);
+                return signInWithPopup(auth, provider).catch(err => {
+                    if (err.code === 'auth/popup-blocked' || err.code === 'auth/operation-not-supported-in-this-environment') {
+                        return signInWithRedirect(auth, provider);
+                    }
+                    throw err;
+                });
             },
             signOut() { return signOut(auth); },
 
@@ -813,6 +822,14 @@
         const pageReady = new Promise(resolve => {
             if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', resolve);
             else resolve();
+        });
+        // After coming back from Google on a phone, report any sign-in error.
+        getRedirectResult(auth).catch(err => {
+            console.error(err);
+            pageReady.then(() => {
+                window.openLoginModal();
+                window.showAuthError('Sign-in failed (' + (err.code || 'unknown error') + '). Please try again.');
+            });
         });
         onAuthStateChanged(auth, async (user) => {
             await pageReady;
