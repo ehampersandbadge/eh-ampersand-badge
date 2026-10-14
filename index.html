@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Emory & Henry University - & Badge Tracker</title>
+    <title>Emory &amp; Henry University - Ampersand Badge Program</title>
+    <link rel="icon" type="image/png" href="assets/brand/ampersand-logo.png">
     
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -119,7 +120,7 @@
                     <img src="assets/brand/ampersand-logo.png" alt="van Vlissingen Center" class="w-12 h-12 object-contain drop-shadow">
                     <div>
                         <span class="hidden sm:block text-xl font-bold tracking-tight text-white leading-tight">Emory & Henry University</span>
-                        <span class="text-base sm:text-xs font-bold sm:font-medium text-yellow-400 tracking-wide uppercase">&amp; Badge Tracker</span>
+                        <span class="text-base sm:text-xs font-bold sm:font-medium text-yellow-400 tracking-wide uppercase">Ampersand Badge Program</span>
                     </div>
                 </div>
 
@@ -209,9 +210,9 @@
             <div class="w-20 h-20 bg-yellow-50 text-eh-blue rounded-full flex items-center justify-center mx-auto mb-6 shadow-inner border-2 border-yellow-200">
                 <i data-lucide="award" class="w-10 h-10 text-eh-gold"></i>
             </div>
-            <h1 class="text-3xl sm:text-4xl font-extrabold text-eh-blue tracking-tight">E&H &amp; Badge Program</h1>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-eh-blue tracking-tight">E&H Ampersand Badge Program</h1>
             <p class="mt-4 text-slate-600 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-                Track your experiential learning, earn &amp; Badges, and showcase your readiness to employers and graduate schools.
+                Track your experiences, earn badges, and showcase your career readiness to employers and graduate schools.
             </p>
             <div class="mt-8 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button onclick="openLoginModal()" class="w-full sm:w-auto px-8 py-3.5 bg-eh-blue text-white font-bold rounded-xl shadow-lg hover:bg-eh-lightBlue transition flex items-center justify-center">
@@ -229,7 +230,7 @@
                     <div>
                         <span id="welcome-badge" class="inline-block px-3 py-1 bg-yellow-400/20 text-yellow-300 border border-yellow-400/30 rounded-full text-xs font-bold tracking-wider uppercase mb-2">Student Dashboard</span>
                         <h2 id="welcome-title" class="text-2xl sm:text-3xl font-extrabold">Welcome, Student!</h2>
-                        <p class="text-slate-200 text-sm mt-1 max-w-xl">Earn up to 50 points per competency through coursework, on-campus employment, internships, clubs, sports, and more. Complete a capstone reflection to earn each badge.</p>
+                        <p class="text-slate-200 text-sm mt-1 max-w-xl">Earn up to 50 points per competency through coursework, on-campus employment, internships, clubs, sports, and more. Complete a final reflection to earn each badge.</p>
                     </div>
                     <div class="flex gap-4 sm:gap-6 bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/10">
                         <div class="text-center px-2">
@@ -539,7 +540,7 @@
             <div class="bg-slate-900 text-white rounded-2xl p-6 shadow-md flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <span class="px-2.5 py-0.5 bg-amber-400 text-slate-950 rounded font-bold text-xs uppercase tracking-wider">Admin Control Panel</span>
-                    <h2 class="text-2xl font-bold mt-1">Pending Reviews & Capstones</h2>
+                    <h2 class="text-2xl font-bold mt-1">Pending Reviews &amp; Reflections</h2>
                     <p class="text-slate-400 text-sm">Review student submissions, grant points, and approve NACE Badges.</p>
                 </div>
                 <div class="flex items-center space-x-2">
@@ -589,7 +590,7 @@
 
             <div class="text-center mb-6">
                 <img src="assets/brand/ampersand-logo.png" alt="" class="w-14 h-14 object-contain mx-auto mb-3">
-                <h3 class="text-xl font-bold text-eh-blue">Sign In to &amp; Badge Dashboard</h3>
+                <h3 class="text-xl font-bold text-eh-blue">Sign In to Ampersand Badge Program</h3>
                 <p class="text-xs text-slate-500 mt-1">Sign in with your official @emoryhenry.edu or @ehc.edu Google account.</p>
             </div>
 
@@ -659,7 +660,7 @@
 
             <div class="border-b border-slate-100 pb-4 mb-6">
                 <span class="px-2.5 py-0.5 bg-yellow-100 text-eh-blue font-bold text-xs rounded-full uppercase tracking-wider">Final Step for Badge</span>
-                <h3 id="capstone-modal-badge-title" class="text-2xl font-bold text-eh-blue mt-1">Submit Capstone Reflection</h3>
+                <h3 id="capstone-modal-badge-title" class="text-2xl font-bold text-eh-blue mt-1">Submit Final Reflection</h3>
                 <p class="text-xs text-slate-500 mt-1">You have reached 50 points! Choose your preferred reflection format to earn your official NACE Badge.</p>
             </div>
 
@@ -700,7 +701,7 @@
                 <div class="pt-4 flex justify-end space-x-3 border-t border-slate-100">
                     <button type="button" onclick="closeCapstoneModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-sm font-medium">Cancel</button>
                     <button type="submit" class="px-6 py-2 bg-eh-gold text-eh-blue font-bold rounded-lg text-sm hover:bg-yellow-400 transition shadow">
-                        Submit Capstone &rarr;
+                        Submit Final Reflection &rarr;
                     </button>
                 </div>
             </form>
@@ -860,6 +861,8 @@
                 }
             }
             await pageReady;
+            window.finishingGoogleSignIn = false;
+            window.hideAuthLoading();
             window.openLoginModal();
             window.showAuthError(problem);
         })();
@@ -950,6 +953,9 @@
 
         // Firebase calls this whenever someone signs in or out (including when a returning
         // student reopens the site and is still signed in).
+        // True while we are finishing a return trip from Google (set by the Firebase script at the bottom).
+        window.finishingGoogleSignIn = /[#&](id_token|error)=/.test(location.hash);
+
         function hideAuthLoading() {
             const el = document.getElementById('auth-loading-overlay');
             if (el) el.classList.add('hidden');
@@ -962,7 +968,12 @@
                 await handleAuthChangeInner(fbUser);
             } finally {
                 // Only uncover the page if no newer sign-in/out check has started in the meantime.
-                if (myRun === authChangeCounter) hideAuthLoading();
+                // While finishing a Google sign-in, ignore the brief "nobody signed in yet" report and
+                // keep the cover up until the person is actually signed in (or sign-in fails).
+                if (myRun === authChangeCounter && (fbUser || !window.finishingGoogleSignIn)) {
+                    window.finishingGoogleSignIn = false;
+                    hideAuthLoading();
+                }
             }
         }
 
@@ -1024,7 +1035,7 @@
                 try { await fb.signOut(); } catch (e) {}
                 openLoginModal();
                 showAuthError(err && err.code === 'permission-denied'
-                    ? 'This account is not allowed to use the badge tracker. Please sign in with your official @emoryhenry.edu or @ehc.edu Google account.'
+                    ? 'This account is not allowed to use the badge program. Please sign in with your official @emoryhenry.edu or @ehc.edu Google account.'
                     : 'Could not load your data. Please check your connection and try again.');
             }
         }
@@ -1242,7 +1253,7 @@
                                 </div>
                             ` : pts >= 50 ? `
                                 <button onclick="openCapstoneModal('${badge.id}')" class="w-full py-2 bg-eh-gold hover:bg-yellow-400 text-eh-blue font-bold text-xs rounded-lg transition shadow">
-                                    Submit Capstone &rarr;
+                                    Submit Final Reflection &rarr;
                                 </button>
                             ` : `
                                 <button onclick="quickSubmitForBadge('${badge.id}')" class="w-full py-2 border border-slate-200 hover:border-eh-blue text-slate-700 font-semibold text-xs rounded-lg transition">
@@ -1317,7 +1328,7 @@
                         <td class="p-4 font-semibold text-eh-blue">${badgeTitle}</td>
                         <td class="p-4 font-medium text-slate-800">
                             ${s.title}
-                            ${s.isCapstone ? '<span class="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-bold rounded">CAPSTONE</span>' : ''}
+                            ${s.isCapstone ? '<span class="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-bold rounded">FINAL REFLECTION</span>' : ''}
                         </td>
                         <td class="p-4 font-bold text-slate-700">+${s.pointsGranted || s.pointsRequested || 0}</td>
                         <td class="p-4 text-xs text-slate-500">${new Date(s.timestamp).toLocaleDateString()}</td>
@@ -1554,7 +1565,7 @@
                         </td>
                         <td class="p-4 font-semibold text-eh-blue">${badgeTitle}</td>
                         <td class="p-4">
-                            ${s.isCapstone ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 font-bold text-xs rounded-full">Capstone</span>' : '<span class="text-xs text-slate-600">Activity</span>'}
+                            ${s.isCapstone ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 font-bold text-xs rounded-full">Final Reflection</span>' : '<span class="text-xs text-slate-600">Activity</span>'}
                         </td>
                         <td class="p-4 max-w-xs">
                             <p class="font-medium text-slate-800 truncate">${s.title}</p>
@@ -1942,7 +1953,7 @@
         function openCapstoneModal(badgeId) {
             const badge = NACE_BADGES.find(b => b.id === badgeId);
             document.getElementById('capstone-badge-id').value = badgeId;
-            document.getElementById('capstone-modal-badge-title').textContent = `Capstone Reflection: ${badge ? badge.title : ''}`;
+            document.getElementById('capstone-modal-badge-title').textContent = `Final Reflection: ${badge ? badge.title : ''}`;
             document.getElementById('capstone-modal').classList.remove('hidden');
         }
 
@@ -1977,7 +1988,7 @@
                 userEmail: currentUser.email,
                 userName: `${currentUser.firstName} ${currentUser.lastName}`,
                 badgeId: badgeId,
-                title: `Capstone Reflection (${format.toUpperCase()})`,
+                title: `Final Reflection (${format.toUpperCase()})`,
                 description: content,
                 proofUrl: format === 'video' ? content : '',
                 pointsRequested: 0,
