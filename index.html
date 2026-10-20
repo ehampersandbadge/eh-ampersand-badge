@@ -403,7 +403,13 @@
                 </div>
 
                 <!-- BULK DISABLE / RE-ENABLE BY EMAIL LIST -->
-                <div class="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                <div class="mb-3">
+                    <button type="button" id="bulk-section-toggle" onclick="toggleBulkSection()" aria-expanded="false" aria-controls="bulk-section-body" class="flex items-center text-xs font-semibold text-slate-500 hover:text-eh-blue transition">
+                        <i data-lucide="chevron-right" id="bulk-section-chevron" class="w-4 h-4 mr-1 transition-transform"></i>
+                        Bulk disable accounts (e.g. graduates)
+                    </button>
+                </div>
+                <div id="bulk-section-body" class="hidden mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-1">Bulk Disable Accounts (e.g. Graduates)</h4>
                     <p class="text-xs text-slate-500 mb-3">Paste a list of email addresses, separated by commas, spaces or new lines (a spreadsheet column works). Any address with an account is disabled; addresses without an account are ignored. Disabled students cannot sign in, but all of their data is kept. Administrator accounts are never changed here.</p>
                     <textarea id="bulk-status-emails" rows="5" placeholder="student1@emoryhenry.edu&#10;student2@emoryhenry.edu&#10;student3@ehc.edu" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs font-mono focus:ring-2 focus:ring-eh-blue"></textarea>
@@ -1756,6 +1762,15 @@
             document.getElementById('impersonation-banner').classList.add('hidden');
             setupLoggedInView();
             switchTab('admin');
+        }
+
+        // The bulk tool is tucked away until it is needed
+        function toggleBulkSection() {
+            const body = document.getElementById('bulk-section-body');
+            const open = body.classList.toggle('hidden') === false;
+            document.getElementById('bulk-section-toggle').setAttribute('aria-expanded', String(open));
+            const chevron = document.getElementById('bulk-section-chevron');
+            if (chevron) chevron.style.transform = open ? 'rotate(90deg)' : '';
         }
 
         // BULK DISABLE / RE-ENABLE ACCOUNTS FROM A PASTED LIST OF EMAILS
