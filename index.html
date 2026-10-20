@@ -536,10 +536,26 @@
                     <table class="w-full text-left border-collapse">
                         <thead>
                             <tr class="bg-slate-50 border-b border-slate-200 text-xs uppercase text-slate-500 font-bold tracking-wider">
-                                <th class="p-3">Title</th>
-                                <th class="p-3">Assigned Badge</th>
-                                <th class="p-3">Points</th>
-                                <th class="p-3">Proof Link Req.</th>
+                                <th id="exp-th-title" class="p-3" aria-sort="none">
+                                    <button type="button" onclick="sortExperiences('title')" class="flex items-center uppercase font-bold tracking-wider hover:text-eh-blue transition" title="Click to sort">
+                                        Title <span class="exp-sort-arrow ml-1 text-[10px]"></span>
+                                    </button>
+                                </th>
+                                <th id="exp-th-badge" class="p-3" aria-sort="none">
+                                    <button type="button" onclick="sortExperiences('badge')" class="flex items-center uppercase font-bold tracking-wider hover:text-eh-blue transition" title="Click to sort">
+                                        Assigned Badge <span class="exp-sort-arrow ml-1 text-[10px]"></span>
+                                    </button>
+                                </th>
+                                <th id="exp-th-points" class="p-3" aria-sort="none">
+                                    <button type="button" onclick="sortExperiences('points')" class="flex items-center uppercase font-bold tracking-wider hover:text-eh-blue transition" title="Click to sort">
+                                        Points <span class="exp-sort-arrow ml-1 text-[10px]"></span>
+                                    </button>
+                                </th>
+                                <th id="exp-th-link" class="p-3" aria-sort="none">
+                                    <button type="button" onclick="sortExperiences('link')" class="flex items-center uppercase font-bold tracking-wider hover:text-eh-blue transition" title="Click to sort">
+                                        Proof Link Req. <span class="exp-sort-arrow ml-1 text-[10px]"></span>
+                                    </button>
+                                </th>
                                 <th class="p-3 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -2079,6 +2095,21 @@
             saveToServer('DELETE_EXPERIENCE', { id });
         }
 
+        // Sorting for the Active Custom Experiences table. Click a column heading to sort; click again to reverse.
+        let expSortKey = null;
+        let expSortDir = 'asc';
+
+        function sortExperiences(key) {
+            if (expSortKey === key) {
+                expSortDir = expSortDir === 'asc' ? 'desc' : 'asc';
+            } else {
+                expSortKey = key;
+                // Proof Link starts with "Required" on top; everything else starts A-Z / low-to-high
+                expSortDir = key === 'link' ? 'desc' : 'asc';
+            }
+            renderAdminExperienceList();
+        }
+
         function renderAdminExperienceList() {
             const listBody = document.getElementById('admin-exp-list-body');
             if (!listBody) return;
@@ -2094,15 +2125,42 @@
                 return;
             }
 
-            listBody.innerHTML = customExperiences.map(exp => {
+            const rows = customExperiences.map(exp => {
                 const ids = expBadgeIds(exp);
                 const badgeName = ids.length === NACE_BADGES.length
                     ? 'All Badges (Universal)'
                     : ids.map(id => (NACE_BADGES.find(b => b.id === id) || {}).title || id).join(', ');
+                return { exp, badgeName };
+            });
 
+            // Sort a copy of the list (the saved order is left alone)
+            if (expSortKey) {
+                const dir = expSortDir === 'asc' ? 1 : -1;
+                const text = (a, b) => String(a).localeCompare(String(b), undefined, { sensitivity: 'base', numeric: true });
+                const byTitle = (a, b) => text(a.exp.title, b.exp.title);
+                rows.sort((a, b) => {
+                    let c = 0;
+                    if (expSortKey === 'title') c = byTitle(a, b);
+                    else if (expSortKey === 'badge') c = text(a.badgeName, b.badgeName);
+                    else if (expSortKey === 'points') c = (Number(a.exp.points) || 0) - (Number(b.exp.points) || 0);
+                    else if (expSortKey === 'link') c = (a.exp.linkRequired ? 1 : 0) - (b.exp.linkRequired ? 1 : 0);
+                    return c !== 0 ? c * dir : byTitle(a, b); // ties are always listed A-Z by title
+                });
+            }
+
+            // Show which column is sorted, and which way
+            ['title', 'badge', 'points', 'link'].forEach(key => {
+                const th = document.getElementById('exp-th-' + key);
+                if (!th) return;
+                const on = key === expSortKey;
+                th.setAttribute('aria-sort', on ? (expSortDir === 'asc' ? 'ascending' : 'descending') : 'none');
+                th.querySelector('.exp-sort-arrow').textContent = on ? (expSortDir === 'asc' ? '\u25B2' : '\u25BC') : '';
+            });
+
+            listBody.innerHTML = rows.map(({ exp, badgeName }) => {
                 return `
                     <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-semibold text-slate-800">${exp.title}</td>
+                        <td class="p-3 font-semibold text-slate-800">${escapeHtml(exp.title)}</td>
                         <td class="p-3 text-slate-600">${badgeName}</td>
                         <td class="p-3 font-bold text-slate-700">${exp.points} Pts</td>
                         <td class="p-3">
