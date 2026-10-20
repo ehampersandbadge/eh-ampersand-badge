@@ -258,7 +258,7 @@
             <div>
                 <div class="flex items-center justify-between mb-4">
                     <h3 class="text-xl font-bold text-eh-blue flex items-center">
-                        <i data-lucide="shield-alert" class="w-5 h-5 mr-2 text-eh-gold"></i> 8 NACE Career Competencies
+                        Your Badge Progress
                     </h3>
                 </div>
 
@@ -432,24 +432,53 @@
                     <h3 class="text-lg font-bold text-eh-blue flex items-center">
                         <i data-lucide="plus-circle" class="w-5 h-5 mr-2 text-eh-gold"></i> Add New Custom Experience / Activity
                     </h3>
-                    <p class="text-xs text-slate-500 mt-1">Create new submission options for students. Choose a specific badge or make it available across all badges.</p>
+                    <p class="text-xs text-slate-500 mt-1">Create new submission options for students. Choose one badge, any combination of badges, or all of them.</p>
                 </div>
                 <form onsubmit="handleCreateExperience(event)" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Target Badge *</label>
-                        <select id="admin-exp-badge" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
-                            <option value="all">-- All Badges (Universal) --</option>
-                            <option value="career">Career & Self-Development</option>
-                            <option value="communication">Communication</option>
-                            <option value="critical_thinking">Critical Thinking</option>
-                            <option value="cultural_awareness">Cultural Awareness</option>
-                            <option value="leadership">Leadership</option>
-                            <option value="professionalism">Professionalism</option>
-                            <option value="teamwork">Teamwork</option>
-                            <option value="technology">Technology</option>
-                        </select>
+                    <div class="sm:col-span-2 lg:col-span-5">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <label class="block text-xs font-semibold text-slate-700 uppercase">Target Badges *</label>
+                            <label class="flex items-center gap-2 text-xs font-semibold text-eh-blue cursor-pointer">
+                                <input type="checkbox" id="admin-exp-badge-all" class="w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="toggleAllExperienceBadges(this.checked)">
+                                <span>Select all badges</span>
+                            </label>
+                        </div>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="career" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Career &amp; Self-Development</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="communication" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Communication</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="critical_thinking" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Critical Thinking</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="cultural_awareness" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Cultural Awareness</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="leadership" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Leadership</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="professionalism" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Professionalism</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="teamwork" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Teamwork</span>
+                            </label>
+                            <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                                <input type="checkbox" value="technology" class="admin-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncSelectAllBadges()">
+                                <span>Technology</span>
+                            </label>
+                        </div>
                     </div>
-                    <div>
+                    <div class="lg:col-span-2">
                         <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Experience Title *</label>
                         <input type="text" id="admin-exp-title" required placeholder="e.g. Workshop Attendance" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
                     </div>
@@ -1600,9 +1629,30 @@
         }
 
         // DYNAMIC EXPERIENCE MANAGEMENT
+        // An experience can apply to any combination of badges. New ones store a list (badgeIds);
+        // older ones saved a single badge id or "all", so this reads either kind.
+        function expBadgeIds(exp) {
+            if (Array.isArray(exp.badgeIds) && exp.badgeIds.length) return exp.badgeIds;
+            if (exp.badgeId === 'all') return NACE_BADGES.map(b => b.id);
+            return exp.badgeId ? [exp.badgeId] : [];
+        }
+
+        function toggleAllExperienceBadges(checked) {
+            document.querySelectorAll('.admin-exp-badge-check').forEach(box => { box.checked = checked; });
+        }
+
+        function syncSelectAllBadges() {
+            const boxes = Array.from(document.querySelectorAll('.admin-exp-badge-check'));
+            document.getElementById('admin-exp-badge-all').checked = boxes.length > 0 && boxes.every(b => b.checked);
+        }
+
         function handleCreateExperience(e) {
             e.preventDefault();
-            const badgeId = document.getElementById('admin-exp-badge').value;
+            const badgeIds = Array.from(document.querySelectorAll('.admin-exp-badge-check:checked')).map(b => b.value);
+            if (badgeIds.length === 0) {
+                alert('Please select at least one badge for this experience.');
+                return;
+            }
             const title = document.getElementById('admin-exp-title').value.trim();
             const points = parseInt(document.getElementById('admin-exp-points').value);
             const isLinkReq = document.getElementById('admin-exp-link-req').checked;
@@ -1611,7 +1661,9 @@
 
             const newExp = {
                 id: 'exp_' + Date.now(),
-                badgeId: badgeId,
+                badgeIds: badgeIds,
+                // Older single-value field, kept so nothing that still reads it breaks
+                badgeId: badgeIds.length === NACE_BADGES.length ? 'all' : (badgeIds.length === 1 ? badgeIds[0] : 'multiple'),
                 title: title,
                 points: points,
                 linkRequired: isLinkReq
@@ -1623,6 +1675,8 @@
             document.getElementById('admin-exp-title').value = '';
             document.getElementById('admin-exp-points').value = '';
             document.getElementById('admin-exp-link-req').checked = false;
+            toggleAllExperienceBadges(false);
+            syncSelectAllBadges();
             
             refreshAppData();
             saveToServer('CREATE_EXPERIENCE', newExp);
@@ -1652,8 +1706,10 @@
             }
 
             listBody.innerHTML = customExperiences.map(exp => {
-                const badge = NACE_BADGES.find(b => b.id === exp.badgeId);
-                const badgeName = exp.badgeId === 'all' ? 'All Badges (Universal)' : (badge ? badge.title : exp.badgeId);
+                const ids = expBadgeIds(exp);
+                const badgeName = ids.length === NACE_BADGES.length
+                    ? 'All Badges (Universal)'
+                    : ids.map(id => (NACE_BADGES.find(b => b.id === id) || {}).title || id).join(', ');
 
                 return `
                     <tr class="hover:bg-slate-50">
@@ -1878,7 +1934,7 @@
                 return;
             }
 
-            const relevantExps = customExperiences.filter(exp => exp.badgeId === 'all' || exp.badgeId === badgeId);
+            const relevantExps = customExperiences.filter(exp => expBadgeIds(exp).includes(badgeId));
 
             if (relevantExps.length === 0) {
                 typeSelect.innerHTML = '<option value="">-- No Activities Available --</option>';
