@@ -696,6 +696,84 @@
         </div>
     </div>
 
+    <!-- MODAL: EDIT A CUSTOM EXPERIENCE (ADMIN) -->
+    <div id="edit-exp-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeEditExperienceModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-eh-blue">Edit Experience / Activity</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-5">Changes apply to future submissions. Submissions students have already made keep the title and points they were made with.</p>
+
+            <form onsubmit="handleEditExperienceSubmit(event)" class="space-y-4">
+                <div>
+                    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                        <label class="block text-xs font-semibold text-slate-700 uppercase">Target Badges *</label>
+                        <label class="flex items-center gap-2 text-xs font-semibold text-eh-blue cursor-pointer">
+                            <input type="checkbox" id="edit-exp-badge-all" class="w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="toggleAllEditBadges(this.checked)">
+                            <span>Select all badges</span>
+                        </label>
+                    </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="career" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Career &amp; Self-Development</span>
+                        </label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="communication" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Communication</span>
+                        </label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="critical_thinking" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Critical Thinking</span>
+                        </label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="cultural_awareness" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Cultural Awareness</span>
+                        </label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="leadership" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Leadership</span>
+                        </label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="professionalism" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Professionalism</span>
+                        </label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="teamwork" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Teamwork</span>
+                        </label>
+                        <label class="flex items-center gap-2 px-3 py-2 border border-slate-200 rounded-lg text-xs text-slate-700 hover:bg-slate-50 cursor-pointer">
+                            <input type="checkbox" value="technology" class="edit-exp-badge-check w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue" onchange="syncEditSelectAll()">
+                            <span>Technology</span>
+                        </label>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Experience Title *</label>
+                    <input type="text" id="edit-exp-title" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Default Points *</label>
+                        <input type="number" id="edit-exp-points" required min="1" max="50" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Verification Link Required?</label>
+                        <div class="flex items-center h-9">
+                            <input type="checkbox" id="edit-exp-link-req" class="w-4 h-4 text-eh-blue border-slate-300 rounded focus:ring-eh-blue">
+                            <span class="ml-2 text-xs text-slate-600 font-medium">Require Proof Link</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-2">
+                    <button type="button" onclick="closeEditExperienceModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-eh-blue text-white rounded-lg text-xs font-bold hover:bg-eh-lightBlue transition shadow">Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL: SAFETY VERIFIED ACCOUNT DELETION (ADMIN CONTROL) -->
     <div id="delete-user-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-50 flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-md w-full p-6 sm:p-8 shadow-2xl border border-rose-100 relative">
@@ -969,6 +1047,7 @@
                         return batch.commit();
                     }
                     case 'CREATE_EXPERIENCE': return setDoc(doc(db, 'experiences', p.id), p);
+                    case 'UPDATE_EXPERIENCE': return setDoc(doc(db, 'experiences', p.id), p);
                     case 'DELETE_EXPERIENCE': return deleteDoc(doc(db, 'experiences', p.id));
                     case 'ADD_WORK_EXAMPLE': return setDoc(doc(db, 'workExamples', p.id), p);
                     case 'DELETE_WORK_EXAMPLE': return deleteDoc(doc(db, 'workExamples', p.id));
@@ -2087,6 +2166,77 @@
             saveToServer('CREATE_EXPERIENCE', newExp);
         }
 
+        // EDITING AN EXISTING EXPERIENCE (keeps the same id, so past submissions stay linked to it)
+        let editingExpId = null;
+
+        function openEditExperience(id) {
+            const exp = customExperiences.find(e => e.id === id);
+            if (!exp) return;
+            editingExpId = id;
+            const ids = expBadgeIds(exp);
+            document.querySelectorAll('.edit-exp-badge-check').forEach(box => { box.checked = ids.includes(box.value); });
+            syncEditSelectAll();
+            document.getElementById('edit-exp-title').value = exp.title || '';
+            document.getElementById('edit-exp-points').value = exp.points;
+            document.getElementById('edit-exp-link-req').checked = !!exp.linkRequired;
+            document.getElementById('edit-exp-modal').classList.remove('hidden');
+        }
+
+        function closeEditExperienceModal() {
+            document.getElementById('edit-exp-modal').classList.add('hidden');
+            editingExpId = null;
+        }
+
+        function toggleAllEditBadges(checked) {
+            document.querySelectorAll('.edit-exp-badge-check').forEach(box => { box.checked = checked; });
+        }
+
+        function syncEditSelectAll() {
+            const boxes = Array.from(document.querySelectorAll('.edit-exp-badge-check'));
+            document.getElementById('edit-exp-badge-all').checked = boxes.length > 0 && boxes.every(b => b.checked);
+        }
+
+        async function handleEditExperienceSubmit(e) {
+            e.preventDefault();
+            const id = editingExpId;
+            const index = customExperiences.findIndex(x => x.id === id);
+            if (index < 0) { closeEditExperienceModal(); return; }
+
+            const badgeIds = Array.from(document.querySelectorAll('.edit-exp-badge-check:checked')).map(b => b.value);
+            if (badgeIds.length === 0) {
+                alert('Please select at least one badge for this experience.');
+                return;
+            }
+            const title = document.getElementById('edit-exp-title').value.trim();
+            const points = parseInt(document.getElementById('edit-exp-points').value);
+            if (!title || isNaN(points) || points < 1 || points > 50) {
+                alert('Please enter a title and a point value between 1 and 50.');
+                return;
+            }
+
+            const backup = customExperiences[index];
+            const updated = {
+                ...backup,
+                badgeIds,
+                // Older single-value field, kept so nothing that still reads it breaks
+                badgeId: badgeIds.length === NACE_BADGES.length ? 'all' : (badgeIds.length === 1 ? badgeIds[0] : 'multiple'),
+                title,
+                points,
+                linkRequired: document.getElementById('edit-exp-link-req').checked
+            };
+
+            // Show the change right away, then save; put the old version back if the save fails
+            customExperiences[index] = updated;
+            closeEditExperienceModal();
+            refreshAppData();
+            const saved = await saveToServer('UPDATE_EXPERIENCE', updated);
+            if (!saved) {
+                const i = customExperiences.findIndex(x => x.id === id);
+                if (i >= 0) customExperiences[i] = backup;
+                refreshAppData();
+            }
+        }
+
         function deleteExperience(id) {
             if (!confirm('Are you sure you want to delete this experience? It will no longer be available for student submissions.')) return;
             customExperiences = customExperiences.filter(exp => exp.id !== id);
@@ -2166,7 +2316,8 @@
                         <td class="p-3">
                             ${exp.linkRequired ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-bold text-[10px] rounded">Required</span>' : '<span class="text-slate-400 text-[10px]">Optional</span>'}
                         </td>
-                        <td class="p-3 text-right">
+                        <td class="p-3 text-right whitespace-nowrap">
+                            <button onclick="openEditExperience('${exp.id}')" class="text-eh-blue hover:text-eh-lightBlue font-bold mr-4">Edit</button>
                             <button onclick="deleteExperience('${exp.id}')" class="text-rose-600 hover:text-rose-800 font-bold">Delete</button>
                         </td>
                     </tr>
