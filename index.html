@@ -654,7 +654,7 @@
                 <div class="w-12 h-12 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto mb-3">
                     <i data-lucide="triangle-alert" class="w-6 h-6"></i>
                 </div>
-                <h3 class="text-xl font-bold text-rose-700">Permanent Account Deletion</h3>
+                <h3 id="delete-modal-title" class="text-xl font-bold text-rose-700">Permanent Account Deletion</h3>
                 <p class="text-xs text-slate-600 mt-1">This action cannot be undone. All user data and badge submissions will be permanently purged.</p>
             </div>
 
@@ -664,6 +664,13 @@
                 <div class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-xs space-y-1">
                     <p><strong>Target Student:</strong> <span id="delete-target-name"></span></p>
                     <p><strong>Target Email:</strong> <span id="delete-target-email-label" class="font-bold text-rose-600"></span></p>
+                </div>
+
+                <div id="delete-admin-warning" class="hidden p-4 bg-amber-50 border-2 border-amber-400 rounded-xl text-xs text-amber-900 space-y-2">
+                    <p class="font-bold uppercase tracking-wide flex items-center"><i data-lucide="triangle-alert" class="w-4 h-4 mr-1.5"></i> Warning: this is an administrator account</p>
+                    <p id="delete-admin-self-note" class="hidden font-bold text-rose-700">This is YOUR OWN account.</p>
+                    <p>Deleting it will permanently erase this person's student profile and every submission they have made. This cannot be undone.</p>
+                    <p>It does not remove their administrator access. That is a separate setting, so they will stay an admin and a fresh blank profile will be created the next time they sign in. To remove admin access, use Admin Management instead.</p>
                 </div>
 
                 <div>
@@ -1511,7 +1518,16 @@
             document.getElementById('delete-confirm-email').value = '';
             document.getElementById('delete-user-error').classList.add('hidden');
 
+            // Extra warning when the account being deleted belongs to an administrator
+            const targetIsAdmin = !!targetUser.isAdmin || adminEmails.includes(targetUser.email.toLowerCase());
+            const myEmail = ((realAdminUser || currentUser) || {}).email || '';
+            const isSelf = targetUser.email.toLowerCase() === myEmail.toLowerCase();
+            document.getElementById('delete-admin-warning').classList.toggle('hidden', !targetIsAdmin);
+            document.getElementById('delete-admin-self-note').classList.toggle('hidden', !(targetIsAdmin && isSelf));
+            document.getElementById('delete-modal-title').textContent = targetIsAdmin ? 'Delete Administrator Account' : 'Permanent Account Deletion';
+
             document.getElementById('delete-user-modal').classList.remove('hidden');
+            if (window.lucide) lucide.createIcons();
         }
 
         function closeDeleteUserModal() {
@@ -1558,13 +1574,15 @@
 
             // Sync deletion to the server; if it didn't actually go through, put the account back.
             const succeeded = await saveToServer('DELETE_USER', { email: targetEmail });
-            if (!succeeded && removedUser) {
-                if (!registeredUsers.some(u => u.email.toLowerCase() === targetEmail)) {
+            if (!succeeded) {
+                if (removedUser && !registeredUsers.some(u => u.email.toLowerCase() === targetEmail)) {
                     registeredUsers.push(removedUser);
                 }
                 allSubmissions = allSubmissions.concat(removedSubmissions);
                 saveSubmissions();
                 refreshAppData();
+                // saveToServer has already shown an error message; don't also claim it worked.
+                return;
             }
 
             alert(`Account ${targetEmail} and all associated data have been permanently deleted.`);
