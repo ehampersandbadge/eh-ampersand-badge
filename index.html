@@ -402,12 +402,28 @@
                     </div>
                 </div>
 
+                <!-- BULK DISABLE / RE-ENABLE BY EMAIL LIST -->
+                <div class="mb-6 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                    <h4 class="text-xs font-bold text-slate-700 uppercase mb-1">Bulk Disable Accounts (e.g. Graduates)</h4>
+                    <p class="text-xs text-slate-500 mb-3">Paste a list of email addresses, separated by commas, spaces or new lines (a spreadsheet column works). Any address with an account is disabled; addresses without an account are ignored. Disabled students cannot sign in, but all of their data is kept. Administrator accounts are never changed here.</p>
+                    <textarea id="bulk-status-emails" rows="5" placeholder="student1@emoryhenry.edu&#10;student2@emoryhenry.edu&#10;student3@ehc.edu" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs font-mono focus:ring-2 focus:ring-eh-blue"></textarea>
+                    <div class="flex flex-col sm:flex-row gap-3 mt-3">
+                        <button type="button" id="bulk-disable-btn" onclick="handleBulkAccountStatus('Disabled')" class="px-5 py-2.5 bg-rose-600 text-white font-bold rounded-lg text-xs hover:bg-rose-700 transition shadow">Disable These Accounts</button>
+                        <button type="button" id="bulk-enable-btn" onclick="handleBulkAccountStatus('Active')" class="px-5 py-2.5 border border-slate-300 bg-white text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-50 transition">Re-enable These Accounts</button>
+                    </div>
+                    <div id="bulk-status-result" class="hidden mt-3 p-3 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 space-y-1"></div>
+                </div>
+
                 <!-- ALL USER ACCOUNTS (VIEW AS STUDENT & DELETION CONTROL) -->
                 <div>
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-3 flex items-center justify-between">
                         <span>Registered Student Accounts</span>
                         <span class="text-slate-400 font-normal">View-as student portal or delete account</span>
                     </h4>
+                    <div class="flex flex-col sm:flex-row gap-3 mb-3">
+                        <input type="text" id="admin-user-search" oninput="handleUserSearchInput(this.value)" placeholder="Search by name or email" class="flex-1 border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                        <button type="button" id="admin-toggle-disabled-btn" onclick="toggleDisabledAccounts()" class="px-4 py-2.5 border border-slate-300 bg-white text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-50 transition">Show disabled accounts</button>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left border-collapse">
                             <thead>
@@ -422,6 +438,10 @@
                                 <!-- Dynamic Student Accounts -->
                             </tbody>
                         </table>
+                    </div>
+                    <div class="flex items-center justify-between gap-3 mt-2">
+                        <p id="admin-user-count-note" class="text-xs text-slate-500"></p>
+                        <button type="button" id="admin-user-more-btn" onclick="showMoreUsers()" class="hidden px-4 py-1.5 border border-slate-300 bg-white text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-50 transition">Show more</button>
                     </div>
                 </div>
             </div>
@@ -580,13 +600,21 @@
                     <h2 class="text-2xl font-bold mt-1">Pending Reviews &amp; Reflections</h2>
                     <p class="text-slate-400 text-sm">Review student submissions, grant points, and approve NACE Badges.</p>
                 </div>
-                <div class="flex items-center space-x-2">
-                    <button onclick="filterAdminSubmissions('all')" class="px-3 py-1.5 rounded text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700">All</button>
-                    <button onclick="filterAdminSubmissions('pending')" class="px-3 py-1.5 rounded text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/40">Pending Only</button>
+                <div class="flex flex-col gap-3 md:items-end">
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button id="admin-filter-pending" onclick="filterAdminSubmissions('pending')" class="px-3 py-1.5 rounded text-xs font-semibold border bg-amber-500/20 text-amber-300 border-amber-500/40">Pending Only</button>
+                        <button id="admin-filter-all" onclick="filterAdminSubmissions('all')" class="px-3 py-1.5 rounded text-xs font-semibold border bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700">All Recent</button>
+                        <button id="admin-refresh-btn" onclick="refreshPendingSubmissions()" class="px-3 py-1.5 rounded text-xs font-semibold border bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700">Refresh</button>
+                    </div>
+                    <form onsubmit="searchStudentSubmissions(event)" class="flex items-center gap-2">
+                        <input type="text" id="admin-search-email" placeholder="Find a student by email" class="w-56 px-3 py-1.5 rounded text-xs bg-slate-800 text-white placeholder-slate-400 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-amber-400">
+                        <button type="submit" class="px-3 py-1.5 rounded text-xs font-semibold border bg-slate-800 text-slate-200 border-slate-700 hover:bg-slate-700">Search</button>
+                    </form>
                 </div>
             </div>
 
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <p id="admin-table-note" class="px-4 py-3 text-xs text-slate-500 border-b border-slate-100"></p>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
@@ -604,6 +632,9 @@
                             <!-- Dynamic Admin Content -->
                         </tbody>
                     </table>
+                </div>
+                <div id="admin-load-more-wrap" class="hidden p-4 text-center border-t border-slate-100">
+                    <button id="admin-load-more-btn" onclick="loadMoreRecentSubmissions()" class="px-5 py-2 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow">Load More</button>
                 </div>
             </div>
         </div>
@@ -757,7 +788,7 @@
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-app.js';
         import { getAuth, signInWithCredential, GoogleAuthProvider, signOut, onAuthStateChanged }
             from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-auth.js';
-        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where, writeBatch, arrayUnion }
+        import { getFirestore, doc, getDoc, setDoc, updateDoc, deleteDoc, collection, getDocs, query, where, orderBy, limit, startAfter, documentId, getCountFromServer, writeBatch, arrayUnion }
             from 'https://www.gstatic.com/firebasejs/12.2.1/firebase-firestore.js';
 
         const firebaseConfig = {
@@ -803,23 +834,94 @@
                 return updateDoc(doc(db, 'users', email), { pendingUnlocks: [] });
             },
 
-            // Admins load everything; students load only their own submissions.
+            // What gets loaded at sign-in:
+            //  - Students: only their own submissions.
+            //  - Admins: only the PENDING submissions (the review queue) plus their own, the active
+            //    student accounts (not disabled ones), and how many disabled accounts exist.
+            //    Everything else is fetched later, only when an admin asks for it.
             async loadAll(email, isAdmin) {
                 const subsRef = collection(db, 'submissions');
-                const [subs, exps, wes, users, admins] = await Promise.all([
-                    getDocs(isAdmin ? subsRef : query(subsRef, where('userEmail', '==', email))),
+                const usersRef = collection(db, 'users');
+                const [own, pending, exps, wes, users, admins, disabledCount] = await Promise.all([
+                    getDocs(query(subsRef, where('userEmail', '==', email))),
+                    isAdmin ? getDocs(query(subsRef, where('status', '==', 'pending'))) : null,
                     getDocs(collection(db, 'experiences')),
                     getDocs(collection(db, 'workExamples')),
-                    isAdmin ? getDocs(collection(db, 'users')) : null,
-                    isAdmin ? getDocs(collection(db, 'admins')) : null
+                    isAdmin ? getDocs(query(usersRef, where('status', '!=', 'Disabled'))) : null,
+                    isAdmin ? getDocs(collection(db, 'admins')) : null,
+                    isAdmin ? getCountFromServer(query(usersRef, where('status', '==', 'Disabled')))
+                                .then(s => s.data().count).catch(() => null) : null
                 ]);
+                const subMap = new Map();
+                [own, pending].forEach(snap => { if (snap) snap.docs.forEach(d => subMap.set(d.id, d.data())); });
                 return {
-                    submissions: subs.docs.map(d => d.data()),
+                    submissions: Array.from(subMap.values()),
                     customExperiences: exps.docs.map(d => d.data()),
                     workExamples: wes.docs.map(d => d.data()),
                     users: users ? users.docs.map(d => ({ ...d.data(), email: d.id })) : [],
-                    adminEmails: admins ? admins.docs.map(d => d.id) : []
+                    adminEmails: admins ? admins.docs.map(d => d.id) : [],
+                    disabledCount: isAdmin ? disabledCount : null
                 };
+            },
+
+            // ---- Admin-only: fetched on demand ----
+            async loadAdminEmails() {
+                const snap = await getDocs(collection(db, 'admins'));
+                return snap.docs.map(d => d.id);
+            },
+            async loadPendingSubmissions() {
+                const snap = await getDocs(query(collection(db, 'submissions'), where('status', '==', 'pending')));
+                return snap.docs.map(d => d.data());
+            },
+            async loadSubmissionsForUser(email) {
+                const snap = await getDocs(query(collection(db, 'submissions'), where('userEmail', '==', email)));
+                return snap.docs.map(d => d.data());
+            },
+            // One page of the newest submissions. Pass the cursor from the previous page to get the next one.
+            async loadRecentSubmissions(cursor, pageSize) {
+                const subsRef = collection(db, 'submissions');
+                const q = cursor
+                    ? query(subsRef, orderBy('timestamp', 'desc'), startAfter(cursor), limit(pageSize))
+                    : query(subsRef, orderBy('timestamp', 'desc'), limit(pageSize));
+                const snap = await getDocs(q);
+                return {
+                    items: snap.docs.map(d => d.data()),
+                    cursor: snap.docs.length ? snap.docs[snap.docs.length - 1] : cursor,
+                    hasMore: snap.docs.length === pageSize
+                };
+            },
+            async loadDisabledUsers() {
+                const snap = await getDocs(query(collection(db, 'users'), where('status', '==', 'Disabled')));
+                return snap.docs.map(d => ({ ...d.data(), email: d.id }));
+            },
+            // Looks up specific accounts by email (30 at a time). Only accounts that exist are returned and billed.
+            async getUsersByEmails(emails) {
+                const groups = [];
+                for (let i = 0; i < emails.length; i += 30) groups.push(emails.slice(i, i + 30));
+                const snaps = await Promise.all(groups.map(g =>
+                    getDocs(query(collection(db, 'users'), where(documentId(), 'in', g)))));
+                const found = [];
+                snaps.forEach(s => s.docs.forEach(d => found.push({ ...d.data(), email: d.id })));
+                return found;
+            },
+
+            // Sets the status ("Disabled" or "Active") on existing user profiles, in groups of 400.
+            // Returns which emails were saved and which were not.
+            async setUserStatuses(emails, status) {
+                const done = [], failed = [];
+                for (let i = 0; i < emails.length; i += 400) {
+                    const chunk = emails.slice(i, i + 400);
+                    try {
+                        const batch = writeBatch(db);
+                        chunk.forEach(e => batch.update(doc(db, 'users', e), { status }));
+                        await batch.commit();
+                        done.push(...chunk);
+                    } catch (err) {
+                        console.error('Bulk status update failed for a group:', err);
+                        failed.push(...chunk);
+                    }
+                }
+                return { done, failed };
             },
 
             addAdmin(email) { return setDoc(doc(db, 'admins', email), { email }); },
@@ -944,7 +1046,24 @@
         let allSubmissions = [];
         let customExperiences = [];
         let adminEmails = []; // emails that have an admins/<email> document (only loaded for admins)
-        let adminFilterMode = 'all';
+        let adminFilterMode = 'pending'; // 'pending' | 'all' (recent, paged) | 'search' (one student)
+
+        // Admin portal: what has been loaded so far (everything else is fetched only when asked for)
+        const RECENT_PAGE_SIZE = 50;
+        const USER_PAGE_SIZE = 100;
+        let recentSubmissionIds = [];      // ids shown in the "All Recent" view, newest first
+        let recentIdSet = new Set();
+        let recentCursor = null;           // where the next page starts
+        let recentHasMore = false;
+        let recentLoaded = false;
+        let recentLoading = false;
+        let searchResultIds = [];          // ids shown in the single-student search view
+        let searchedEmail = '';
+        let disabledCount = null;          // how many disabled accounts exist (null = unknown)
+        let disabledLoaded = false;        // have the disabled accounts' profiles been fetched?
+        let showDisabledAccounts = false;  // are they shown in the accounts list?
+        let userSearchText = '';
+        let userDisplayLimit = USER_PAGE_SIZE;
 
         // INITIALIZATION
         window.addEventListener('DOMContentLoaded', () => {
@@ -974,25 +1093,86 @@
             customExperiences = [];
             workExamples = [];
             adminEmails = [];
+            resetAdminViewState();
         }
 
-        // Puts freshly loaded Firestore data into the app's in-memory lists.
-        function applyData(data) {
-            adminEmails = data.adminEmails || [];
-            registeredUsers = (data.users || []).map(u => ({
-                id: u.email,
-                email: u.email,
+        function resetAdminViewState() {
+            adminFilterMode = 'pending';
+            recentSubmissionIds = [];
+            recentIdSet = new Set();
+            recentCursor = null;
+            recentHasMore = false;
+            recentLoaded = false;
+            recentLoading = false;
+            searchResultIds = [];
+            searchedEmail = '';
+            disabledCount = null;
+            disabledLoaded = false;
+            showDisabledAccounts = false;
+            userSearchText = '';
+            userDisplayLimit = USER_PAGE_SIZE;
+            ['admin-user-search', 'admin-search-email'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        }
+
+        function mapUserDoc(u) {
+            const email = String(u.email || '').toLowerCase();
+            return {
+                id: email,
+                email,
                 firstName: u.firstName || '',
                 lastName: u.lastName || '',
                 status: u.status || 'Active',
                 createdAt: u.createdAt || '',
-                isAdmin: adminEmails.includes(u.email)
-            }));
+                isAdmin: adminEmails.includes(email)
+            };
+        }
+
+        function isDisabledUser(u) {
+            return String(u.status || '').toLowerCase() === 'disabled';
+        }
+
+        // Adds or updates accounts in the in-memory list
+        function mergeUsers(list) {
+            const byEmail = new Map(registeredUsers.map(u => [u.email.toLowerCase(), u]));
+            list.forEach(raw => {
+                const u = mapUserDoc(raw);
+                const existing = byEmail.get(u.email);
+                if (existing) Object.assign(existing, u);
+                else { registeredUsers.push(u); byEmail.set(u.email, u); }
+            });
+        }
+
+        // Adds or updates submissions in the in-memory list (newest first)
+        function upsertSubmissions(list) {
+            const byId = new Map(allSubmissions.map(s => [s.id, s]));
+            list.forEach(raw => {
+                const s = { ...raw, userEmail: String(raw.userEmail || '').toLowerCase() };
+                const existing = byId.get(s.id);
+                if (existing) Object.assign(existing, s);
+                else { allSubmissions.push(s); byId.set(s.id, s); }
+            });
+            allSubmissions.sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
+        }
+
+        function adjustDisabledCount(delta) {
+            if (disabledLoaded) disabledCount = registeredUsers.filter(isDisabledUser).length;
+            else if (disabledCount !== null) disabledCount = Math.max(0, disabledCount + delta);
+        }
+
+        // Puts freshly loaded Firestore data into the app's in-memory lists.
+        function applyData(data) {
+            resetAdminViewState();
+            adminEmails = data.adminEmails || [];
+            registeredUsers = (data.users || []).map(mapUserDoc);
             allSubmissions = (data.submissions || [])
                 .map(s => ({ ...s, userEmail: String(s.userEmail || '').toLowerCase() }))
                 .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
             customExperiences = data.customExperiences || [];
             workExamples = data.workExamples || [];
+            disabledCount = (typeof data.disabledCount === 'number') ? data.disabledCount : null;
         }
 
         // Firebase calls this whenever someone signs in or out (including when a returning
@@ -1084,12 +1264,10 @@
             }
         }
 
-        // Re-reads everything from Firestore (used after admin changes). Keeps View-As mode intact.
-        async function reloadData() {
-            const real = realAdminUser || currentUser;
-            if (!real) return;
-            const data = await fb.loadAll(real.email, !!real.isAdmin);
-            applyData(data);
+        // Re-reads just the list of administrators (used after adding or removing an admin).
+        async function refreshAdminList() {
+            adminEmails = await fb.loadAdminEmails();
+            registeredUsers.forEach(u => { u.isAdmin = adminEmails.includes(u.email.toLowerCase()); });
             refreshAppData();
         }
 
@@ -1405,7 +1583,7 @@
             try {
                 await fb.addAdmin(emailInput);
                 document.getElementById('admin-new-email').value = '';
-                await reloadData();
+                await refreshAdminList();
                 alert(`Granted admin permissions to ${emailInput}`);
             } catch (err) {
                 console.error(err);
@@ -1423,7 +1601,7 @@
 
             try {
                 await fb.removeAdmin(email.toLowerCase());
-                await reloadData();
+                await refreshAdminList();
             } catch (err) {
                 console.error(err);
                 alert('Could not revoke admin permissions.');
@@ -1447,38 +1625,112 @@
             const body = document.getElementById('admin-registered-users-body');
             if (!body) return;
 
-            if (registeredUsers.length === 0) {
-                body.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">No registered student accounts found.</td></tr>`;
-                return;
-            }
+            // Disabled accounts stay hidden unless the admin chose to show them
+            let visible = registeredUsers.filter(u => showDisabledAccounts || !isDisabledUser(u));
+            const q = userSearchText.trim().toLowerCase();
+            if (q) visible = visible.filter(u => `${u.email} ${u.firstName} ${u.lastName}`.toLowerCase().includes(q));
+            visible.sort((a, b) => (a.lastName + a.firstName + a.email).toLowerCase().localeCompare((b.lastName + b.firstName + b.email).toLowerCase()));
 
-            body.innerHTML = registeredUsers.map(u => {
-                const isAdmin = !!u.isAdmin;
-                return `
-                    <tr class="hover:bg-slate-50">
-                        <td class="p-3 font-semibold text-slate-800">${u.firstName} ${u.lastName}</td>
-                        <td class="p-3 text-slate-600 font-mono text-[11px]">${u.email}</td>
+            const shown = visible.slice(0, userDisplayLimit);
+
+            if (shown.length === 0) {
+                body.innerHTML = `<tr><td colspan="4" class="p-4 text-center text-slate-400 italic">${q ? 'No accounts match your search.' : 'No registered student accounts found.'}</td></tr>`;
+            } else {
+                body.innerHTML = shown.map(u => {
+                    const isAdmin = !!u.isAdmin;
+                    const isDisabled = isDisabledUser(u);
+                    return `
+                    <tr class="hover:bg-slate-50 ${isDisabled ? 'opacity-60' : ''}">
+                        <td class="p-3 font-semibold text-slate-800">${escapeHtml(u.firstName)} ${escapeHtml(u.lastName)}</td>
+                        <td class="p-3 text-slate-600 font-mono text-[11px]">${escapeHtml(u.email)}</td>
                         <td class="p-3">
                             ${isAdmin ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-900 font-bold rounded text-[10px]">ADMIN</span>' : '<span class="px-2 py-0.5 bg-slate-100 text-slate-700 font-medium rounded text-[10px]">STUDENT</span>'}
+                            ${isDisabled ? '<span class="ml-1 px-2 py-0.5 bg-rose-100 text-rose-700 font-bold rounded text-[10px]">DISABLED</span>' : ''}
                         </td>
                         <td class="p-3 text-right space-x-2">
-                            <button onclick="impersonateUser('${u.email}')" class="px-2.5 py-1 bg-eh-blue text-white font-bold rounded hover:bg-eh-lightBlue transition text-[11px]" title="View as student">
+                            <button onclick="impersonateUser('${escapeHtml(u.email)}')" class="px-2.5 py-1 bg-eh-blue text-white font-bold rounded hover:bg-eh-lightBlue transition text-[11px]" title="View as student">
                                 View As Student
                             </button>
-                            <button onclick="openDeleteUserModal('${u.email}')" class="px-2.5 py-1 bg-rose-100 text-rose-700 font-bold rounded hover:bg-rose-200 transition text-[11px]" title="Permanently delete account">
+                            <button onclick="openDeleteUserModal('${escapeHtml(u.email)}')" class="px-2.5 py-1 bg-rose-100 text-rose-700 font-bold rounded hover:bg-rose-200 transition text-[11px]" title="Permanently delete account">
                                 Delete Account
                             </button>
                         </td>
                     </tr>
                 `;
-            }).join('');
+                }).join('');
+            }
+
+            const note = document.getElementById('admin-user-count-note');
+            if (note) note.textContent = visible.length
+                ? `Showing ${shown.length} of ${visible.length} account${visible.length === 1 ? '' : 's'}${showDisabledAccounts ? '' : ' (disabled accounts hidden)'}.`
+                : '';
+            const moreBtn = document.getElementById('admin-user-more-btn');
+            if (moreBtn) moreBtn.classList.toggle('hidden', visible.length <= shown.length);
+            updateDisabledButton();
+        }
+
+        function handleUserSearchInput(value) {
+            userSearchText = value || '';
+            userDisplayLimit = USER_PAGE_SIZE;
+            renderAdminRegisteredUsers();
+        }
+
+        function showMoreUsers() {
+            userDisplayLimit += USER_PAGE_SIZE;
+            renderAdminRegisteredUsers();
+        }
+
+        function updateDisabledButton() {
+            const btn = document.getElementById('admin-toggle-disabled-btn');
+            if (!btn) return;
+            if (showDisabledAccounts) btn.textContent = 'Hide disabled accounts';
+            else btn.textContent = 'Show disabled accounts' + (disabledCount !== null ? ` (${disabledCount})` : '');
+        }
+
+        // Disabled accounts are only fetched the first time the admin asks to see them
+        async function toggleDisabledAccounts() {
+            if (showDisabledAccounts) {
+                showDisabledAccounts = false;
+                userDisplayLimit = USER_PAGE_SIZE;
+                renderAdminRegisteredUsers();
+                return;
+            }
+            const btn = document.getElementById('admin-toggle-disabled-btn');
+            if (!disabledLoaded) {
+                btn.disabled = true;
+                btn.textContent = 'Loading...';
+                try {
+                    mergeUsers(await fb.loadDisabledUsers());
+                    disabledLoaded = true;
+                    disabledCount = registeredUsers.filter(isDisabledUser).length;
+                } catch (err) {
+                    console.error(err);
+                    alert('Could not load the disabled accounts. Please check your connection and try again.');
+                    btn.disabled = false;
+                    updateDisabledButton();
+                    return;
+                }
+                btn.disabled = false;
+            }
+            showDisabledAccounts = true;
+            userDisplayLimit = USER_PAGE_SIZE;
+            renderAdminRegisteredUsers();
         }
 
         // IMPERSONATION / VIEW AS STUDENT
-        function impersonateUser(targetEmail) {
+        async function impersonateUser(targetEmail) {
             const targetUser = registeredUsers.find(u => u.email.toLowerCase() === targetEmail.toLowerCase());
             if (!targetUser) {
                 alert('Account not found.');
+                return;
+            }
+
+            // Only the review queue is loaded up front, so fetch this student's full history now.
+            try {
+                upsertSubmissions(await fb.loadSubmissionsForUser(targetUser.email.toLowerCase()));
+            } catch (err) {
+                console.error(err);
+                alert("Could not load this student's submissions. Please check your connection and try again.");
                 return;
             }
 
@@ -1504,6 +1756,101 @@
             document.getElementById('impersonation-banner').classList.add('hidden');
             setupLoggedInView();
             switchTab('admin');
+        }
+
+        // BULK DISABLE / RE-ENABLE ACCOUNTS FROM A PASTED LIST OF EMAILS
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+        }
+
+        async function handleBulkAccountStatus(newStatus) {
+            const disabling = newStatus === 'Disabled';
+            const resultBox = document.getElementById('bulk-status-result');
+            const show = (html) => { resultBox.innerHTML = html; resultBox.classList.remove('hidden'); };
+
+            // Pull every email address out of whatever was pasted (commas, spaces, new lines, "Name <email>", etc.)
+            const raw = document.getElementById('bulk-status-emails').value;
+            const found = raw.match(/[A-Za-z0-9._%+'-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+            const emails = Array.from(new Set(found.map(e => e.toLowerCase())));
+            if (emails.length === 0) {
+                show('<p class="text-rose-700 font-semibold">No email addresses were found. Please paste a list of email addresses first.</p>');
+                return;
+            }
+
+            // Accounts not already loaded on this page (such as disabled ones) are looked up by email.
+            // Only addresses that actually have an account cost anything.
+            const loadedEmails = new Set(registeredUsers.map(u => u.email.toLowerCase()));
+            const unknownEmails = emails.filter(e => !loadedEmails.has(e));
+            if (unknownEmails.length) {
+                show('<p class="font-semibold">Checking which addresses have accounts...</p>');
+                try {
+                    mergeUsers(await fb.getUsersByEmails(unknownEmails));
+                } catch (err) {
+                    console.error(err);
+                    show('<p class="text-rose-700 font-semibold">Could not check the list against existing accounts. Please check your connection and try again.</p>');
+                    return;
+                }
+            }
+
+            const byEmail = new Map(registeredUsers.map(u => [u.email.toLowerCase(), u]));
+            const myEmail = (((realAdminUser || currentUser) || {}).email || '').toLowerCase();
+            const toChange = [], alreadyDone = [], skippedAdmins = [], noAccount = [];
+            emails.forEach(e => {
+                const u = byEmail.get(e);
+                if (!u) { noAccount.push(e); return; }
+                const isDisabledNow = String(u.status || '').toLowerCase() === 'disabled';
+                if (disabling && (u.isAdmin || e === myEmail)) { skippedAdmins.push(e); return; }
+                if (disabling === isDisabledNow) { alreadyDone.push(e); return; }
+                toChange.push(e);
+            });
+
+            const verb = disabling ? 'disable' : 're-enable';
+            if (toChange.length === 0) {
+                show(`<p class="font-semibold">Nothing to change.</p>` + bulkSummaryLines(disabling, [], alreadyDone, skippedAdmins, noAccount, []));
+                return;
+            }
+
+            const msg = disabling
+                ? `This will DISABLE ${toChange.length} account${toChange.length === 1 ? '' : 's'}. They will no longer be able to sign in, but their data is kept and you can re-enable them later.\n\nContinue?`
+                : `This will RE-ENABLE ${toChange.length} account${toChange.length === 1 ? '' : 's'}, allowing them to sign in again.\n\nContinue?`;
+            if (!confirm(msg)) return;
+
+            const disableBtn = document.getElementById('bulk-disable-btn');
+            const enableBtn = document.getElementById('bulk-enable-btn');
+            disableBtn.disabled = true; enableBtn.disabled = true;
+            show('<p class="font-semibold">Working... please keep this page open.</p>');
+
+            try {
+                const { done, failed } = await fb.setUserStatuses(toChange, newStatus);
+                // Update the list on screen to match what was saved
+                const doneSet = new Set(done);
+                registeredUsers.forEach(u => { if (doneSet.has(u.email.toLowerCase())) u.status = newStatus; });
+                adjustDisabledCount(disabling ? done.length : -done.length);
+                renderAdminRegisteredUsers();
+                if (window.lucide) lucide.createIcons();
+
+                show(`<p class="font-semibold ${failed.length ? 'text-amber-700' : 'text-emerald-700'}">${failed.length ? 'Finished with some problems.' : 'Done.'}</p>` +
+                    bulkSummaryLines(disabling, done, alreadyDone, skippedAdmins, noAccount, failed));
+                if (failed.length === 0) document.getElementById('bulk-status-emails').value = '';
+            } catch (err) {
+                console.error(err);
+                show(`<p class="text-rose-700 font-semibold">Could not ${verb} the accounts. Please check your connection and try again.</p>`);
+            } finally {
+                disableBtn.disabled = false; enableBtn.disabled = false;
+            }
+        }
+
+        function bulkSummaryLines(disabling, done, alreadyDone, skippedAdmins, noAccount, failed) {
+            const list = (arr) => arr.length <= 10
+                ? ': ' + arr.map(escapeHtml).join(', ')
+                : ': ' + arr.slice(0, 10).map(escapeHtml).join(', ') + `, and ${arr.length - 10} more`;
+            let html = '';
+            html += `<p>${disabling ? 'Disabled' : 'Re-enabled'}: <b>${done.length}</b></p>`;
+            html += `<p>Already ${disabling ? 'disabled' : 'active'} (no change): <b>${alreadyDone.length}</b></p>`;
+            html += `<p>No account found (ignored): <b>${noAccount.length}</b></p>`;
+            if (skippedAdmins.length) html += `<p class="text-amber-700">Skipped because they are administrators: <b>${skippedAdmins.length}</b>${list(skippedAdmins)}</p>`;
+            if (failed.length) html += `<p class="text-rose-700">Could not be saved (please try again): <b>${failed.length}</b>${list(failed)}</p>`;
+            return html;
         }
 
         // SAFETY VERIFIED ACCOUNT DELETION
@@ -1585,23 +1932,32 @@
                 return;
             }
 
+            if (removedUser && isDisabledUser(removedUser)) adjustDisabledCount(-1);
+            renderAdminRegisteredUsers();
             alert(`Account ${targetEmail} and all associated data have been permanently deleted.`);
+        }
+
+        function submissionsFromIds(ids) {
+            const byId = new Map(allSubmissions.map(s => [s.id, s]));
+            return ids.map(id => byId.get(id)).filter(Boolean);
         }
 
         function renderAdminPortal() {
             const adminBody = document.getElementById('admin-table-body');
             if (!adminBody) return;
 
-            let filtered = allSubmissions;
-            if (adminFilterMode === 'pending') {
-                filtered = allSubmissions.filter(s => s.status === 'pending');
-            }
+            let filtered;
+            if (adminFilterMode === 'pending') filtered = allSubmissions.filter(s => s.status === 'pending');
+            else if (adminFilterMode === 'search') filtered = submissionsFromIds(searchResultIds);
+            else filtered = submissionsFromIds(recentSubmissionIds);
+
+            updateAdminViewControls(filtered.length);
 
             if (filtered.length === 0) {
                 adminBody.innerHTML = `
                     <tr>
                         <td colspan="7" class="text-center py-8 text-slate-400 text-sm">
-                            No submissions found in this filter.
+                            ${adminFilterMode === 'search' ? 'No submissions found for that student.' : adminFilterMode === 'pending' ? 'No pending submissions. You are all caught up!' : recentLoading ? 'Loading...' : 'No submissions found.'}
                         </td>
                     </tr>
                 `;
@@ -1794,9 +2150,103 @@
             }).join('');
         }
 
-        function filterAdminSubmissions(mode) {
+        // Updates the buttons, the description line, and the Load More button above/below the table
+        function updateAdminViewControls(rowCount) {
+            const activeCls = ['bg-amber-500/20', 'text-amber-300', 'border-amber-500/40'];
+            const idleCls = ['bg-slate-800', 'text-slate-200', 'border-slate-700'];
+            [['admin-filter-pending', 'pending'], ['admin-filter-all', 'all']].forEach(([id, mode]) => {
+                const el = document.getElementById(id);
+                if (!el) return;
+                const on = adminFilterMode === mode;
+                activeCls.forEach(c => el.classList.toggle(c, on));
+                idleCls.forEach(c => el.classList.toggle(c, !on));
+            });
+
+            const note = document.getElementById('admin-table-note');
+            if (note) {
+                if (adminFilterMode === 'pending') note.textContent = `${rowCount} pending submission${rowCount === 1 ? '' : 's'} waiting for review.`;
+                else if (adminFilterMode === 'search') note.textContent = `${rowCount} submission${rowCount === 1 ? '' : 's'} from ${searchedEmail}.`;
+                else if (recentLoading && rowCount === 0) note.textContent = 'Loading submissions...';
+                else note.textContent = `Showing the ${rowCount} most recent submission${rowCount === 1 ? '' : 's'}${recentHasMore ? '. Use Load More to see older ones.' : ' (that is all of them).'}`;
+            }
+
+            const wrap = document.getElementById('admin-load-more-wrap');
+            if (wrap) wrap.classList.toggle('hidden', !(adminFilterMode === 'all' && recentHasMore));
+            const btn = document.getElementById('admin-load-more-btn');
+            if (btn) { btn.disabled = recentLoading; btn.textContent = recentLoading ? 'Loading...' : 'Load More'; }
+        }
+
+        async function filterAdminSubmissions(mode) {
             adminFilterMode = mode;
+            if (mode === 'all' && !recentLoaded) {
+                await loadMoreRecentSubmissions();
+                return;
+            }
             renderAdminPortal();
+        }
+
+        async function loadMoreRecentSubmissions() {
+            if (recentLoading) return;
+            recentLoading = true;
+            renderAdminPortal();
+            try {
+                const page = await fb.loadRecentSubmissions(recentCursor, RECENT_PAGE_SIZE);
+                upsertSubmissions(page.items);
+                page.items.forEach(s => {
+                    if (!recentIdSet.has(s.id)) { recentIdSet.add(s.id); recentSubmissionIds.push(s.id); }
+                });
+                recentCursor = page.cursor;
+                recentHasMore = page.hasMore;
+                recentLoaded = true;
+            } catch (err) {
+                console.error(err);
+                alert('Could not load submissions. Please check your connection and try again.');
+            } finally {
+                recentLoading = false;
+                renderAdminPortal();
+            }
+        }
+
+        // Finds every submission from one student (works for disabled students too)
+        async function searchStudentSubmissions(e) {
+            e.preventDefault();
+            const raw = document.getElementById('admin-search-email').value;
+            const match = raw.match(/[A-Za-z0-9._%+'-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/);
+            if (!match) {
+                alert('Please enter a full student email address.');
+                return;
+            }
+            const email = match[0].toLowerCase();
+            try {
+                const items = await fb.loadSubmissionsForUser(email);
+                upsertSubmissions(items);
+                searchResultIds = items.map(s => s.id);
+                searchedEmail = email;
+                adminFilterMode = 'search';
+                renderAdminPortal();
+            } catch (err) {
+                console.error(err);
+                alert('Could not search for that student. Please check your connection and try again.');
+            }
+        }
+
+        // Re-checks the server for new or changed pending submissions
+        async function refreshPendingSubmissions() {
+            const btn = document.getElementById('admin-refresh-btn');
+            if (btn) { btn.disabled = true; btn.textContent = 'Refreshing...'; }
+            try {
+                const pending = await fb.loadPendingSubmissions();
+                const pendingIds = new Set(pending.map(s => s.id));
+                // Anything we still show as pending that the server no longer lists was reviewed elsewhere
+                allSubmissions = allSubmissions.filter(s => s.status !== 'pending' || pendingIds.has(s.id));
+                upsertSubmissions(pending);
+                refreshAppData();
+            } catch (err) {
+                console.error(err);
+                alert('Could not refresh. Please check your connection and try again.');
+            } finally {
+                if (btn) { btn.disabled = false; btn.textContent = 'Refresh'; }
+            }
         }
 
         function updateAdminPendingBadge() {
