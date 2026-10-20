@@ -2626,7 +2626,10 @@
                 return;
             }
 
-            const relevantExps = customExperiences.filter(exp => expBadgeIds(exp).includes(badgeId));
+            // Always listed A-Z by title (ignoring capitalization), so new experiences slot into the right place
+            const relevantExps = customExperiences
+                .filter(exp => expBadgeIds(exp).includes(badgeId))
+                .sort((a, b) => String(a.title).localeCompare(String(b.title), undefined, { sensitivity: 'base', numeric: true }));
 
             if (relevantExps.length === 0) {
                 typeSelect.innerHTML = '<option value="">-- No Activities Available --</option>';
