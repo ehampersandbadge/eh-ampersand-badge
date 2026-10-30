@@ -843,6 +843,11 @@
             <form id="capstone-form" onsubmit="handleCapstoneSubmit(event)" class="space-y-6">
                 <input type="hidden" id="capstone-badge-id">
 
+                <div class="p-4 bg-sky-50 border border-sky-200 rounded-xl">
+                    <p class="text-xs font-bold text-sky-800 uppercase tracking-wider mb-1">Your Reflection Question</p>
+                    <p id="capstone-question" class="text-sm text-slate-800 leading-relaxed"></p>
+                </div>
+
                 <div>
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Choose Reflection Format *</label>
                     <div class="grid grid-cols-2 gap-4">
@@ -864,7 +869,7 @@
                 <!-- Written Option -->
                 <div id="capstone-written-area">
                     <label class="block text-sm font-semibold text-slate-700 mb-2">Written Reflection Essay *</label>
-                    <textarea id="capstone-text" rows="6" placeholder="Reflect on how your experiences at Emory & Henry helped build this competency and how you will apply it in your future career..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
+                    <textarea id="capstone-text" rows="6" placeholder="Write your response to the reflection question above..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
                 </div>
 
                 <!-- Video Option -->
@@ -1788,7 +1793,7 @@
                             ${s.title}
                             ${s.isCapstone ? '<span class="ml-2 px-1.5 py-0.5 bg-yellow-100 text-yellow-800 text-[10px] font-bold rounded">FINAL REFLECTION</span>' : ''}
                         </td>
-                        <td class="p-4 font-bold text-slate-700">+${s.pointsGranted || s.pointsRequested || 0}</td>
+                        <td class="p-4 font-bold text-slate-700">${studentPointsLabel(s)}</td>
                         <td class="p-4 text-xs text-slate-500">${new Date(s.timestamp).toLocaleDateString()}</td>
                         <td class="p-4">${statusBadge}</td>
                         <td class="p-4 text-right">
@@ -2221,14 +2226,14 @@
                         </td>
                         <td class="p-4 font-semibold text-eh-blue">${badgeTitle}</td>
                         <td class="p-4">
-                            ${s.isCapstone ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 font-bold text-xs rounded-full">Final Reflection</span>' : '<span class="text-xs text-slate-600">Activity</span>'}
+                            ${s.isCapstone ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 font-bold text-xs rounded-full">Final Reflection</span>' : (s.activityType === 'other' ? '<span class="px-2 py-0.5 bg-sky-100 text-sky-800 font-bold text-xs rounded-full">Proposed Activity</span>' : '<span class="text-xs text-slate-600">Activity</span>')}
                         </td>
                         <td class="p-4 max-w-xs">
                             <p class="font-medium text-slate-800 truncate">${s.title}</p>
                             <p class="text-xs text-slate-500 truncate">${s.description || ''}</p>
                             ${s.proofUrl ? `<a href="${s.proofUrl}" target="_blank" class="text-xs text-eh-blue font-bold hover:underline flex items-center mt-1"><i data-lucide="external-link" class="w-3 h-3 mr-1"></i> View Proof Link</a>` : ''}
                         </td>
-                        <td class="p-4 font-bold text-slate-800">${s.pointsRequested || 0} Pts</td>
+                        <td class="p-4 font-bold text-slate-800">${adminPointsLabel(s)}</td>
                         <td class="p-4">
                             <span class="px-2 py-1 rounded text-xs font-bold ${s.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : s.status === 'rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">
                                 ${s.status.toUpperCase()}
@@ -2614,15 +2619,35 @@
             if (badgeEl) badgeEl.textContent = pendingCount;
         }
 
+        // Points shown for a submission. Proposed ("Other") activities have no fixed value until approved.
+        function studentPointsLabel(s) {
+            if (s.pointsGranted) return '+' + s.pointsGranted;
+            if (s.activityType === 'other') return s.status === 'pending' ? OTHER_POINTS_LABEL : '+0';
+            return '+' + (s.pointsRequested || 0);
+        }
+
+        function adminPointsLabel(s) {
+            if (s.activityType === 'other') return s.status === 'approved' ? `${s.pointsGranted || 0} Pts` : `${OTHER_POINTS_LABEL} Pts`;
+            return `${s.pointsRequested || 0} Pts`;
+        }
+
         function reviewSubmission(subId, action) {
             const sub = allSubmissions.find(s => s.id === subId);
             if (!sub) return;
 
             if (action === 'approve') {
-                const pts = prompt('Enter approved points for this activity:', sub.pointsRequested || 15);
+                const isOther = sub.activityType === OTHER_ACTIVITY_ID;
+                const pts = prompt(
+                    isOther ? `Enter approved points for this proposed activity (${OTHER_MIN_POINTS} to ${OTHER_MAX_POINTS}):` : 'Enter approved points for this activity:',
+                    isOther ? '' : (sub.pointsRequested || 15));
                 if (pts === null) return;
+                const awarded = parseInt(pts) || 0;
+                if (isOther && (awarded < OTHER_MIN_POINTS || awarded > OTHER_MAX_POINTS)) {
+                    alert(`Please enter a whole number from ${OTHER_MIN_POINTS} to ${OTHER_MAX_POINTS}. The submission was not approved.`);
+                    return;
+                }
                 sub.status = 'approved';
-                sub.pointsGranted = parseInt(pts) || 0;
+                sub.pointsGranted = awarded;
             } else {
                 sub.status = 'rejected';
                 sub.pointsGranted = 0;
@@ -2752,6 +2777,13 @@
                 NACE_BADGES.map(b => `<option value="${b.id}">${b.title}</option>`).join('');
         }
 
+        // The built-in "Other" option: a student proposes an activity and a reviewer sets 5-50 points on approval
+        const OTHER_ACTIVITY_ID = 'other';
+        const OTHER_MIN_POINTS = 5;
+        const OTHER_MAX_POINTS = 50;
+        const OTHER_POINTS_LABEL = OTHER_MIN_POINTS + '\u2013' + OTHER_MAX_POINTS;
+        const DEFAULT_TITLE_PLACEHOLDER = 'e.g., MATH 121, SGA Vice President, Summer Internship at Ballad Health';
+
         function updateActivityOptions() {
             const badgeId = document.getElementById('form-badge-select').value;
             const typeSelect = document.getElementById('form-activity-type');
@@ -2766,13 +2798,13 @@
                 .filter(exp => expBadgeIds(exp).includes(badgeId))
                 .sort((a, b) => String(a.title).localeCompare(String(b.title), undefined, { sensitivity: 'base', numeric: true }));
 
-            if (relevantExps.length === 0) {
-                typeSelect.innerHTML = '<option value="">-- No Activities Available --</option>';
-                return;
-            }
+            // "Other" is built in (not an experience you create). It always sits at the very bottom,
+            // after the A-Z list, so students can propose an activity that is not listed.
+            const otherOption = `<option value="${OTHER_ACTIVITY_ID}" data-other="true" data-req="false">Other: Propose a New Activity (${OTHER_POINTS_LABEL} Pts)</option>`;
 
             typeSelect.innerHTML = '<option value="">-- Choose Experience/Activity --</option>' + 
-                relevantExps.map(r => `<option value="${r.id}" data-pts="${r.points}" data-req="${r.linkRequired ? 'true' : 'false'}">${r.title} (+${r.points} Pts)</option>`).join('');
+                relevantExps.map(r => `<option value="${r.id}" data-pts="${r.points}" data-req="${r.linkRequired ? 'true' : 'false'}">${r.title} (+${r.points} Pts)</option>`).join('') +
+                otherOption;
         }
 
         function handleActivityTypeChange() {
@@ -2780,12 +2812,19 @@
             const selectedOpt = select.options[select.selectedIndex];
             const pts = selectedOpt.getAttribute('data-pts');
             const isReq = selectedOpt.getAttribute('data-req') === 'true';
+            const isOther = selectedOpt.getAttribute('data-other') === 'true';
+
+            const titleInput = document.getElementById('form-title');
+            titleInput.placeholder = isOther ? 'Name of the activity you are proposing' : DEFAULT_TITLE_PLACEHOLDER;
 
             const hint = document.getElementById('activity-point-hint');
             const proofInput = document.getElementById('form-proof-url');
             const proofReqTag = document.getElementById('proof-req-tag');
 
-            if (pts) {
+            if (isOther) {
+                hint.textContent = `Describe the activity below. A reviewer will decide whether it counts and award ${OTHER_MIN_POINTS} to ${OTHER_MAX_POINTS} points if approved.`;
+                hint.classList.remove('hidden');
+            } else if (pts) {
                 hint.textContent = `This activity option is eligible for ${pts} points upon approval.`;
                 hint.classList.remove('hidden');
             } else {
@@ -2817,7 +2856,9 @@
             const badgeId = document.getElementById('form-badge-select').value;
             const typeSelect = document.getElementById('form-activity-type');
             const selectedOpt = typeSelect.options[typeSelect.selectedIndex];
-            const ptsRequested = parseInt(selectedOpt.getAttribute('data-pts')) || 15;
+            const isOther = typeSelect.value === OTHER_ACTIVITY_ID;
+            // A proposal has no fixed value; the reviewer sets the points when approving
+            const ptsRequested = isOther ? 0 : (parseInt(selectedOpt.getAttribute('data-pts')) || 15);
 
             const newSubmission = {
                 id: 'sub_' + Date.now(),
@@ -2843,11 +2884,24 @@
             saveToServer('NEW_SUBMISSION', newSubmission);
         }
 
+        // THE FINAL REFLECTION QUESTION FOR EACH BADGE (to change a question, edit its text here)
+        const REFLECTION_PROMPTS = {
+            career: "Briefly discuss your career ambitions for 1, 3, and 5 years after you graduate, and discuss what steps you will need to take to achieve those ambitions.",
+            communication: "Reflect on a presentation or written piece of communication you completed recently. What went well, and what could you have done better?",
+            critical_thinking: "Reflect on a recent problem you had to solve. Go through your thought process as you were analyzing and solving that problem. Use the STAR method - what was the situation, what was the task, what action did you take, and what was the result of that action?",
+            cultural_awareness: "How have your experiences at Emory & Henry informed your sense of cultural awareness? Also, briefly discuss your own cultural identity, how it has impacted your experience as a student, and how it will help you bring a fresh perspective to a workplace.",
+            leadership: "Discuss your personal leadership style, and discuss what you have learned from your leadership experiences both in and outside of class.",
+            professionalism: "Discuss why you feel that the experiences you submitted demonstrate you exhibiting an exceptional sense of professionalism, and discuss what strategies you use to maintain productive work habits.",
+            teamwork: "Reflect on a recent experience where you had to work as part of a team. Use the STAR method - what was the situation, what was the task, what action did you and your team take (and why was the action improved by working as a team), and what was the result?",
+            technology: "Discuss a time when you used technology in a remarkable way to solve a problem. Use the STAR method - what was the situation, what was the task, what action did you take to incorporate technology, and what was the result? Be specific! Also, discuss your approach to learning unfamiliar technologies."
+        };
+
         // CAPSTONE MODAL LOGIC
         function openCapstoneModal(badgeId) {
             const badge = NACE_BADGES.find(b => b.id === badgeId);
             document.getElementById('capstone-badge-id').value = badgeId;
             document.getElementById('capstone-modal-badge-title').textContent = `Final Reflection: ${badge ? badge.title : ''}`;
+            document.getElementById('capstone-question').textContent = REFLECTION_PROMPTS[badgeId] || '';
             document.getElementById('capstone-modal').classList.remove('hidden');
         }
 
@@ -2884,6 +2938,7 @@
                 badgeId: badgeId,
                 title: `Final Reflection (${format.toUpperCase()})`,
                 description: content,
+                reflectionQuestion: REFLECTION_PROMPTS[badgeId] || '',
                 proofUrl: format === 'video' ? content : '',
                 pointsRequested: 0,
                 pointsGranted: 0,
@@ -2902,7 +2957,8 @@
         function viewSubmissionDetail(id) {
             const sub = allSubmissions.find(s => s.id === id);
             if (sub) {
-                alert(`Activity: ${sub.title}\nStatus: ${sub.status.toUpperCase()}\nPoints Granted: ${sub.pointsGranted}\nReflection: ${sub.description}`);
+                const question = sub.reflectionQuestion ? `\nQuestion: ${sub.reflectionQuestion}` : '';
+                alert(`Activity: ${sub.title}\nStatus: ${sub.status.toUpperCase()}\nPoints Granted: ${sub.pointsGranted}${question}\nReflection: ${sub.description}`);
             }
         }
     </script>
