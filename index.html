@@ -857,6 +857,29 @@
         </div>
     </div>
 
+    <!-- MODAL: REJECT SUBMISSION WITH OPTIONAL NOTE (ADMIN) -->
+    <div id="reject-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeRejectModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-rose-700">Reject Submission</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Rejecting is final, and the student cannot edit and resubmit it. If you would like them to improve it instead, use Request Revisions.</p>
+            <p id="rej-context" class="text-sm font-semibold text-slate-800 mb-3 break-words"></p>
+            <form onsubmit="submitRejection(event)" class="space-y-4">
+                <input type="hidden" id="rej-sub-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Note to the student (optional)</label>
+                    <textarea id="rej-note" rows="4" maxlength="2000" placeholder="Explain why this submission was not approved..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-1">
+                    <button type="button" onclick="closeRejectModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition shadow">Reject Submission</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- MODAL: EDIT AND RESUBMIT (STUDENT) -->
     <div id="resubmit-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-[60] flex items-center justify-center p-4 hidden">
         <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
@@ -1233,7 +1256,9 @@
                     }
                     case 'REVIEW_SUBMISSION': {
                         const batch = writeBatch(db);
-                        batch.update(doc(db, 'submissions', p.id), { status: p.status, pointsGranted: p.pointsGranted || 0 });
+                        const reviewFields = { status: p.status, pointsGranted: p.pointsGranted || 0 };
+                        if (p.status === 'rejected') reviewFields.rejectionNote = p.rejectionNote || '';
+                        batch.update(doc(db, 'submissions', p.id), reviewFields);
                         if (p.event) batch.set(doc(db, 'submissions', p.id, 'events', p.event.id), p.event);
                         // Approved capstone => flag the badge so the student sees the celebration next sign-in.
                         if (p.isCapstone === true && p.status === 'approved' && p.badgeId && p.userEmail) {
@@ -2209,10 +2234,11 @@
             set('sd-question', s.reflectionQuestion || '');
 
             // The reviewer's most recent note, while the submission is waiting on the student
-            const showNote = s.status === 'revision' && !!s.revisionNote;
+            const isRejectedNote = s.status === 'rejected' && !!s.rejectionNote;
+            const showNote = (s.status === 'revision' && !!s.revisionNote) || isRejectedNote;
             document.getElementById('sd-note-wrap').classList.toggle('hidden', !showNote);
-            set('sd-note', s.revisionNote || '');
-            set('sd-note-meta', `${s.revisionRequestedBy || 'Reviewer'}${s.revisionRequestedAt ? ' \u00B7 ' + formatWhen(s.revisionRequestedAt) : ''}`);
+            set('sd-note', isRejectedNote ? s.rejectionNote : (s.revisionNote || ''));
+            set('sd-note-meta', isRejectedNote ? '' : `${s.revisionRequestedBy || 'Reviewer'}${s.revisionRequestedAt ? ' \u00B7 ' + formatWhen(s.revisionRequestedAt) : ''}`);
 
             const you = mode === 'student';
             set('sd-body-label', s.isCapstone ? (you ? 'Your Reflection' : "Student's Reflection") : (you ? 'Your Description' : "Student's Description"));
@@ -2233,7 +2259,7 @@
             document.getElementById('sd-actions').classList.toggle('hidden', !(mode === 'admin' && s.status === 'pending'));
             document.getElementById('sd-approve').onclick = () => { closeSubmissionDetails(); reviewSubmission(s.id, 'approve'); };
             document.getElementById('sd-revise').onclick = () => { closeSubmissionDetails(); openRevisionRequest(s.id); };
-            document.getElementById('sd-reject').onclick = () => { closeSubmissionDetails(); reviewSubmission(s.id, 'reject'); };
+            document.getElementById('sd-reject').onclick = () => { closeSubmissionDetails(); openRejectModal(s.id); };
             const resubmitBtn = document.getElementById('sd-resubmit');
             resubmitBtn.classList.toggle('hidden', !(mode === 'student' && s.status === 'revision'));
             resubmitBtn.onclick = () => openResubmitModal(s.id);
@@ -2482,7 +2508,7 @@
                                 <div class="flex flex-wrap justify-end gap-1">
                                     <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-bold hover:bg-emerald-700 transition">Approve</button>
                                     <button onclick="openRevisionRequest('${escapeHtml(s.id)}')" class="px-3 py-1 bg-amber-500 text-white rounded text-xs font-bold hover:bg-amber-600 transition">Request Revisions</button>
-                                    <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'reject')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs font-bold hover:bg-rose-700 transition">Reject</button>
+                                    <button onclick="openRejectModal('${escapeHtml(s.id)}')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs font-bold hover:bg-rose-700 transition">Reject</button>
                                 </div>
                             ` : s.status === 'revision' ? `
                                 <span class="text-xs text-orange-700 italic">Waiting for student</span>
@@ -2888,7 +2914,7 @@
             return `${s.pointsRequested || 0} Pts`;
         }
 
-        function reviewSubmission(subId, action) {
+        function reviewSubmission(subId, action, note) {
             const sub = allSubmissions.find(s => s.id === subId);
             if (!sub) return;
 
@@ -2908,6 +2934,7 @@
             } else {
                 sub.status = 'rejected';
                 sub.pointsGranted = 0;
+                sub.rejectionNote = (note || '').trim();
             }
 
             const actor = actorInfo();
@@ -2915,7 +2942,7 @@
                 id: newEventId(), submissionId: sub.id, userEmail: String(sub.userEmail || '').toLowerCase(),
                 type: action === 'approve' ? 'approved' : 'rejected',
                 byEmail: actor.email, byName: actor.name, byRole: 'admin',
-                note: '', pointsGranted: sub.pointsGranted || 0, timestamp: new Date().toISOString()
+                note: action === 'approve' ? '' : (sub.rejectionNote || ''), pointsGranted: sub.pointsGranted || 0, timestamp: new Date().toISOString()
             };
 
             saveSubmissions();
@@ -2983,6 +3010,28 @@
             refreshAppData();
             const saved = await saveToServer('REQUEST_REVISION', { id: sub.id, note, at: now, byName: actor.name, event });
             if (!saved) { Object.assign(sub, backup); refreshAppData(); }
+        }
+
+        // ADMIN: reject a pending submission, with an optional note to the student
+        function openRejectModal(subId) {
+            const sub = allSubmissions.find(s => s.id === subId);
+            if (!sub || sub.status !== 'pending') return;
+            document.getElementById('rej-sub-id').value = subId;
+            document.getElementById('rej-context').textContent = `${sub.userName || 'Student'}: ${sub.title}`;
+            document.getElementById('rej-note').value = '';
+            document.getElementById('reject-modal').classList.remove('hidden');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('reject-modal').classList.add('hidden');
+        }
+
+        function submitRejection(e) {
+            e.preventDefault();
+            const subId = document.getElementById('rej-sub-id').value;
+            const note = document.getElementById('rej-note').value.trim();
+            closeRejectModal();
+            reviewSubmission(subId, 'reject', note);
         }
 
         // STUDENT: banner on the dashboard when something needs attention
@@ -3173,7 +3222,8 @@
                     box.appendChild(historyItem('Approved', by, e.timestamp, 'border-emerald-500',
                         e.pointsGranted ? [domEl('p', 'text-xs text-slate-600 mt-0.5', 'Points awarded: ' + e.pointsGranted)] : []));
                 } else if (e.type === 'rejected') {
-                    box.appendChild(historyItem('Not approved', by, e.timestamp, 'border-rose-400', []));
+                    box.appendChild(historyItem('Not approved', by, e.timestamp, 'border-rose-400',
+                        e.note ? [domEl('div', 'mt-1 p-2 bg-rose-50 border border-rose-200 rounded text-sm text-slate-800 whitespace-pre-wrap break-words', e.note)] : []));
                 }
             });
 
