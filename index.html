@@ -232,6 +232,7 @@
 
         <!-- TAB 1: DASHBOARD (STUDENT VIEW) -->
         <div id="tab-dashboard" class="hidden space-y-8">
+            <div class="revision-banner hidden p-4 bg-amber-50 border border-amber-300 rounded-xl text-sm text-amber-900"></div>
             <!-- Top Summary Banner -->
             <div class="bg-gradient-to-r from-eh-blue to-eh-lightBlue text-white rounded-2xl p-6 sm:p-8 shadow-md">
                 <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
@@ -347,6 +348,7 @@
 
         <!-- TAB 3: MY SUBMISSIONS HISTORY -->
         <div id="tab-my-submissions" class="hidden space-y-6">
+            <div class="revision-banner hidden p-4 bg-amber-50 border border-amber-300 rounded-xl text-sm text-amber-900"></div>
             <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm flex items-center justify-between">
                 <div>
                     <h2 class="text-2xl font-bold text-eh-blue">My Activity Submissions</h2>
@@ -794,6 +796,12 @@
                 <p id="sd-question" class="text-sm text-slate-800 leading-relaxed break-words"></p>
             </div>
 
+            <div id="sd-note-wrap" class="hidden mt-4 p-3 bg-amber-50 border border-amber-300 rounded-xl">
+                <p class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Reviewer's Note</p>
+                <p id="sd-note" class="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap break-words"></p>
+                <p id="sd-note-meta" class="text-xs text-slate-500 mt-1"></p>
+            </div>
+
             <div class="mt-4">
                 <p id="sd-body-label" class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Student's Response</p>
                 <div id="sd-body" class="p-3 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 leading-relaxed whitespace-pre-wrap break-words max-h-[40vh] overflow-y-auto"></div>
@@ -803,19 +811,95 @@
                 <a id="sd-link" target="_blank" rel="noopener noreferrer" class="text-sm text-eh-blue font-bold hover:underline break-all"></a>
             </div>
 
+            <div class="mt-5 pt-4 border-t border-slate-100">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-2">History</p>
+                <div id="sd-history" class="space-y-3"></div>
+            </div>
+
             <div class="mt-5 pt-4 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
                 <div class="flex items-center gap-3">
                     <span id="sd-status" class="px-2 py-1 rounded text-xs font-bold"></span>
                     <span id="sd-points" class="text-sm font-bold text-slate-800"></span>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
-                    <div id="sd-actions" class="hidden flex items-center gap-2">
+                    <div id="sd-actions" class="hidden flex flex-wrap items-center gap-2">
                         <button type="button" id="sd-approve" class="px-4 py-2 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition">Approve</button>
+                        <button type="button" id="sd-revise" class="px-4 py-2 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition">Request Revisions</button>
                         <button type="button" id="sd-reject" class="px-4 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition">Reject</button>
                     </div>
+                    <button type="button" id="sd-resubmit" class="hidden px-4 py-2 bg-eh-gold text-eh-blue rounded-lg text-xs font-bold hover:bg-yellow-400 transition shadow">Edit &amp; Resubmit</button>
                     <button type="button" onclick="closeSubmissionDetails()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Close</button>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL: REQUEST REVISIONS (ADMIN) -->
+    <div id="revision-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeRevisionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-eh-blue">Request Revisions</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">The submission goes back to the student with your note. They can edit and resubmit it, and it returns to your pending queue.</p>
+            <p id="rev-context" class="text-sm font-semibold text-slate-800 mb-3 break-words"></p>
+            <form onsubmit="submitRevisionRequest(event)" class="space-y-4">
+                <input type="hidden" id="rev-sub-id">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Note to the student *</label>
+                    <textarea id="rev-note" rows="5" required maxlength="2000" placeholder="What would you like to see improved?" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-1">
+                    <button type="button" onclick="closeRevisionModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition shadow">Send Back to Student</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: EDIT AND RESUBMIT (STUDENT) -->
+    <div id="resubmit-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-[60] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeResubmitModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-eh-blue">Edit &amp; Resubmit</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Update your submission using your reviewer's note, then resubmit it for review.</p>
+
+            <div class="p-3 bg-amber-50 border border-amber-300 rounded-xl mb-4">
+                <p class="text-xs font-bold text-amber-800 uppercase tracking-wider mb-1">Reviewer's Note</p>
+                <p id="rs-note" class="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap break-words"></p>
+                <p id="rs-note-meta" class="text-xs text-slate-500 mt-1"></p>
+            </div>
+
+            <form onsubmit="handleResubmitSubmit(event)" class="space-y-4">
+                <input type="hidden" id="rs-sub-id">
+                <div id="rs-question-wrap" class="hidden p-3 bg-sky-50 border border-sky-200 rounded-xl">
+                    <p class="text-xs font-bold text-sky-800 uppercase tracking-wider mb-1">Your Reflection Question</p>
+                    <p id="rs-question" class="text-sm text-slate-800 leading-relaxed break-words"></p>
+                </div>
+                <div id="rs-title-wrap">
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Activity Title *</label>
+                    <input type="text" id="rs-title" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-eh-blue">
+                </div>
+                <div id="rs-desc-wrap">
+                    <label id="rs-desc-label" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Description *</label>
+                    <textarea id="rs-desc" rows="7" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
+                </div>
+                <div id="rs-link-wrap">
+                    <label id="rs-link-label" class="block text-xs font-semibold text-slate-700 uppercase mb-1">Verification Link</label>
+                    <input type="url" id="rs-link" placeholder="https://..." class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-eh-blue">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Message to your reviewer (optional)</label>
+                    <textarea id="rs-message" rows="3" maxlength="2000" placeholder="Explain what you changed, or ask a question..." class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:ring-2 focus:ring-eh-blue"></textarea>
+                </div>
+                <p class="text-xs text-slate-500">Do not include grades, GPA, health information, or personal information about other students.</p>
+                <div class="flex items-center justify-end space-x-3 pt-1">
+                    <button type="button" onclick="closeResubmitModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-eh-gold text-eh-blue rounded-lg text-xs font-bold hover:bg-yellow-400 transition shadow">Resubmit for Review</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -944,7 +1028,7 @@
             <div class="space-y-3 text-sm text-slate-700">
                 <div>
                     <p class="font-semibold text-slate-800">What we collect</p>
-                    <p>Your name and university email address (from your Google account), and what you choose to submit: activities and experiences, descriptions and reflections, links to your work, requested and awarded points, review status, and the date you agreed to this notice.</p>
+                    <p>Your name and university email address (from your Google account), and what you choose to submit: activities and experiences, descriptions and reflections, links to your work, requested and awarded points, review status, feedback exchanged with reviewers (including earlier versions of your submissions), and the date you agreed to this notice.</p>
                 </div>
                 <div>
                     <p class="font-semibold text-slate-800">Who can see it</p>
@@ -1071,6 +1155,11 @@
             },
 
             // ---- Admin-only: fetched on demand ----
+            // The history (notes, resubmissions, decisions) of one submission
+            async loadSubmissionEvents(subId) {
+                const snap = await getDocs(collection(db, 'submissions', subId, 'events'));
+                return snap.docs.map(d => d.data());
+            },
             async loadAdminEmails() {
                 const snap = await getDocs(collection(db, 'admins'));
                 return snap.docs.map(d => d.id);
@@ -1145,11 +1234,32 @@
                     case 'REVIEW_SUBMISSION': {
                         const batch = writeBatch(db);
                         batch.update(doc(db, 'submissions', p.id), { status: p.status, pointsGranted: p.pointsGranted || 0 });
+                        if (p.event) batch.set(doc(db, 'submissions', p.id, 'events', p.event.id), p.event);
                         // Approved capstone => flag the badge so the student sees the celebration next sign-in.
                         if (p.isCapstone === true && p.status === 'approved' && p.badgeId && p.userEmail) {
                             batch.set(doc(db, 'users', p.userEmail.toLowerCase()),
                                 { pendingUnlocks: arrayUnion(p.badgeId) }, { merge: true });
                         }
+                        return batch.commit();
+                    }
+                    case 'REQUEST_REVISION': {
+                        // Send a submission back to the student with a note, and record it in the history
+                        const batch = writeBatch(db);
+                        batch.update(doc(db, 'submissions', p.id), {
+                            status: 'revision', pointsGranted: 0,
+                            revisionNote: p.note, revisionRequestedAt: p.at, revisionRequestedBy: p.byName
+                        });
+                        batch.set(doc(db, 'submissions', p.id, 'events', p.event.id), p.event);
+                        return batch.commit();
+                    }
+                    case 'RESUBMIT_SUBMISSION': {
+                        // The student's edited version goes back to pending, and the change is recorded
+                        const batch = writeBatch(db);
+                        batch.update(doc(db, 'submissions', p.id), {
+                            title: p.title, description: p.description, proofUrl: p.proofUrl,
+                            status: 'pending', revisionCount: p.revisionCount, updatedAt: p.updatedAt
+                        });
+                        batch.set(doc(db, 'submissions', p.id, 'events', p.event.id), p.event);
                         return batch.commit();
                     }
                     case 'CREATE_EXPERIENCE': return setDoc(doc(db, 'experiences', p.id), p);
@@ -1160,10 +1270,22 @@
                     case 'DELETE_USER': {
                         const target = p.email.toLowerCase();
                         const subs = await getDocs(query(collection(db, 'submissions'), where('userEmail', '==', target)));
-                        const batch = writeBatch(db);
-                        subs.docs.forEach(d => batch.delete(d.ref));
+                        // Each submission's history is deleted together with it (in the same group of writes)
+                        const groups = await Promise.all(subs.docs.map(async d => {
+                            const events = await getDocs(collection(db, 'submissions', d.id, 'events'));
+                            return [d.ref, ...events.docs.map(e => e.ref)];
+                        }));
+                        const batches = [];
+                        let batch = writeBatch(db), count = 0;
+                        groups.forEach(refs => {
+                            if (count + refs.length > 450) { batches.push(batch); batch = writeBatch(db); count = 0; }
+                            refs.forEach(r => batch.delete(r));
+                            count += refs.length;
+                        });
                         batch.delete(doc(db, 'users', target));
-                        return batch.commit();
+                        batches.push(batch);
+                        for (const b of batches) await b.commit();
+                        return;
                     }
                     default:
                         throw new Error('Unknown save action: ' + action);
@@ -1389,7 +1511,7 @@
 
         // PRIVACY NOTICE
         // Change this value whenever the notice's wording changes; everyone will be asked to agree again.
-        const PRIVACY_NOTICE_VERSION = '2026-10-27';
+        const PRIVACY_NOTICE_VERSION = '2026-11-03';
         let privacyResolve = null;
 
         function showPrivacyModal(consentMode) {
@@ -1680,6 +1802,7 @@
             renderBadgesGrid();
             renderWorkExamples();
             renderStudentHistory();
+            updateRevisionBanner();
             renderAdminPortal();
             renderAdminExperienceList();
             renderAdminUserList();
@@ -1758,6 +1881,12 @@
                                 <div class="w-full py-2 bg-emerald-50 text-emerald-700 font-bold text-xs rounded-lg text-center flex items-center justify-center">
                                     <i data-lucide="check-circle" class="w-4 h-4 mr-1"></i> Badge Earned!
                                 </div>
+                            ` : (pts >= 50 && capstoneSub && capstoneSub.status === 'pending') ? `
+                                <div class="w-full py-2 bg-amber-50 text-amber-800 font-bold text-xs rounded-lg text-center">Final Reflection Under Review</div>
+                            ` : (pts >= 50 && capstoneSub && capstoneSub.status === 'revision') ? `
+                                <button onclick="openResubmitModal('${capstoneSub.id}')" class="w-full py-2 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-lg transition shadow">
+                                    Revise &amp; Resubmit Reflection
+                                </button>
                             ` : pts >= 50 ? `
                                 <button onclick="openCapstoneModal('${badge.id}')" class="w-full py-2 bg-eh-gold hover:bg-yellow-400 text-eh-blue font-bold text-xs rounded-lg transition shadow">
                                     Submit Final Reflection &rarr;
@@ -1828,7 +1957,8 @@
 
                 let statusBadge = `<span class="px-2 py-1 bg-amber-100 text-amber-800 rounded-md text-xs font-bold">Pending Review</span>`;
                 if (s.status === 'approved') statusBadge = `<span class="px-2 py-1 bg-emerald-100 text-emerald-800 rounded-md text-xs font-bold">Approved</span>`;
-                if (s.status === 'rejected') statusBadge = `<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-md text-xs font-bold">Needs Revision</span>`;
+                if (s.status === 'rejected') statusBadge = `<span class="px-2 py-1 bg-rose-100 text-rose-800 rounded-md text-xs font-bold">Not Approved</span>`;
+                if (s.status === 'revision') statusBadge = `<span class="px-2 py-1 bg-orange-100 text-orange-800 rounded-md text-xs font-bold">Revisions Requested</span>`;
 
                 return `
                     <tr class="hover:bg-slate-50/50">
@@ -1841,7 +1971,8 @@
                         <td class="p-4 text-xs text-slate-500">${new Date(s.timestamp).toLocaleDateString()}</td>
                         <td class="p-4">${statusBadge}</td>
                         <td class="p-4 text-right">
-                            <button onclick="viewSubmissionDetail('${s.id}')" class="text-xs text-eh-blue font-bold hover:underline">Details</button>
+                            ${s.status === 'revision' ? `<button onclick="openResubmitModal('${escapeHtml(s.id)}')" class="px-2.5 py-1 mr-2 bg-eh-gold text-eh-blue rounded text-xs font-bold hover:bg-yellow-400 transition">Edit &amp; Resubmit</button>` : ''}
+                            <button onclick="openSubmissionDetails('${escapeHtml(s.id)}', 'student')" class="text-xs text-eh-blue font-bold hover:underline">Details</button>
                         </td>
                     </tr>
                 `;
@@ -2059,23 +2190,32 @@
             return /^https?:\/\//i.test(s) ? s : '';
         }
 
-        // FULL SUBMISSION DETAILS (admin): read the whole response, then approve or reject from here
-        function openSubmissionDetails(id) {
+        // FULL SUBMISSION DETAILS: read the whole response and its history.
+        // mode 'admin' (default) shows the review buttons; mode 'student' shows the student's own view.
+        function openSubmissionDetails(id, mode) {
+            mode = mode === 'student' ? 'student' : 'admin';
             const s = allSubmissions.find(x => x.id === id);
             if (!s) return;
+            detailViewId = id;
             const badge = NACE_BADGES.find(b => b.id === s.badgeId);
             const set = (elId, text) => { document.getElementById(elId).textContent = text; };
 
             set('sd-type', s.isCapstone ? 'Final Reflection' : (s.activityType === OTHER_ACTIVITY_ID ? 'Proposed Activity' : 'Activity'));
             set('sd-title', s.title || '');
             set('sd-student', `${s.userName || 'Student'} (${s.userEmail || ''})`);
-            set('sd-meta', `${badge ? badge.title : s.badgeId} badge \u00B7 Submitted ${s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}`);
+            set('sd-meta', `${badge ? badge.title : s.badgeId} badge \u00B7 Submitted ${s.timestamp ? new Date(s.timestamp).toLocaleString() : ''}${s.revisionCount > 0 ? ' \u00B7 Resubmitted ' + s.revisionCount + (s.revisionCount === 1 ? ' time' : ' times') : ''}`);
 
-            const hasQuestion = !!s.reflectionQuestion;
-            document.getElementById('sd-question-wrap').classList.toggle('hidden', !hasQuestion);
+            document.getElementById('sd-question-wrap').classList.toggle('hidden', !s.reflectionQuestion);
             set('sd-question', s.reflectionQuestion || '');
 
-            set('sd-body-label', s.isCapstone ? "Student's Reflection" : "Student's Description");
+            // The reviewer's most recent note, while the submission is waiting on the student
+            const showNote = s.status === 'revision' && !!s.revisionNote;
+            document.getElementById('sd-note-wrap').classList.toggle('hidden', !showNote);
+            set('sd-note', s.revisionNote || '');
+            set('sd-note-meta', `${s.revisionRequestedBy || 'Reviewer'}${s.revisionRequestedAt ? ' \u00B7 ' + formatWhen(s.revisionRequestedAt) : ''}`);
+
+            const you = mode === 'student';
+            set('sd-body-label', s.isCapstone ? (you ? 'Your Reflection' : "Student's Reflection") : (you ? 'Your Description' : "Student's Description"));
             set('sd-body', s.description || '(Nothing written)');
 
             const link = safeUrl(s.proofUrl);
@@ -2086,21 +2226,26 @@
             else { linkEl.removeAttribute('href'); linkEl.textContent = 'A link was provided but it is not a web address, so it is not shown as clickable.'; }
 
             const statusEl = document.getElementById('sd-status');
-            statusEl.textContent = String(s.status || '').toUpperCase();
-            statusEl.className = 'px-2 py-1 rounded text-xs font-bold ' + (s.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : s.status === 'rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800');
-            set('sd-points', adminPointsLabel(s));
+            statusEl.textContent = you ? studentStatusLabel(s.status) : adminStatusLabel(s.status);
+            statusEl.className = 'px-2 py-1 rounded text-xs font-bold ' + statusClass(s.status);
+            set('sd-points', you ? studentPointsLabel(s) + ' Pts' : adminPointsLabel(s));
 
-            const actions = document.getElementById('sd-actions');
-            actions.classList.toggle('hidden', s.status !== 'pending');
+            document.getElementById('sd-actions').classList.toggle('hidden', !(mode === 'admin' && s.status === 'pending'));
             document.getElementById('sd-approve').onclick = () => { closeSubmissionDetails(); reviewSubmission(s.id, 'approve'); };
+            document.getElementById('sd-revise').onclick = () => { closeSubmissionDetails(); openRevisionRequest(s.id); };
             document.getElementById('sd-reject').onclick = () => { closeSubmissionDetails(); reviewSubmission(s.id, 'reject'); };
+            const resubmitBtn = document.getElementById('sd-resubmit');
+            resubmitBtn.classList.toggle('hidden', !(mode === 'student' && s.status === 'revision'));
+            resubmitBtn.onclick = () => openResubmitModal(s.id);
 
             document.getElementById('submission-detail-modal').classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
+            loadSubmissionHistory(s);
         }
 
         function closeSubmissionDetails() {
             document.getElementById('submission-detail-modal').classList.add('hidden');
+            detailViewId = null;
         }
 
         function escapeHtml(s) {
@@ -2323,21 +2468,24 @@
                             ${s.isCapstone ? '<span class="px-2 py-0.5 bg-yellow-100 text-yellow-800 font-bold text-xs rounded-full">Final Reflection</span>' : (s.activityType === 'other' ? '<span class="px-2 py-0.5 bg-sky-100 text-sky-800 font-bold text-xs rounded-full">Proposed Activity</span>' : '<span class="text-xs text-slate-600">Activity</span>')}
                         </td>
                         <td class="p-4 max-w-xs">
-                            <p class="font-medium text-slate-800 truncate">${escapeHtml(s.title)}</p>
+                            <p class="font-medium text-slate-800 truncate">${escapeHtml(s.title)}${(s.revisionCount > 0 && s.status === 'pending') ? ' <span class="ml-1 px-1.5 py-0.5 bg-sky-100 text-sky-800 text-[10px] font-bold rounded align-middle">RESUBMITTED</span>' : ''}</p>
                             <p class="text-xs text-slate-500 truncate">${escapeHtml(s.description || '')}</p>
                             <button type="button" onclick="openSubmissionDetails('${escapeHtml(s.id)}')" class="text-xs text-eh-blue font-bold hover:underline mt-1">Read full submission</button>
                             ${safeUrl(s.proofUrl) ? `<a href="${escapeHtml(safeUrl(s.proofUrl))}" target="_blank" rel="noopener noreferrer" class="text-xs text-eh-blue font-bold hover:underline flex items-center mt-1"><i data-lucide="external-link" class="w-3 h-3 mr-1"></i> View Proof Link</a>` : ''}
                         </td>
                         <td class="p-4 font-bold text-slate-800">${adminPointsLabel(s)}</td>
                         <td class="p-4">
-                            <span class="px-2 py-1 rounded text-xs font-bold ${s.status === 'approved' ? 'bg-emerald-100 text-emerald-800' : s.status === 'rejected' ? 'bg-rose-100 text-rose-800' : 'bg-amber-100 text-amber-800'}">
-                                ${s.status.toUpperCase()}
-                            </span>
+                            <span class="px-2 py-1 rounded text-xs font-bold ${statusClass(s.status)}">${adminStatusLabel(s.status)}</span>
                         </td>
                         <td class="p-4 text-right">
                             ${s.status === 'pending' ? `
-                                <button onclick="reviewSubmission('${s.id}', 'approve')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-bold hover:bg-emerald-700 transition mr-1">Approve</button>
-                                <button onclick="reviewSubmission('${s.id}', 'reject')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs font-bold hover:bg-rose-700 transition">Reject</button>
+                                <div class="flex flex-wrap justify-end gap-1">
+                                    <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'approve')" class="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-bold hover:bg-emerald-700 transition">Approve</button>
+                                    <button onclick="openRevisionRequest('${escapeHtml(s.id)}')" class="px-3 py-1 bg-amber-500 text-white rounded text-xs font-bold hover:bg-amber-600 transition">Request Revisions</button>
+                                    <button onclick="reviewSubmission('${escapeHtml(s.id)}', 'reject')" class="px-3 py-1 bg-rose-600 text-white rounded text-xs font-bold hover:bg-rose-700 transition">Reject</button>
+                                </div>
+                            ` : s.status === 'revision' ? `
+                                <span class="text-xs text-orange-700 italic">Waiting for student</span>
                             ` : `
                                 <span class="text-xs text-slate-400 italic">Reviewed</span>
                             `}
@@ -2714,10 +2862,24 @@
             if (badgeEl) badgeEl.textContent = pendingCount;
         }
 
+        // STATUS LABELS: one place so every screen agrees
+        function statusClass(status) {
+            if (status === 'approved') return 'bg-emerald-100 text-emerald-800';
+            if (status === 'rejected') return 'bg-rose-100 text-rose-800';
+            if (status === 'revision') return 'bg-orange-100 text-orange-800';
+            return 'bg-amber-100 text-amber-800';
+        }
+        function adminStatusLabel(status) {
+            return ({ pending: 'PENDING', approved: 'APPROVED', rejected: 'REJECTED', revision: 'REVISIONS REQUESTED' })[status] || String(status || '').toUpperCase();
+        }
+        function studentStatusLabel(status) {
+            return ({ pending: 'Pending Review', approved: 'Approved', rejected: 'Not Approved', revision: 'Revisions Requested' })[status] || String(status || '');
+        }
+
         // Points shown for a submission. Proposed ("Other") activities have no fixed value until approved.
         function studentPointsLabel(s) {
             if (s.pointsGranted) return '+' + s.pointsGranted;
-            if (s.activityType === 'other') return s.status === 'pending' ? OTHER_POINTS_LABEL : '+0';
+            if (s.activityType === 'other') return (s.status === 'pending' || s.status === 'revision') ? OTHER_POINTS_LABEL : '+0';
             return '+' + (s.pointsRequested || 0);
         }
 
@@ -2748,9 +2910,296 @@
                 sub.pointsGranted = 0;
             }
 
+            const actor = actorInfo();
+            const event = {
+                id: newEventId(), submissionId: sub.id, userEmail: String(sub.userEmail || '').toLowerCase(),
+                type: action === 'approve' ? 'approved' : 'rejected',
+                byEmail: actor.email, byName: actor.name, byRole: 'admin',
+                note: '', pointsGranted: sub.pointsGranted || 0, timestamp: new Date().toISOString()
+            };
+
             saveSubmissions();
             refreshAppData();
-            saveToServer('REVIEW_SUBMISSION', sub);
+            saveToServer('REVIEW_SUBMISSION', { ...sub, event });
+        }
+
+        // ---------------------------------------------------------------
+        // REQUEST REVISIONS / RESUBMIT / HISTORY
+        // ---------------------------------------------------------------
+        function newEventId() {
+            return 'ev_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+        }
+
+        function actorInfo() {
+            const u = realAdminUser || currentUser;
+            const name = `${u.firstName || ''} ${u.lastName || ''}`.trim();
+            return { email: String(u.email).toLowerCase(), name: name || u.email };
+        }
+
+        // Small helper for building page elements safely (text is never treated as HTML)
+        function domEl(tag, cls, text) {
+            const n = document.createElement(tag);
+            if (cls) n.className = cls;
+            if (text !== undefined) n.textContent = text;
+            return n;
+        }
+
+        // ADMIN: send a pending submission back to the student with a note
+        function openRevisionRequest(subId) {
+            const sub = allSubmissions.find(s => s.id === subId);
+            if (!sub || sub.status !== 'pending') return;
+            document.getElementById('rev-sub-id').value = subId;
+            document.getElementById('rev-context').textContent = `${sub.userName || 'Student'}: ${sub.title}`;
+            document.getElementById('rev-note').value = '';
+            document.getElementById('revision-modal').classList.remove('hidden');
+        }
+
+        function closeRevisionModal() {
+            document.getElementById('revision-modal').classList.add('hidden');
+        }
+
+        async function submitRevisionRequest(e) {
+            e.preventDefault();
+            const sub = allSubmissions.find(s => s.id === document.getElementById('rev-sub-id').value);
+            const note = document.getElementById('rev-note').value.trim();
+            if (!sub || sub.status !== 'pending') { closeRevisionModal(); return; }
+            if (!note) { alert('Please write a note to the student.'); return; }
+
+            const actor = actorInfo();
+            const now = new Date().toISOString();
+            const backup = {
+                status: sub.status, pointsGranted: sub.pointsGranted, revisionNote: sub.revisionNote,
+                revisionRequestedAt: sub.revisionRequestedAt, revisionRequestedBy: sub.revisionRequestedBy
+            };
+            const event = {
+                id: newEventId(), submissionId: sub.id, userEmail: String(sub.userEmail || '').toLowerCase(),
+                type: 'revision_requested', byEmail: actor.email, byName: actor.name, byRole: 'admin',
+                note, timestamp: now
+            };
+
+            // Show the change right away, then save; put it back if the save fails
+            Object.assign(sub, { status: 'revision', pointsGranted: 0, revisionNote: note, revisionRequestedAt: now, revisionRequestedBy: actor.name });
+            closeRevisionModal();
+            refreshAppData();
+            const saved = await saveToServer('REQUEST_REVISION', { id: sub.id, note, at: now, byName: actor.name, event });
+            if (!saved) { Object.assign(sub, backup); refreshAppData(); }
+        }
+
+        // STUDENT: banner on the dashboard when something needs attention
+        function updateRevisionBanner() {
+            if (!currentUser) return;
+            const mine = allSubmissions.filter(s => String(s.userEmail).toLowerCase() === currentUser.email.toLowerCase() && s.status === 'revision');
+            document.querySelectorAll('.revision-banner').forEach(box => {
+                if (mine.length === 0) { box.classList.add('hidden'); box.textContent = ''; return; }
+                box.classList.remove('hidden');
+                box.innerHTML = `
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                        <p><span class="font-bold">Action needed:</span> ${mine.length === 1 ? 'one of your submissions has' : mine.length + ' of your submissions have'} revisions requested. Read your reviewer's note and resubmit.</p>
+                        <button type="button" onclick="switchTab('my-submissions')" class="shrink-0 px-4 py-2 bg-amber-500 text-white rounded-lg text-xs font-bold hover:bg-amber-600 transition">Go to My Submissions</button>
+                    </div>`;
+            });
+        }
+
+        // STUDENT: edit a returned submission and send it back for review
+        function openResubmitModal(subId) {
+            const sub = allSubmissions.find(s => s.id === subId);
+            if (!sub || sub.status !== 'revision') return;
+            if (realAdminUser) {
+                alert('Resubmitting is only available when signed in as the student, not while viewing as one.');
+                return;
+            }
+            closeSubmissionDetails();
+
+            const isCap = sub.isCapstone === true;
+            const isVideo = isCap && !!sub.proofUrl;
+            const exp = customExperiences.find(x => x.id === sub.activityType);
+            const linkRequired = isVideo || (!isCap && !!(exp && exp.linkRequired));
+
+            document.getElementById('rs-sub-id').value = subId;
+            document.getElementById('rs-note').textContent = sub.revisionNote || '';
+            document.getElementById('rs-note-meta').textContent = `${sub.revisionRequestedBy || 'Reviewer'}${sub.revisionRequestedAt ? ' \u00B7 ' + new Date(sub.revisionRequestedAt).toLocaleString() : ''}`;
+
+            document.getElementById('rs-question-wrap').classList.toggle('hidden', !(isCap && sub.reflectionQuestion));
+            document.getElementById('rs-question').textContent = sub.reflectionQuestion || '';
+
+            document.getElementById('rs-title-wrap').classList.toggle('hidden', isCap);
+            document.getElementById('rs-title').required = !isCap;
+            document.getElementById('rs-title').value = sub.title || '';
+
+            document.getElementById('rs-desc-wrap').classList.toggle('hidden', isVideo);
+            document.getElementById('rs-desc').required = !isVideo;
+            document.getElementById('rs-desc-label').textContent = isCap ? 'Your Reflection *' : 'Description *';
+            document.getElementById('rs-desc').value = isVideo ? '' : (sub.description || '');
+
+            document.getElementById('rs-link-wrap').classList.toggle('hidden', isCap && !isVideo);
+            document.getElementById('rs-link').required = linkRequired;
+            document.getElementById('rs-link-label').textContent = isVideo ? 'Video Reflection URL *' : (linkRequired ? 'Verification Link *' : 'Verification Link (Optional)');
+            document.getElementById('rs-link').value = sub.proofUrl || '';
+
+            document.getElementById('rs-message').value = '';
+            document.getElementById('resubmit-modal').classList.remove('hidden');
+        }
+
+        function closeResubmitModal() {
+            document.getElementById('resubmit-modal').classList.add('hidden');
+        }
+
+        async function handleResubmitSubmit(e) {
+            e.preventDefault();
+            const sub = allSubmissions.find(s => s.id === document.getElementById('rs-sub-id').value);
+            if (!sub || sub.status !== 'revision') { closeResubmitModal(); return; }
+            if (realAdminUser) { alert('Resubmitting is only available when signed in as the student.'); return; }
+
+            const isCap = sub.isCapstone === true;
+            const isVideo = isCap && !!sub.proofUrl;
+            const message = document.getElementById('rs-message').value.trim();
+
+            let title = sub.title, description, proofUrl;
+            if (isVideo) {
+                proofUrl = document.getElementById('rs-link').value.trim();
+                description = proofUrl;
+            } else if (isCap) {
+                description = document.getElementById('rs-desc').value.trim();
+                proofUrl = '';
+            } else {
+                title = document.getElementById('rs-title').value.trim();
+                description = document.getElementById('rs-desc').value.trim();
+                proofUrl = document.getElementById('rs-link').value.trim();
+            }
+
+            if (!title || !description) { alert('Please fill in all required fields.'); return; }
+            if (proofUrl && !safeUrl(proofUrl)) { alert('Please enter a web address that starts with http:// or https://'); return; }
+            if (isVideo && !proofUrl) { alert('Please provide your video link.'); return; }
+
+            const previous = { title: String(sub.title || ''), description: String(sub.description || ''), proofUrl: String(sub.proofUrl || '') };
+            const current = { title: String(title), description: String(description), proofUrl: String(proofUrl || '') };
+            const changed = previous.title !== current.title || previous.description !== current.description || previous.proofUrl !== current.proofUrl;
+            if (!changed && !message) {
+                alert('Please change your submission, or add a message to your reviewer explaining why no change is needed.');
+                return;
+            }
+
+            const actor = actorInfo();
+            const now = new Date().toISOString();
+            const backup = { ...previous, status: sub.status, revisionCount: sub.revisionCount, updatedAt: sub.updatedAt };
+            const nextCount = (sub.revisionCount || 0) + 1;
+            const event = {
+                id: newEventId(), submissionId: sub.id, userEmail: String(sub.userEmail || '').toLowerCase(),
+                type: 'resubmitted', byEmail: actor.email, byName: actor.name, byRole: 'student',
+                note: message, previous, current, timestamp: now
+            };
+
+            // Show the change right away, then save; put it back if the save fails
+            Object.assign(sub, { ...current, status: 'pending', revisionCount: nextCount, updatedAt: now });
+            closeResubmitModal();
+            refreshAppData();
+            const saved = await saveToServer('RESUBMIT_SUBMISSION', { id: sub.id, ...current, revisionCount: nextCount, updatedAt: now, event });
+            if (!saved) {
+                Object.assign(sub, { title: backup.title, description: backup.description, proofUrl: backup.proofUrl, status: 'revision', revisionCount: backup.revisionCount, updatedAt: backup.updatedAt });
+                refreshAppData();
+            }
+        }
+
+        // HISTORY TIMELINE (shown in the full-submission window, for admins and students)
+        function formatWhen(ts) {
+            return ts ? new Date(ts).toLocaleString() : '';
+        }
+
+        function versionDetails(summaryText, v, isCap) {
+            const d = domEl('details', 'mt-1');
+            d.appendChild(domEl('summary', 'text-xs text-eh-blue font-semibold cursor-pointer', summaryText));
+            const parts = [];
+            if (!isCap) parts.push('Title: ' + (v.title || ''));
+            parts.push(v.description || '(Nothing written)');
+            if (v.proofUrl && v.proofUrl !== v.description) parts.push('Link: ' + v.proofUrl);
+            d.appendChild(domEl('div', 'mt-1 p-2 bg-slate-50 border border-slate-200 rounded text-xs text-slate-700 whitespace-pre-wrap break-words', parts.join('\n\n')));
+            return d;
+        }
+
+        function changesDetails(prev, cur, isCap) {
+            const fields = [['title', 'Title'], ['description', isCap ? 'Reflection' : 'Description'], ['proofUrl', 'Link']]
+                .filter(([k]) => !(isCap && k === 'title'))
+                .filter(([k]) => (prev[k] || '') !== (cur[k] || '') && !(k === 'proofUrl' && isCap && (prev.proofUrl || '') === (prev.description || '') && (cur.proofUrl || '') === (cur.description || '')));
+            if (!fields.length) return domEl('p', 'text-xs text-slate-400 italic mt-1', 'No changes to the submission itself.');
+            const d = domEl('details', 'mt-1');
+            d.appendChild(domEl('summary', 'text-xs text-eh-blue font-semibold cursor-pointer', `See what changed (${fields.length})`));
+            fields.forEach(([k, label]) => {
+                const box = domEl('div', 'mt-1 p-2 bg-slate-50 border border-slate-200 rounded text-xs');
+                box.appendChild(domEl('p', 'font-bold text-slate-600 mb-1', label));
+                box.appendChild(domEl('p', 'text-slate-500 whitespace-pre-wrap break-words', 'Before: ' + (prev[k] || '(empty)')));
+                box.appendChild(domEl('p', 'text-slate-800 whitespace-pre-wrap break-words mt-1', 'After: ' + (cur[k] || '(empty)')));
+                d.appendChild(box);
+            });
+            return d;
+        }
+
+        function historyItem(label, by, ts, tone, extras) {
+            const item = domEl('div', 'pl-3 border-l-4 ' + tone);
+            const head = domEl('p', 'text-sm font-semibold text-slate-800');
+            head.appendChild(document.createTextNode(label + ' '));
+            head.appendChild(domEl('span', 'font-normal text-xs text-slate-500', '\u00B7 ' + by + (ts ? ' \u00B7 ' + formatWhen(ts) : '')));
+            item.appendChild(head);
+            (extras || []).forEach(x => item.appendChild(x));
+            return item;
+        }
+
+        function renderSubmissionHistory(box, s, events) {
+            const sorted = [...events].sort((a, b) => String(a.timestamp).localeCompare(String(b.timestamp)) || String(a.id).localeCompare(String(b.id)));
+            const isCap = s.isCapstone === true;
+            // The original version is what the first resubmission replaced (or the current one if never resubmitted)
+            const firstResub = sorted.find(e => e.type === 'resubmitted' && e.previous);
+            const original = firstResub ? firstResub.previous : { title: s.title, description: s.description, proofUrl: s.proofUrl };
+
+            box.textContent = '';
+            box.appendChild(historyItem('Submitted', s.userName || 'Student', s.timestamp, 'border-slate-300',
+                [versionDetails('View original submission', original, isCap)]));
+
+            sorted.forEach(e => {
+                const by = e.byName || e.byEmail || '';
+                if (e.type === 'revision_requested') {
+                    box.appendChild(historyItem('Revisions requested', by, e.timestamp, 'border-amber-400',
+                        [domEl('div', 'mt-1 p-2 bg-amber-50 border border-amber-200 rounded text-sm text-slate-800 whitespace-pre-wrap break-words', e.note || '')]));
+                } else if (e.type === 'resubmitted') {
+                    const extras = [];
+                    if (e.note) {
+                        const m = domEl('div', 'mt-1 p-2 bg-sky-50 border border-sky-200 rounded text-sm text-slate-800 whitespace-pre-wrap break-words');
+                        m.appendChild(domEl('p', 'text-xs font-bold text-sky-800 uppercase tracking-wider mb-0.5', 'Message from student'));
+                        m.appendChild(domEl('p', '', e.note));
+                        extras.push(m);
+                    }
+                    extras.push(changesDetails(e.previous || {}, e.current || {}, isCap));
+                    box.appendChild(historyItem('Resubmitted', by, e.timestamp, 'border-sky-400', extras));
+                } else if (e.type === 'approved') {
+                    box.appendChild(historyItem('Approved', by, e.timestamp, 'border-emerald-500',
+                        e.pointsGranted ? [domEl('p', 'text-xs text-slate-600 mt-0.5', 'Points awarded: ' + e.pointsGranted)] : []));
+                } else if (e.type === 'rejected') {
+                    box.appendChild(historyItem('Not approved', by, e.timestamp, 'border-rose-400', []));
+                }
+            });
+
+            if (!sorted.length && s.status !== 'pending') {
+                box.appendChild(domEl('p', 'text-xs text-slate-400 italic', 'No further activity was recorded for this submission.'));
+            }
+        }
+
+        let detailViewId = null;
+        async function loadSubmissionHistory(s) {
+            const box = document.getElementById('sd-history');
+            box.textContent = '';
+            box.appendChild(domEl('p', 'text-xs text-slate-400 italic', 'Loading history...'));
+            let events;
+            try {
+                events = await fb.loadSubmissionEvents(s.id);
+            } catch (err) {
+                console.error(err);
+                if (detailViewId === s.id) {
+                    box.textContent = '';
+                    box.appendChild(domEl('p', 'text-xs text-rose-600', 'Could not load the history. Please close this window and try again.'));
+                }
+                return;
+            }
+            if (detailViewId !== s.id) return; // another window was opened or this one was closed
+            renderSubmissionHistory(box, s, events);
         }
 
         // AUTHENTICATION MODAL & LOGIC
@@ -2953,6 +3402,11 @@
             const selectedOpt = typeSelect.options[typeSelect.selectedIndex];
             const isOther = typeSelect.value === OTHER_ACTIVITY_ID;
             // A proposal has no fixed value; the reviewer sets the points when approving
+            const proofCheck = (document.getElementById('form-proof-url').value || '').trim();
+            if (proofCheck && !safeUrl(proofCheck)) {
+                alert('Please enter a web address that starts with http:// or https://');
+                return;
+            }
             const ptsRequested = isOther ? 0 : (parseInt(selectedOpt.getAttribute('data-pts')) || 15);
 
             const newSubmission = {
@@ -3025,6 +3479,10 @@
                 alert('Please provide your reflection content or video link.');
                 return;
             }
+            if (format === 'video' && !safeUrl(content)) {
+                alert('Please enter a web address that starts with http:// or https://');
+                return;
+            }
 
             const capstoneSub = {
                 id: 'cap_' + Date.now(),
@@ -3049,13 +3507,6 @@
             saveToServer('NEW_SUBMISSION', capstoneSub);
         }
 
-        function viewSubmissionDetail(id) {
-            const sub = allSubmissions.find(s => s.id === id);
-            if (sub) {
-                const question = sub.reflectionQuestion ? `\nQuestion: ${sub.reflectionQuestion}` : '';
-                alert(`Activity: ${sub.title}\nStatus: ${sub.status.toUpperCase()}\nPoints Granted: ${sub.pointsGranted}${question}\nReflection: ${sub.description}`);
-            }
-        }
     </script>
 </body>
 </html>
