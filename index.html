@@ -135,7 +135,7 @@
                             <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-1.5"></i> Badges Dashboard
                         </button>
                         <button onclick="switchTab('work-examples')" id="nav-work-examples" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                            <i data-lucide="file-check" class="w-4 h-4 inline mr-1.5"></i> Work Examples
+                            <i data-lucide="book-open" class="w-4 h-4 inline mr-1.5"></i> How it Works
                         </button>
                         <button onclick="switchTab('activities')" id="nav-activities" class="px-3 py-2 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
                             <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1.5"></i> Submit Activity
@@ -188,7 +188,7 @@
                 <i data-lucide="layout-dashboard" class="w-4 h-4 inline mr-1.5"></i> Badges Dashboard
             </button>
             <button onclick="switchTab('work-examples')" id="mobile-nav-work-examples" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
-                <i data-lucide="file-check" class="w-4 h-4 inline mr-1.5"></i> Work Examples
+                <i data-lucide="book-open" class="w-4 h-4 inline mr-1.5"></i> How it Works
             </button>
             <button onclick="switchTab('activities')" id="mobile-nav-activities" class="w-full text-left px-3 py-2.5 rounded-lg text-sm font-semibold text-slate-200 hover:text-white hover:bg-eh-lightBlue transition">
                 <i data-lucide="plus-circle" class="w-4 h-4 inline mr-1.5"></i> Submit Activity
@@ -275,17 +275,75 @@
             </div>
         </div>
 
-        <!-- TAB: WORK EXAMPLES -->
-        <div id="tab-work-examples" class="hidden space-y-6">
-            <div class="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm">
+        <!-- TAB: HOW IT WORKS (instructions, work examples, and rewards) -->
+        <div id="tab-work-examples" class="hidden space-y-8">
+            <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
                 <h2 class="text-2xl font-bold text-eh-blue flex items-center">
-                    <i data-lucide="file-check" class="w-6 h-6 mr-2 text-eh-gold"></i> Work Examples & Sample Deliverables
+                    <i data-lucide="book-open" class="w-6 h-6 mr-2 text-eh-gold"></i> How it Works
                 </h2>
-                <p class="text-sm text-slate-500 mt-1">Review examples of student work and submission formats that meet the criteria to receive points for badges.</p>
+                <p class="text-base font-bold text-slate-800 mt-4">Welcome to the Ampersand Badge Program!</p>
+                <p class="text-sm text-slate-700 leading-relaxed mt-2">In the Career Center, we believe that the Ampersand is a powerful symbol that represents the connections you can make between your on-campus experience and the skills that employers want to see. The Ampersand Badges are your chance to practice telling employers your story and demonstrate that you have the skills they want, and earn rewards along the way!</p>
+                <p class="text-sm text-slate-700 leading-relaxed mt-3">Read below for instructions on how to earn an Ampersand Badge.</p>
+            </div>
+
+            <div class="space-y-4">
+                <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="w-10 h-10 shrink-0 rounded-full bg-eh-blue text-white font-bold flex items-center justify-center">1</div>
+                    <div>
+                        <h3 class="font-bold text-eh-blue text-base">Step 1</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed mt-1">Research the badges, the activities/experiences that you can use to earn a badge, and how many points each experience/activity is worth. You need to earn a total of 50 points to unlock each badge.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="w-10 h-10 shrink-0 rounded-full bg-eh-blue text-white font-bold flex items-center justify-center">2</div>
+                    <div>
+                        <h3 class="font-bold text-eh-blue text-base">Step 2</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed mt-1">Decide which activity/experience you want to get credit for, and decide which badge you want to apply that credit toward. Note that some experiences have limits on how many times you can use them for badge credit.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="w-10 h-10 shrink-0 rounded-full bg-eh-blue text-white font-bold flex items-center justify-center">3</div>
+                    <div>
+                        <h3 class="font-bold text-eh-blue text-base">Step 3</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed mt-1">Submit your Activity. Tell us what activity you're submitting for and write a brief reflection on why that activity demonstrates your proficiency in that badge's skill. Some activities (especially coursework) may also require you to submit a link to an assignment or other artifact that supports your submission.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="w-10 h-10 shrink-0 rounded-full bg-eh-blue text-white font-bold flex items-center justify-center">4</div>
+                    <div>
+                        <h3 class="font-bold text-eh-blue text-base">Step 4</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed mt-1">The Career Center will review your submission. If it's approved, you'll receive the points for your submission. The Career Center may also ask you to make adjustments to your submission before approving it.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="w-10 h-10 shrink-0 rounded-full bg-eh-blue text-white font-bold flex items-center justify-center">5</div>
+                    <div>
+                        <h3 class="font-bold text-eh-blue text-base">Step 5</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed mt-1">Once you've earned 50 points toward a badge, complete a final reflection. Each badge has a different final reflection question that's similar to what you might be asked in an interview. You can answer the final reflection in either written or video format.</p>
+                    </div>
+                </div>
+                <div class="flex items-start gap-4 bg-white border border-slate-200 rounded-xl p-5 shadow-sm">
+                    <div class="w-10 h-10 shrink-0 rounded-full bg-eh-blue text-white font-bold flex items-center justify-center">6</div>
+                    <div>
+                        <h3 class="font-bold text-eh-blue text-base">Step 6</h3>
+                        <p class="text-sm text-slate-700 leading-relaxed mt-1">Once the Career Center approves your final reflection, you'll unlock your badge!</p>
+                    </div>
+                </div>
+            </div>
+
+            <div>
+                <h3 class="text-lg font-bold text-eh-blue">Have a question about what a high-quality submission should look like? You can see a few examples below!</h3>
             </div>
 
             <div id="work-examples-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <!-- Dynamic Content Inserted Here -->
+            </div>
+
+            <div class="bg-white rounded-2xl p-6 sm:p-8 border border-slate-200 shadow-sm">
+                <p class="text-sm text-slate-700 leading-relaxed">Once you earn a badge, you'll receive a link to upload your badge to your LinkedIn and other social media profiles. Earning a certain number of badges also gets you access to the rewards below:</p>
+                <div id="rewards-list" class="mt-4 space-y-3">
+                    <!-- Rewards are managed in the admin tab -->
+                </div>
             </div>
         </div>
 
@@ -614,6 +672,36 @@
                     <h4 class="text-xs font-bold text-slate-700 uppercase mb-3">Existing Work Examples</h4>
                     <div id="admin-examples-list" class="space-y-2">
                         <!-- Dynamic Work Examples Admin View -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Manage Rewards Section -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h3 class="text-lg font-bold text-eh-blue flex items-center">
+                        <i data-lucide="gift" class="w-5 h-5 mr-2 text-eh-gold"></i> Manage Rewards
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Rewards appear at the bottom of the How it Works page. Each one is unlocked when a student earns a certain number of badges.</p>
+                </div>
+                <form onsubmit="handleSaveReward(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Badges Required *</label>
+                        <input type="number" id="admin-reward-count" required min="1" max="8" placeholder="e.g. 3" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Reward Description *</label>
+                        <textarea id="admin-reward-desc" required rows="2" maxlength="500" placeholder="e.g. Opportunity to apply for admission to the van Vlissingen Fellows Program (special networking events with employers, externship trips, and more)." class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue"></textarea>
+                    </div>
+                    <div class="sm:col-span-4 flex flex-wrap items-center gap-3">
+                        <button type="submit" id="admin-reward-submit" class="px-5 py-2.5 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow">Add Reward</button>
+                        <button type="button" id="admin-reward-cancel" onclick="cancelRewardEdit()" class="hidden px-4 py-2.5 border border-slate-300 bg-white text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-50 transition">Cancel Edit</button>
+                    </div>
+                </form>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-700 uppercase mb-3">Current Rewards</h4>
+                    <div id="admin-rewards-list" class="space-y-2">
+                        <!-- Dynamic Rewards Admin View -->
                     </div>
                 </div>
             </div>
@@ -1155,11 +1243,13 @@
             async loadAll(email, isAdmin) {
                 const subsRef = collection(db, 'submissions');
                 const usersRef = collection(db, 'users');
-                const [own, pending, exps, wes, users, admins, disabledCount] = await Promise.all([
+                const [own, pending, exps, wes, rewardDocs, users, admins, disabledCount] = await Promise.all([
                     getDocs(query(subsRef, where('userEmail', '==', email))),
                     isAdmin ? getDocs(query(subsRef, where('status', '==', 'pending'))) : null,
                     getDocs(collection(db, 'experiences')),
                     getDocs(collection(db, 'workExamples')),
+                    // Rewards are optional; if they can't be loaded, sign-in still works
+                    getDocs(collection(db, 'rewards')).catch(err => { console.error('Could not load rewards', err); return { docs: [] }; }),
                     isAdmin ? getDocs(query(usersRef, where('status', '!=', 'Disabled'))) : null,
                     isAdmin ? getDocs(collection(db, 'admins')) : null,
                     isAdmin ? getCountFromServer(query(usersRef, where('status', '==', 'Disabled')))
@@ -1171,6 +1261,7 @@
                     submissions: Array.from(subMap.values()),
                     customExperiences: exps.docs.map(d => d.data()),
                     workExamples: wes.docs.map(d => d.data()),
+                    rewards: rewardDocs.docs.map(d => d.data()),
                     users: users ? users.docs.map(d => ({ ...d.data(), email: d.id })) : [],
                     adminEmails: admins ? admins.docs.map(d => d.id) : [],
                     disabledCount: isAdmin ? disabledCount : null
@@ -1290,6 +1381,9 @@
                     case 'CREATE_EXPERIENCE': return setDoc(doc(db, 'experiences', p.id), p);
                     case 'UPDATE_EXPERIENCE': return setDoc(doc(db, 'experiences', p.id), p);
                     case 'DELETE_EXPERIENCE': return deleteDoc(doc(db, 'experiences', p.id));
+                    case 'ADD_REWARD': return setDoc(doc(db, 'rewards', p.id), p);
+                    case 'UPDATE_REWARD': return setDoc(doc(db, 'rewards', p.id), p);
+                    case 'DELETE_REWARD': return deleteDoc(doc(db, 'rewards', p.id));
                     case 'ADD_WORK_EXAMPLE': return setDoc(doc(db, 'workExamples', p.id), p);
                     case 'DELETE_WORK_EXAMPLE': return deleteDoc(doc(db, 'workExamples', p.id));
                     case 'DELETE_USER': {
@@ -1392,6 +1486,8 @@
 
         // MASTER LIST OF WORK EXAMPLES (synced from the server; see applyData)
         let workExamples = [];
+        let rewards = [];
+        let editingRewardId = null;
 
         // APP STATE
         let currentUser = null;
@@ -1446,6 +1542,7 @@
             allSubmissions = [];
             customExperiences = [];
             workExamples = [];
+            rewards = [];
             adminEmails = [];
             resetAdminViewState();
         }
@@ -1526,6 +1623,7 @@
                 .sort((a, b) => String(b.timestamp || '').localeCompare(String(a.timestamp || '')));
             customExperiences = data.customExperiences || [];
             workExamples = data.workExamples || [];
+            rewards = data.rewards || [];
             disabledCount = (typeof data.disabledCount === 'number') ? data.disabledCount : null;
         }
 
@@ -1826,6 +1924,8 @@
 
             renderBadgesGrid();
             renderWorkExamples();
+            renderRewards();
+            renderAdminRewardsList();
             renderStudentHistory();
             updateRevisionBanner();
             renderAdminPortal();
@@ -1936,7 +2036,7 @@
             if (!grid) return;
 
             if (workExamples.length === 0) {
-                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-sm">No work examples available at this time.</div>`;
+                grid.innerHTML = `<div class="col-span-full text-center py-12 text-slate-400 text-sm">No examples have been added yet.</div>`;
                 return;
             }
 
@@ -1946,14 +2046,14 @@
                     <div class="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition flex flex-col justify-between">
                         <div>
                             <span class="px-2.5 py-1 bg-amber-100 text-amber-900 rounded-full font-bold text-[10px] uppercase inline-block mb-3">
-                                ${badge ? badge.title : we.badgeId}
+                                ${escapeHtml(badge ? badge.title : we.badgeId)}
                             </span>
-                            <h3 class="font-bold text-slate-800 text-base mb-2">${we.title}</h3>
-                            <p class="text-xs text-slate-600 mb-4 leading-relaxed">${we.description}</p>
+                            <h3 class="font-bold text-slate-800 text-base mb-2">${escapeHtml(we.title)}</h3>
+                            <p class="text-xs text-slate-600 mb-4 leading-relaxed">${escapeHtml(we.description)}</p>
                         </div>
-                        <a href="${we.url}" target="_blank" rel="noopener" class="w-full py-2 bg-eh-blue hover:bg-eh-lightBlue text-white font-bold text-xs rounded-lg transition text-center flex items-center justify-center">
+                        ${safeUrl(we.url) ? `<a href="${escapeHtml(safeUrl(we.url))}" target="_blank" rel="noopener noreferrer" class="w-full py-2 bg-eh-blue hover:bg-eh-lightBlue text-white font-bold text-xs rounded-lg transition text-center flex items-center justify-center">
                             <i data-lucide="external-link" class="w-3.5 h-3.5 mr-1.5"></i> View Example Link
-                        </a>
+                        </a>` : ''}
                     </div>
                 `;
             }).join('');
@@ -2734,6 +2834,135 @@
             }).join('');
         }
 
+        // REWARDS (shown on the How it Works page; managed by admins)
+        function sortedRewards() {
+            return [...rewards].sort((a, b) =>
+                (Number(a.badgeCount) - Number(b.badgeCount)) ||
+                String(a.createdAt || '').localeCompare(String(b.createdAt || '')) ||
+                String(a.id).localeCompare(String(b.id)));
+        }
+
+        function badgeCountLabel(n) {
+            n = Number(n);
+            return n + (n === 1 ? ' Badge' : ' Badges');
+        }
+
+        function renderRewards() {
+            const box = document.getElementById('rewards-list');
+            if (!box) return;
+            const list = sortedRewards();
+            if (list.length === 0) {
+                box.innerHTML = `<p class="text-sm text-slate-400 italic">No rewards have been added yet.</p>`;
+                return;
+            }
+            box.innerHTML = list.map(r => `
+                <div class="flex items-start gap-4 p-4 bg-amber-50 border border-amber-200 rounded-xl">
+                    <span class="shrink-0 px-3 py-1 bg-eh-blue text-white font-bold text-xs rounded-full whitespace-nowrap">${escapeHtml(badgeCountLabel(r.badgeCount))}</span>
+                    <p class="text-sm text-slate-800 leading-relaxed break-words">${escapeHtml(r.description)}</p>
+                </div>
+            `).join('');
+        }
+
+        function renderAdminRewardsList() {
+            const container = document.getElementById('admin-rewards-list');
+            if (!container) return;
+            const list = sortedRewards();
+            if (list.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 italic">No rewards published yet.</p>`;
+                return;
+            }
+            container.innerHTML = list.map(r => `
+                <div class="flex items-start justify-between gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
+                    <div class="min-w-0">
+                        <span class="font-bold text-eh-blue">${escapeHtml(badgeCountLabel(r.badgeCount))}:</span>
+                        <span class="text-slate-800 ml-1 break-words">${escapeHtml(r.description)}</span>
+                    </div>
+                    <div class="shrink-0 whitespace-nowrap">
+                        <button onclick="startRewardEdit('${escapeHtml(r.id)}')" class="text-eh-blue hover:text-eh-lightBlue font-bold mr-3">Edit</button>
+                        <button onclick="deleteReward('${escapeHtml(r.id)}')" class="text-rose-600 hover:text-rose-800 font-bold">Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function resetRewardForm() {
+            editingRewardId = null;
+            document.getElementById('admin-reward-count').value = '';
+            document.getElementById('admin-reward-desc').value = '';
+            document.getElementById('admin-reward-submit').textContent = 'Add Reward';
+            document.getElementById('admin-reward-cancel').classList.add('hidden');
+        }
+
+        function startRewardEdit(id) {
+            const r = rewards.find(x => x.id === id);
+            if (!r) return;
+            editingRewardId = id;
+            document.getElementById('admin-reward-count').value = r.badgeCount;
+            document.getElementById('admin-reward-desc').value = r.description || '';
+            document.getElementById('admin-reward-submit').textContent = 'Save Changes';
+            document.getElementById('admin-reward-cancel').classList.remove('hidden');
+            document.getElementById('admin-reward-desc').focus();
+        }
+
+        function cancelRewardEdit() {
+            resetRewardForm();
+        }
+
+        async function handleSaveReward(e) {
+            e.preventDefault();
+            const badgeCount = parseInt(document.getElementById('admin-reward-count').value);
+            const description = document.getElementById('admin-reward-desc').value.trim();
+            if (isNaN(badgeCount) || badgeCount < 1 || badgeCount > NACE_BADGES.length) {
+                alert(`Please enter a number of badges from 1 to ${NACE_BADGES.length}.`);
+                return;
+            }
+            if (!description) {
+                alert('Please enter a description for the reward.');
+                return;
+            }
+
+            if (editingRewardId) {
+                const index = rewards.findIndex(x => x.id === editingRewardId);
+                if (index < 0) { resetRewardForm(); return; }
+                const backup = rewards[index];
+                const updated = { ...backup, badgeCount, description };
+                rewards[index] = updated;
+                resetRewardForm();
+                refreshAppData();
+                // Show the change right away, then save; put the old version back if the save fails
+                const saved = await saveToServer('UPDATE_REWARD', updated);
+                if (!saved) {
+                    const i = rewards.findIndex(x => x.id === updated.id);
+                    if (i >= 0) rewards[i] = backup;
+                    refreshAppData();
+                }
+            } else {
+                const newReward = { id: 'rw_' + Date.now(), badgeCount, description, createdAt: new Date().toISOString() };
+                rewards.push(newReward);
+                resetRewardForm();
+                refreshAppData();
+                const saved = await saveToServer('ADD_REWARD', newReward);
+                if (!saved) {
+                    rewards = rewards.filter(x => x.id !== newReward.id);
+                    refreshAppData();
+                }
+            }
+        }
+
+        async function deleteReward(id) {
+            const reward = rewards.find(x => x.id === id);
+            if (!reward) return;
+            if (!confirm('Delete this reward?')) return;
+            if (editingRewardId === id) resetRewardForm();
+            rewards = rewards.filter(x => x.id !== id);
+            refreshAppData();
+            const saved = await saveToServer('DELETE_REWARD', { id });
+            if (!saved) {
+                rewards.push(reward);
+                refreshAppData();
+            }
+        }
+
         // WORK EXAMPLE ADMIN LOGIC
         function handleCreateWorkExample(e) {
             e.preventDefault();
@@ -2774,8 +3003,8 @@
                 return `
                     <div class="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
                         <div>
-                            <span class="font-bold text-eh-blue">${badge ? badge.title : we.badgeId}:</span>
-                            <span class="font-semibold text-slate-800 ml-1">${we.title}</span>
+                            <span class="font-bold text-eh-blue">${escapeHtml(badge ? badge.title : we.badgeId)}:</span>
+                            <span class="font-semibold text-slate-800 ml-1">${escapeHtml(we.title)}</span>
                         </div>
                         <button onclick="deleteWorkExample('${we.id}')" class="text-rose-600 hover:text-rose-800 font-bold">Delete</button>
                     </div>
