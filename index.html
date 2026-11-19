@@ -375,6 +375,7 @@
                         <option value="">-- Select Badge First --</option>
                     </select>
                     <p id="activity-point-hint" class="text-xs text-amber-600 font-semibold mt-1.5 hidden"></p>
+                    <div id="activity-limit-note" class="hidden mt-2 p-3 rounded-lg text-xs leading-relaxed"></div>
                 </div>
 
                 <div>
@@ -397,7 +398,7 @@
 
                 <div class="pt-4 flex items-center justify-end space-x-3">
                     <button type="button" onclick="switchTab('dashboard')" class="px-5 py-2.5 border border-slate-300 rounded-lg font-semibold text-slate-600 text-sm hover:bg-slate-50">Cancel</button>
-                    <button type="submit" class="px-6 py-2.5 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue shadow transition flex items-center">
+                    <button type="submit" id="activity-submit-btn" class="px-6 py-2.5 bg-eh-blue text-white rounded-lg font-bold text-sm hover:bg-eh-lightBlue shadow transition flex items-center disabled:opacity-50 disabled:cursor-not-allowed">
                         <i data-lucide="send" class="w-4 h-4 mr-2"></i> Submit for Review
                     </button>
                 </div>
@@ -565,7 +566,7 @@
                             </label>
                         </div>
                     </div>
-                    <div class="lg:col-span-2">
+                    <div class="lg:col-span-3">
                         <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Experience Title *</label>
                         <input type="text" id="admin-exp-title" required placeholder="e.g. Workshop Attendance" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
                     </div>
@@ -580,8 +581,29 @@
                             <span class="ml-2 text-xs text-slate-600 font-medium">Require Proof Link</span>
                         </div>
                     </div>
-                    <div class="flex items-end">
-                        <button type="submit" class="w-full py-2.5 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow flex items-center justify-center">
+                    <div class="sm:col-span-2 lg:col-span-5 p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <p class="text-xs font-bold text-slate-700 uppercase mb-1">Submission Limits (optional)</p>
+                        <p class="text-xs text-slate-500 mb-3">Leave blank for no limit. Each student's own uses are counted: pending, approved, and sent-back submissions count, and rejected ones do not.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Max uses per badge</label>
+                                <input type="number" id="admin-exp-limit-badge" min="1" max="99" placeholder="No limit" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Max uses across all badges</label>
+                                <input type="number" id="admin-exp-limit-total" min="1" max="99" placeholder="No limit" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Limit resets</label>
+                                <select id="admin-exp-limit-reset" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                                    <option value="never">Never</option>
+                                    <option value="semester">Every term (semester)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sm:col-span-2 lg:col-span-5 flex justify-end">
+                        <button type="submit" class="w-full sm:w-auto px-6 py-2.5 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow flex items-center justify-center">
                             <i data-lucide="plus" class="w-4 h-4 mr-1"></i> Add Experience
                         </button>
                     </div>
@@ -617,6 +639,7 @@
                                         Proof Link Req. <span class="exp-sort-arrow ml-1 text-[10px]"></span>
                                     </button>
                                 </th>
+                                <th class="p-3">Limits</th>
                                 <th class="p-3 text-right">Actions</th>
                             </tr>
                         </thead>
@@ -704,6 +727,53 @@
                         <!-- Dynamic Rewards Admin View -->
                     </div>
                 </div>
+            </div>
+
+            <!-- Manage Terms Section -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-6">
+                <div class="border-b border-slate-100 pb-4">
+                    <h3 class="text-lg font-bold text-eh-blue flex items-center">
+                        <i data-lucide="calendar-range" class="w-5 h-5 mr-2 text-eh-gold"></i> Manage Terms
+                    </h3>
+                    <p class="text-xs text-slate-500 mt-1">Terms are used for submission limits that reset each term. Every submission is automatically tagged with the term that contains its date. Dates are Eastern Time, and both the start and end dates are included. Terms cannot overlap.</p>
+                </div>
+                <div id="terms-status" class="p-3 rounded-lg text-xs"></div>
+                <form onsubmit="handleSaveTerm(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Term Name *</label>
+                        <input type="text" id="admin-term-name" required maxlength="40" placeholder="e.g. Fall 2026" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Start Date *</label>
+                        <input type="date" id="admin-term-start" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">End Date *</label>
+                        <input type="date" id="admin-term-end" required class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div class="flex items-end gap-2">
+                        <button type="submit" id="admin-term-submit" class="flex-1 py-2.5 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow">Add Term</button>
+                        <button type="button" id="admin-term-cancel" onclick="cancelTermEdit()" class="hidden px-3 py-2.5 border border-slate-300 bg-white text-slate-700 font-bold rounded-lg text-xs hover:bg-slate-50 transition">Cancel</button>
+                    </div>
+                </form>
+                <div>
+                    <h4 class="text-xs font-bold text-slate-700 uppercase mb-3">Current Terms</h4>
+                    <div id="admin-terms-list" class="space-y-2"></div>
+                </div>
+            </div>
+
+            <!-- Usage Exceptions Section -->
+            <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+                <div class="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                    <div>
+                        <h3 class="text-lg font-bold text-eh-blue flex items-center">
+                            <i data-lucide="user-check" class="w-5 h-5 mr-2 text-eh-gold"></i> Usage Exceptions
+                        </h3>
+                        <p class="text-xs text-slate-500 mt-1">Let one student use a limited experience more times than usual. You can also grant one from a submission's details window.</p>
+                    </div>
+                    <button type="button" onclick="openExceptionModal()" class="shrink-0 px-4 py-2 bg-eh-blue text-white font-bold rounded-lg text-xs hover:bg-eh-lightBlue transition shadow">Add Exception</button>
+                </div>
+                <div id="admin-exceptions-list" class="space-y-2"></div>
             </div>
 
             <!-- Student Submissions Review Panel -->
@@ -857,6 +927,27 @@
                         </div>
                     </div>
                 </div>
+                <div class="p-4 bg-slate-50 border border-slate-200 rounded-xl">
+                        <p class="text-xs font-bold text-slate-700 uppercase mb-1">Submission Limits (optional)</p>
+                        <p class="text-xs text-slate-500 mb-3">Leave blank for no limit. Each student's own uses are counted: pending, approved, and sent-back submissions count, and rejected ones do not.</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Max uses per badge</label>
+                                <input type="number" id="edit-exp-limit-badge" min="1" max="99" placeholder="No limit" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Max uses across all badges</label>
+                                <input type="number" id="edit-exp-limit-total" min="1" max="99" placeholder="No limit" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Limit resets</label>
+                                <select id="edit-exp-limit-reset" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                                    <option value="never">Never</option>
+                                    <option value="semester">Every term (semester)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
                 <div class="flex items-center justify-end space-x-3 pt-2">
                     <button type="button" onclick="closeEditExperienceModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
                     <button type="submit" class="px-5 py-2 bg-eh-blue text-white rounded-lg text-xs font-bold hover:bg-eh-lightBlue transition shadow">Save Changes</button>
@@ -897,6 +988,12 @@
 
             <div id="sd-link-wrap" class="hidden mt-3">
                 <a id="sd-link" target="_blank" rel="noopener noreferrer" class="text-sm text-eh-blue font-bold hover:underline break-all"></a>
+            </div>
+
+            <div id="sd-usage-wrap" class="hidden mt-4 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Experience Usage</p>
+                <p id="sd-usage" class="text-sm text-slate-800 whitespace-pre-wrap break-words"></p>
+                <button type="button" id="sd-grant-exception" class="mt-2 text-xs text-eh-blue font-bold hover:underline">Grant an exception for this student</button>
             </div>
 
             <div class="mt-5 pt-4 border-t border-slate-100">
@@ -963,6 +1060,50 @@
                 <div class="flex items-center justify-end space-x-3 pt-1">
                     <button type="button" onclick="closeRejectModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
                     <button type="submit" class="px-5 py-2 bg-rose-600 text-white rounded-lg text-xs font-bold hover:bg-rose-700 transition shadow">Reject Submission</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: GRANT A USAGE EXCEPTION (ADMIN) -->
+    <div id="exception-modal" class="fixed inset-0 bg-slate-900/60 modal-blur z-[70] flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-8 shadow-2xl border border-slate-100 relative max-h-[90vh] overflow-y-auto">
+            <button type="button" onclick="closeExceptionModal()" class="absolute top-4 right-4 text-slate-400 hover:text-slate-600">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <h3 class="text-xl font-bold text-eh-blue">Grant a Usage Exception</h3>
+            <p class="text-xs text-slate-500 mt-1 mb-4">Adds extra uses for one student on one experience, on top of its normal limits.</p>
+            <form onsubmit="handleSaveException(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Student Email *</label>
+                    <input type="email" id="ex-email" required placeholder="student@emoryhenry.edu" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Experience *</label>
+                    <select id="ex-exp" required onchange="onExceptionExperienceChange()" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue"></select>
+                    <p class="text-xs text-slate-400 mt-1">Only experiences that have limits are listed.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Extra uses per badge</label>
+                        <input type="number" id="ex-per-badge" min="0" max="20" value="0" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Extra uses in total</label>
+                        <input type="number" id="ex-total" min="0" max="20" value="0" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue">
+                    </div>
+                </div>
+                <div id="ex-term-wrap" class="hidden">
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Applies to</label>
+                    <select id="ex-term" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue"></select>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-700 uppercase mb-1">Note (the student can see this)</label>
+                    <textarea id="ex-note" rows="2" maxlength="500" placeholder="Optional: why this exception was granted" class="w-full border border-slate-300 rounded-lg p-2.5 text-xs focus:ring-2 focus:ring-eh-blue"></textarea>
+                </div>
+                <div class="flex items-center justify-end space-x-3 pt-1">
+                    <button type="button" onclick="closeExceptionModal()" class="px-4 py-2 border border-slate-300 rounded-lg text-xs font-semibold text-slate-600 hover:bg-slate-50">Cancel</button>
+                    <button type="submit" class="px-5 py-2 bg-eh-blue text-white rounded-lg text-xs font-bold hover:bg-eh-lightBlue transition shadow">Grant Exception</button>
                 </div>
             </form>
         </div>
@@ -1243,13 +1384,17 @@
             async loadAll(email, isAdmin) {
                 const subsRef = collection(db, 'submissions');
                 const usersRef = collection(db, 'users');
-                const [own, pending, exps, wes, rewardDocs, users, admins, disabledCount] = await Promise.all([
+                const [own, pending, exps, wes, rewardDocs, termDocs, exceptionDocs, users, admins, disabledCount] = await Promise.all([
                     getDocs(query(subsRef, where('userEmail', '==', email))),
                     isAdmin ? getDocs(query(subsRef, where('status', '==', 'pending'))) : null,
                     getDocs(collection(db, 'experiences')),
                     getDocs(collection(db, 'workExamples')),
                     // Rewards are optional; if they can't be loaded, sign-in still works
                     getDocs(collection(db, 'rewards')).catch(err => { console.error('Could not load rewards', err); return { docs: [] }; }),
+                    // Terms and exceptions are optional here too, so sign-in never depends on them
+                    getDocs(collection(db, 'terms')).catch(err => { console.error('Could not load terms', err); return { docs: [] }; }),
+                    getDocs(isAdmin ? collection(db, 'exceptions') : query(collection(db, 'exceptions'), where('userEmail', '==', email)))
+                        .catch(err => { console.error('Could not load exceptions', err); return { docs: [] }; }),
                     isAdmin ? getDocs(query(usersRef, where('status', '!=', 'Disabled'))) : null,
                     isAdmin ? getDocs(collection(db, 'admins')) : null,
                     isAdmin ? getCountFromServer(query(usersRef, where('status', '==', 'Disabled')))
@@ -1262,6 +1407,8 @@
                     customExperiences: exps.docs.map(d => d.data()),
                     workExamples: wes.docs.map(d => d.data()),
                     rewards: rewardDocs.docs.map(d => d.data()),
+                    terms: termDocs.docs.map(d => d.data()),
+                    exceptions: exceptionDocs.docs.map(d => d.data()),
                     users: users ? users.docs.map(d => ({ ...d.data(), email: d.id })) : [],
                     adminEmails: admins ? admins.docs.map(d => d.id) : [],
                     disabledCount: isAdmin ? disabledCount : null
@@ -1272,6 +1419,10 @@
             // The history (notes, resubmissions, decisions) of one submission
             async loadSubmissionEvents(subId) {
                 const snap = await getDocs(collection(db, 'submissions', subId, 'events'));
+                return snap.docs.map(d => d.data());
+            },
+            async loadExceptionsForUser(email) {
+                const snap = await getDocs(query(collection(db, 'exceptions'), where('userEmail', '==', email)));
                 return snap.docs.map(d => d.data());
             },
             async loadAdminEmails() {
@@ -1381,6 +1532,11 @@
                     case 'CREATE_EXPERIENCE': return setDoc(doc(db, 'experiences', p.id), p);
                     case 'UPDATE_EXPERIENCE': return setDoc(doc(db, 'experiences', p.id), p);
                     case 'DELETE_EXPERIENCE': return deleteDoc(doc(db, 'experiences', p.id));
+                    case 'ADD_TERM': return setDoc(doc(db, 'terms', p.id), p);
+                    case 'UPDATE_TERM': return setDoc(doc(db, 'terms', p.id), p);
+                    case 'DELETE_TERM': return deleteDoc(doc(db, 'terms', p.id));
+                    case 'ADD_EXCEPTION': return setDoc(doc(db, 'exceptions', p.id), p);
+                    case 'DELETE_EXCEPTION': return deleteDoc(doc(db, 'exceptions', p.id));
                     case 'ADD_REWARD': return setDoc(doc(db, 'rewards', p.id), p);
                     case 'UPDATE_REWARD': return setDoc(doc(db, 'rewards', p.id), p);
                     case 'DELETE_REWARD': return deleteDoc(doc(db, 'rewards', p.id));
@@ -1401,6 +1557,8 @@
                             refs.forEach(r => batch.delete(r));
                             count += refs.length;
                         });
+                        const exceptionDocs = await getDocs(query(collection(db, 'exceptions'), where('userEmail', '==', target)));
+                        exceptionDocs.docs.forEach(d => batch.delete(d.ref));
                         batch.delete(doc(db, 'users', target));
                         batches.push(batch);
                         for (const b of batches) await b.commit();
@@ -1488,6 +1646,9 @@
         let workExamples = [];
         let rewards = [];
         let editingRewardId = null;
+        let terms = [];
+        let exceptions = [];
+        let editingTermId = null;
 
         // APP STATE
         let currentUser = null;
@@ -1543,6 +1704,8 @@
             customExperiences = [];
             workExamples = [];
             rewards = [];
+            terms = [];
+            exceptions = [];
             adminEmails = [];
             resetAdminViewState();
         }
@@ -1624,6 +1787,8 @@
             customExperiences = data.customExperiences || [];
             workExamples = data.workExamples || [];
             rewards = data.rewards || [];
+            terms = data.terms || [];
+            exceptions = data.exceptions || [];
             disabledCount = (typeof data.disabledCount === 'number') ? data.disabledCount : null;
         }
 
@@ -1926,6 +2091,9 @@
             renderWorkExamples();
             renderRewards();
             renderAdminRewardsList();
+            renderAdminTerms();
+            renderAdminExceptionsList();
+            updateActivityLimitNote();
             renderStudentHistory();
             updateRevisionBanner();
             renderAdminPortal();
@@ -2367,6 +2535,7 @@
             document.getElementById('submission-detail-modal').classList.remove('hidden');
             if (window.lucide) lucide.createIcons();
             loadSubmissionHistory(s);
+            if (mode === 'admin') loadUsageInfo(s); else document.getElementById('sd-usage-wrap').classList.add('hidden');
         }
 
         function closeSubmissionDetails() {
@@ -2652,6 +2821,9 @@
 
             if (!title || isNaN(points)) return;
 
+            const limits = readLimitFields('admin-exp');
+            if (limits.error) { alert(limits.error); return; }
+
             const newExp = {
                 id: 'exp_' + Date.now(),
                 badgeIds: badgeIds,
@@ -2659,7 +2831,10 @@
                 badgeId: badgeIds.length === NACE_BADGES.length ? 'all' : (badgeIds.length === 1 ? badgeIds[0] : 'multiple'),
                 title: title,
                 points: points,
-                linkRequired: isLinkReq
+                linkRequired: isLinkReq,
+                limitPerBadge: limits.limitPerBadge,
+                limitTotal: limits.limitTotal,
+                limitReset: limits.limitReset
             };
 
             customExperiences.push(newExp);
@@ -2668,6 +2843,7 @@
             document.getElementById('admin-exp-title').value = '';
             document.getElementById('admin-exp-points').value = '';
             document.getElementById('admin-exp-link-req').checked = false;
+            writeLimitFields('admin-exp', {});
             toggleAllExperienceBadges(false);
             syncSelectAllBadges();
             
@@ -2688,6 +2864,7 @@
             document.getElementById('edit-exp-title').value = exp.title || '';
             document.getElementById('edit-exp-points').value = exp.points;
             document.getElementById('edit-exp-link-req').checked = !!exp.linkRequired;
+            writeLimitFields('edit-exp', exp);
             document.getElementById('edit-exp-modal').classList.remove('hidden');
         }
 
@@ -2723,9 +2900,15 @@
                 return;
             }
 
+            const limits = readLimitFields('edit-exp');
+            if (limits.error) { alert(limits.error); return; }
+
             const backup = customExperiences[index];
             const updated = {
                 ...backup,
+                limitPerBadge: limits.limitPerBadge,
+                limitTotal: limits.limitTotal,
+                limitReset: limits.limitReset,
                 badgeIds,
                 // Older single-value field, kept so nothing that still reads it breaks
                 badgeId: badgeIds.length === NACE_BADGES.length ? 'all' : (badgeIds.length === 1 ? badgeIds[0] : 'multiple'),
@@ -2825,6 +3008,7 @@
                         <td class="p-3">
                             ${exp.linkRequired ? '<span class="px-2 py-0.5 bg-amber-100 text-amber-800 font-bold text-[10px] rounded">Required</span>' : '<span class="text-slate-400 text-[10px]">Optional</span>'}
                         </td>
+                        <td class="p-3 text-slate-600 text-[11px]">${escapeHtml(limitsSummary(exp))}</td>
                         <td class="p-3 text-right whitespace-nowrap">
                             <button onclick="openEditExperience('${exp.id}')" class="text-eh-blue hover:text-eh-lightBlue font-bold mr-4">Edit</button>
                             <button onclick="deleteExperience('${exp.id}')" class="text-rose-600 hover:text-rose-800 font-bold">Delete</button>
@@ -2832,6 +3016,442 @@
                     </tr>
                 `;
             }).join('');
+        }
+
+        // =====================================================================
+        // TERMS, SUBMISSION LIMITS, AND EXCEPTIONS
+        // =====================================================================
+        const TERM_TIME_ZONE = 'America/New_York';
+        const COUNTED_STATUSES = ['pending', 'approved', 'revision']; // rejected submissions give the use back
+
+        // Dates are plain "YYYY-MM-DD" text in Eastern Time, so they compare correctly as text.
+        function dateInET(value) {
+            const d = value ? new Date(value) : new Date();
+            const parts = new Intl.DateTimeFormat('en-US', { timeZone: TERM_TIME_ZONE, year: 'numeric', month: '2-digit', day: '2-digit' }).formatToParts(d);
+            const get = (type) => parts.find(x => x.type === type).value;
+            return `${get('year')}-${get('month')}-${get('day')}`;
+        }
+
+        function addDaysToDateString(ds, n) {
+            const [y, m, d] = ds.split('-').map(Number);
+            return new Date(Date.UTC(y, m - 1, d + n)).toISOString().slice(0, 10);
+        }
+
+        function formatDateString(ds) {
+            const [y, m, d] = ds.split('-').map(Number);
+            return new Date(Date.UTC(y, m - 1, d)).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric', timeZone: 'UTC' });
+        }
+
+        function sortedTerms() {
+            return [...terms].sort((a, b) => String(a.startDate).localeCompare(String(b.startDate)));
+        }
+
+        function termForDate(ds) {
+            return terms.find(t => t.startDate <= ds && ds <= t.endDate) || null;
+        }
+
+        function currentTerm() {
+            return termForDate(dateInET());
+        }
+
+        // The term a submission belongs to: the one stamped on it, or else the one containing its date
+        function termIdForSubmission(s) {
+            if (s.termId) return s.termId;
+            const t = termForDate(dateInET(s.timestamp));
+            return t ? t.id : '';
+        }
+
+        // ----- limit settings on an experience -----
+        function expLimits(exp) {
+            const pos = (v) => (Number.isInteger(v) && v > 0) ? v : null;
+            return { perBadge: pos(exp.limitPerBadge), total: pos(exp.limitTotal), resets: exp.limitReset === 'semester' };
+        }
+
+        function hasLimits(exp) {
+            const l = expLimits(exp);
+            return l.perBadge !== null || l.total !== null;
+        }
+
+        function limitsSummary(exp) {
+            const l = expLimits(exp);
+            if (l.perBadge === null && l.total === null) return 'Unlimited';
+            const parts = [];
+            if (l.perBadge !== null) parts.push(`${l.perBadge} per badge`);
+            if (l.total !== null) parts.push(`${l.total} total`);
+            return parts.join(' \u00B7 ') + (l.resets ? ' \u00B7 resets each term' : ' \u00B7 never resets');
+        }
+
+        function describeLimits(exp) {
+            const l = expLimits(exp);
+            const times = (n) => `${n} ${n === 1 ? 'time' : 'times'}`;
+            const parts = [];
+            if (l.perBadge !== null) parts.push(`${times(l.perBadge)} per badge`);
+            if (l.total !== null) parts.push(`${times(l.total)} in total across all badges`);
+            return `This experience can be used ${parts.join(' and ')}${l.resets ? ', and the limit resets every term.' : '.'}`;
+        }
+
+        // Reads the three limit boxes (prefix is "admin-exp" for the create form, "edit-exp" for the edit window)
+        function readLimitFields(prefix) {
+            const read = (id) => {
+                const raw = document.getElementById(`${prefix}-limit-${id}`).value.trim();
+                if (raw === '') return { value: null };
+                const n = Number(raw);
+                if (!Number.isInteger(n) || n < 1 || n > 99) return { error: 'Limits must be whole numbers from 1 to 99, or left blank for no limit.' };
+                return { value: n };
+            };
+            const b = read('badge'), tot = read('total');
+            if (b.error || tot.error) return { error: b.error || tot.error };
+            if (b.value !== null && tot.value !== null && b.value > tot.value) {
+                return { error: 'The per-badge limit cannot be higher than the total limit across all badges.' };
+            }
+            const resets = document.getElementById(`${prefix}-limit-reset`).value === 'semester' ? 'semester' : 'never';
+            return { limitPerBadge: b.value, limitTotal: tot.value, limitReset: (b.value === null && tot.value === null) ? 'never' : resets };
+        }
+
+        function writeLimitFields(prefix, exp) {
+            const l = expLimits(exp || {});
+            document.getElementById(`${prefix}-limit-badge`).value = l.perBadge === null ? '' : l.perBadge;
+            document.getElementById(`${prefix}-limit-total`).value = l.total === null ? '' : l.total;
+            document.getElementById(`${prefix}-limit-reset`).value = l.resets ? 'semester' : 'never';
+        }
+
+        // ----- how many times has a student used an experience? -----
+        // windowTermId: for limits that reset each term, which term to count (defaults to today's term)
+        function limitStatus(email, exp, badgeId, windowTermId) {
+            const l = expLimits(exp);
+            const e = String(email).toLowerCase();
+            let termId = '', termName = '', noTerm = false;
+            if (l.resets) {
+                if (windowTermId !== undefined) {
+                    termId = windowTermId;
+                } else {
+                    const ct = currentTerm();
+                    if (ct) termId = ct.id; else noTerm = true;
+                }
+                const tm = terms.find(x => x.id === termId);
+                termName = tm ? tm.name : '';
+            }
+            const mine = allSubmissions.filter(s =>
+                String(s.userEmail).toLowerCase() === e && s.activityType === exp.id && !s.isCapstone &&
+                COUNTED_STATUSES.includes(s.status) && (!l.resets || termIdForSubmission(s) === termId));
+            const usedTotal = mine.length;
+            const usedBadge = mine.filter(s => s.badgeId === badgeId).length;
+
+            const extras = exceptions.filter(x =>
+                String(x.userEmail).toLowerCase() === e && x.experienceId === exp.id && (!l.resets || !x.termId || x.termId === termId));
+            const extraBadge = extras.reduce((sum, x) => sum + (Number(x.extraPerBadge) || 0), 0);
+            const extraTotal = extras.reduce((sum, x) => sum + (Number(x.extraTotal) || 0), 0);
+            const allowedBadge = l.perBadge === null ? null : l.perBadge + extraBadge;
+            const allowedTotal = l.total === null ? null : l.total + extraTotal;
+
+            return {
+                resets: l.resets, noTerm, termId, termName, usedTotal, usedBadge, allowedBadge, allowedTotal,
+                extraBadge, extraTotal, hasException: extras.length > 0,
+                badgeReached: allowedBadge !== null && usedBadge >= allowedBadge,
+                totalReached: allowedTotal !== null && usedTotal >= allowedTotal
+            };
+        }
+
+        // Returns a message explaining why a new submission is not allowed, or '' if it is
+        function limitBlockMessage(st, exp, badgeId) {
+            const badge = NACE_BADGES.find(b => b.id === badgeId);
+            const badgeName = badge ? badge.title : badgeId;
+            const when = st.resets ? ' this term' : '';
+            if (st.noTerm) return "Submissions for this experience are paused because no term is set up for today's date. Please contact the Career Center.";
+            if (st.badgeReached) return `You have reached the limit for this experience on the ${badgeName} badge (${st.usedBadge} of ${st.allowedBadge} used${when}).`;
+            if (st.totalReached) return `You have reached the limit for this experience across all badges (${st.usedTotal} of ${st.allowedTotal} used${when}).`;
+            return '';
+        }
+
+        // The note under the Experience/Activity dropdown on the submission form
+        function updateActivityLimitNote() {
+            const note = document.getElementById('activity-limit-note');
+            const btn = document.getElementById('activity-submit-btn');
+            if (!note || !btn) return;
+            note.classList.add('hidden');
+            note.textContent = '';
+            btn.disabled = false;
+
+            const typeSelect = document.getElementById('form-activity-type');
+            const badgeSelect = document.getElementById('form-badge-select');
+            if (!typeSelect || !badgeSelect || !currentUser) return;
+            const exp = customExperiences.find(x => x.id === typeSelect.value);
+            if (!exp || !hasLimits(exp)) return;
+
+            const badgeId = badgeSelect.value;
+            const st = limitStatus(currentUser.email, exp, badgeId);
+            const blocked = limitBlockMessage(st, exp, badgeId);
+            const badge = NACE_BADGES.find(b => b.id === badgeId);
+            const l = expLimits(exp);
+            const times = (n) => `${n} ${n === 1 ? 'time' : 'times'}`;
+
+            let text = describeLimits(exp);
+            if (!st.noTerm) {
+                text += ` So far you have used it ${times(st.usedTotal)}${st.resets ? ' this term' : ''}`;
+                if (l.perBadge !== null && badge) text += ` (${st.usedBadge} for ${badge.title})`;
+                text += '.';
+            }
+            if (st.hasException) text += ' The Career Center has granted you extra uses.';
+            if (blocked) text += '\n' + blocked;
+
+            note.textContent = text;
+            note.style.whiteSpace = 'pre-line';
+            note.className = 'mt-2 p-3 rounded-lg text-xs leading-relaxed ' + (blocked ? 'bg-rose-50 border border-rose-200 text-rose-800' : 'bg-sky-50 border border-sky-200 text-sky-900');
+            btn.disabled = !!blocked;
+        }
+
+        // The usage line in the admin's details window, plus the "grant an exception" shortcut
+        function mergeExceptions(list) {
+            const byId = new Map(exceptions.map(x => [x.id, x]));
+            list.forEach(x => { const ex = byId.get(x.id); if (ex) Object.assign(ex, x); else { exceptions.push({ ...x }); byId.set(x.id, x); } });
+        }
+
+        async function loadUsageInfo(s) {
+            const wrap = document.getElementById('sd-usage-wrap');
+            wrap.classList.add('hidden');
+            if (s.isCapstone || s.activityType === OTHER_ACTIVITY_ID) return;
+            const exp = customExperiences.find(x => x.id === s.activityType);
+            if (!exp || !hasLimits(exp)) return;
+            const email = String(s.userEmail || '').toLowerCase();
+            try {
+                const [subs, exs] = await Promise.all([fb.loadSubmissionsForUser(email), fb.loadExceptionsForUser(email)]);
+                upsertSubmissions(subs);
+                mergeExceptions(exs);
+            } catch (err) {
+                console.error(err);
+            }
+            if (detailViewId !== s.id) return;
+
+            const st = limitStatus(email, exp, s.badgeId, termIdForSubmission(s));
+            const badge = NACE_BADGES.find(b => b.id === s.badgeId);
+            const lines = [];
+            lines.push(`${exp.title}: ${limitsSummary(exp)}`);
+            lines.push(`Counting this submission, this student has used it ${st.usedTotal} ${st.usedTotal === 1 ? 'time' : 'times'}${st.allowedTotal !== null ? ' of ' + st.allowedTotal + ' allowed' : ''}${st.resets ? ' in ' + (st.termName || 'its term') : ''}, ${st.usedBadge} for ${badge ? badge.title : s.badgeId}${st.allowedBadge !== null ? ' of ' + st.allowedBadge + ' allowed' : ''}.`);
+            if (st.hasException) lines.push('An exception has been granted to this student for this experience.');
+            const over = (st.allowedBadge !== null && st.usedBadge > st.allowedBadge) || (st.allowedTotal !== null && st.usedTotal > st.allowedTotal);
+            if (over) lines.push('This is OVER the limit. Consider rejecting it, or granting an exception.');
+
+            const text = document.getElementById('sd-usage');
+            text.textContent = lines.join('\n');
+            text.className = 'text-sm whitespace-pre-wrap break-words ' + (over ? 'text-rose-700 font-semibold' : 'text-slate-800');
+            document.getElementById('sd-grant-exception').onclick = () => { closeSubmissionDetails(); openExceptionModal({ email, experienceId: exp.id }); };
+            wrap.classList.remove('hidden');
+        }
+
+        // ----- admin: terms -----
+        function renderAdminTerms() {
+            const list = document.getElementById('admin-terms-list');
+            const status = document.getElementById('terms-status');
+            if (!list || !status) return;
+
+            const sorted = sortedTerms();
+            if (sorted.length === 0) {
+                list.innerHTML = `<p class="text-xs text-slate-400 italic">No terms added yet.</p>`;
+            } else {
+                list.innerHTML = sorted.map(tm => `
+                    <div class="flex items-center justify-between gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
+                        <div>
+                            <span class="font-bold text-eh-blue">${escapeHtml(tm.name)}</span>
+                            <span class="text-slate-600 ml-2">${escapeHtml(formatDateString(tm.startDate))} to ${escapeHtml(formatDateString(tm.endDate))}</span>
+                        </div>
+                        <div class="shrink-0 whitespace-nowrap">
+                            <button onclick="startTermEdit('${escapeHtml(tm.id)}')" class="text-eh-blue hover:text-eh-lightBlue font-bold mr-3">Edit</button>
+                            <button onclick="deleteTerm('${escapeHtml(tm.id)}')" class="text-rose-600 hover:text-rose-800 font-bold">Delete</button>
+                        </div>
+                    </div>`).join('');
+            }
+
+            // Current term, today-not-covered warning, and gaps between terms
+            const today = dateInET();
+            const ct = termForDate(today);
+            const notes = [];
+            if (ct) notes.push(`<p class="font-semibold">Current term: ${escapeHtml(ct.name)} (${escapeHtml(formatDateString(ct.startDate))} to ${escapeHtml(formatDateString(ct.endDate))})</p>`);
+            else notes.push(`<p class="font-bold">Today (${escapeHtml(formatDateString(today))}) is not covered by any term. Experiences that reset each term cannot be submitted until a term includes today's date.</p>`);
+            const gaps = [];
+            for (let i = 0; i < sorted.length - 1; i++) {
+                const nextDay = addDaysToDateString(sorted[i].endDate, 1);
+                if (sorted[i + 1].startDate > nextDay) gaps.push(`${formatDateString(nextDay)} to ${formatDateString(addDaysToDateString(sorted[i + 1].startDate, -1))}`);
+            }
+            if (gaps.length) notes.push(`<p class="mt-1">Dates not covered by any term: ${gaps.map(escapeHtml).join('; ')}.</p>`);
+            status.innerHTML = notes.join('');
+            status.className = 'p-3 rounded-lg text-xs ' + ((ct && !gaps.length) ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-amber-50 border border-amber-300 text-amber-900');
+        }
+
+        function resetTermForm() {
+            editingTermId = null;
+            ['admin-term-name', 'admin-term-start', 'admin-term-end'].forEach(id => { document.getElementById(id).value = ''; });
+            document.getElementById('admin-term-submit').textContent = 'Add Term';
+            document.getElementById('admin-term-cancel').classList.add('hidden');
+        }
+
+        function startTermEdit(id) {
+            const tm = terms.find(x => x.id === id);
+            if (!tm) return;
+            editingTermId = id;
+            document.getElementById('admin-term-name').value = tm.name;
+            document.getElementById('admin-term-start').value = tm.startDate;
+            document.getElementById('admin-term-end').value = tm.endDate;
+            document.getElementById('admin-term-submit').textContent = 'Save Changes';
+            document.getElementById('admin-term-cancel').classList.remove('hidden');
+        }
+
+        function cancelTermEdit() { resetTermForm(); }
+
+        async function handleSaveTerm(e) {
+            e.preventDefault();
+            const name = document.getElementById('admin-term-name').value.trim();
+            const startDate = document.getElementById('admin-term-start').value;
+            const endDate = document.getElementById('admin-term-end').value;
+            if (!name || !startDate || !endDate) { alert('Please fill in the term name, start date, and end date.'); return; }
+            if (endDate < startDate) { alert('The end date cannot be before the start date.'); return; }
+            const clash = terms.find(x => x.id !== editingTermId && !(endDate < x.startDate || startDate > x.endDate));
+            if (clash) {
+                alert(`These dates overlap with ${clash.name} (${formatDateString(clash.startDate)} to ${formatDateString(clash.endDate)}). Terms cannot overlap.`);
+                return;
+            }
+
+            if (editingTermId) {
+                const index = terms.findIndex(x => x.id === editingTermId);
+                if (index < 0) { resetTermForm(); return; }
+                const backup = terms[index];
+                const updated = { ...backup, name, startDate, endDate };
+                terms[index] = updated;
+                resetTermForm();
+                refreshAppData();
+                const saved = await saveToServer('UPDATE_TERM', updated);
+                if (!saved) {
+                    const i = terms.findIndex(x => x.id === updated.id);
+                    if (i >= 0) terms[i] = backup;
+                    refreshAppData();
+                }
+            } else {
+                const newTerm = { id: 'term_' + Date.now(), name, startDate, endDate, createdAt: new Date().toISOString() };
+                terms.push(newTerm);
+                resetTermForm();
+                refreshAppData();
+                const saved = await saveToServer('ADD_TERM', newTerm);
+                if (!saved) { terms = terms.filter(x => x.id !== newTerm.id); refreshAppData(); }
+            }
+        }
+
+        async function deleteTerm(id) {
+            const tm = terms.find(x => x.id === id);
+            if (!tm) return;
+            if (!confirm(`Delete ${tm.name}? Submissions keep their term label, but dates in this term will no longer belong to any term until you add one.`)) return;
+            if (editingTermId === id) resetTermForm();
+            terms = terms.filter(x => x.id !== id);
+            refreshAppData();
+            const saved = await saveToServer('DELETE_TERM', { id });
+            if (!saved) { terms.push(tm); refreshAppData(); }
+        }
+
+        // ----- admin: exceptions -----
+        function renderAdminExceptionsList() {
+            const box = document.getElementById('admin-exceptions-list');
+            if (!box) return;
+            if (exceptions.length === 0) {
+                box.innerHTML = `<p class="text-xs text-slate-400 italic">No exceptions have been granted.</p>`;
+                return;
+            }
+            const sorted = [...exceptions].sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+            box.innerHTML = sorted.map(x => {
+                const extras = [];
+                if (Number(x.extraPerBadge) > 0) extras.push(`+${Number(x.extraPerBadge)} per badge`);
+                if (Number(x.extraTotal) > 0) extras.push(`+${Number(x.extraTotal)} total`);
+                return `
+                <div class="flex items-start justify-between gap-3 bg-slate-50 border border-slate-200 rounded-lg p-3 text-xs">
+                    <div class="min-w-0">
+                        <span class="font-bold text-eh-blue break-all">${escapeHtml(x.userEmail)}</span>
+                        <span class="text-slate-800 ml-1">${escapeHtml(x.experienceTitle || x.experienceId)}</span>
+                        <span class="text-slate-600 ml-1">${escapeHtml(extras.join(', '))}${x.termName ? ' (' + escapeHtml(x.termName) + ' only)' : ''}</span>
+                        ${x.note ? `<p class="text-slate-500 mt-0.5 break-words">${escapeHtml(x.note)}</p>` : ''}
+                    </div>
+                    <button onclick="revokeException('${escapeHtml(x.id)}')" class="shrink-0 text-rose-600 hover:text-rose-800 font-bold">Revoke</button>
+                </div>`;
+            }).join('');
+        }
+
+        function openExceptionModal(prefill) {
+            prefill = prefill || {};
+            const limited = customExperiences.filter(hasLimits).sort((a, b) => String(a.title).localeCompare(String(b.title), undefined, { sensitivity: 'base', numeric: true }));
+            if (limited.length === 0) {
+                alert('No experiences have limits yet, so there is nothing to make an exception to. Add limits to an experience first.');
+                return;
+            }
+            const expSelect = document.getElementById('ex-exp');
+            expSelect.textContent = '';
+            limited.forEach(x => {
+                const o = document.createElement('option');
+                o.value = x.id; o.textContent = x.title;
+                expSelect.appendChild(o);
+            });
+            if (prefill.experienceId) expSelect.value = prefill.experienceId;
+            document.getElementById('ex-email').value = prefill.email || '';
+            document.getElementById('ex-per-badge').value = 0;
+            document.getElementById('ex-total').value = 1;
+            document.getElementById('ex-note').value = '';
+            onExceptionExperienceChange();
+            document.getElementById('exception-modal').classList.remove('hidden');
+        }
+
+        function closeExceptionModal() {
+            document.getElementById('exception-modal').classList.add('hidden');
+        }
+
+        // The "applies to which term" choice only matters for experiences whose limits reset each term
+        function onExceptionExperienceChange() {
+            const exp = customExperiences.find(x => x.id === document.getElementById('ex-exp').value);
+            const wrap = document.getElementById('ex-term-wrap');
+            const resets = !!exp && expLimits(exp).resets;
+            wrap.classList.toggle('hidden', !resets);
+            const sel = document.getElementById('ex-term');
+            sel.textContent = '';
+            const all = document.createElement('option');
+            all.value = ''; all.textContent = 'Every term';
+            sel.appendChild(all);
+            sortedTerms().forEach(tm => {
+                const o = document.createElement('option');
+                o.value = tm.id; o.textContent = tm.name + ' only';
+                sel.appendChild(o);
+            });
+            const ct = currentTerm();
+            if (ct) sel.value = ct.id;
+        }
+
+        async function handleSaveException(e) {
+            e.preventDefault();
+            const email = document.getElementById('ex-email').value.trim().toLowerCase();
+            const exp = customExperiences.find(x => x.id === document.getElementById('ex-exp').value);
+            const extraPerBadge = parseInt(document.getElementById('ex-per-badge').value) || 0;
+            const extraTotal = parseInt(document.getElementById('ex-total').value) || 0;
+            if (!email || !exp) { alert('Please enter a student email and choose an experience.'); return; }
+            if (extraPerBadge < 0 || extraTotal < 0 || extraPerBadge > 20 || extraTotal > 20) { alert('Extra uses must be between 0 and 20.'); return; }
+            if (extraPerBadge === 0 && extraTotal === 0) { alert('Please grant at least one extra use.'); return; }
+
+            const resets = expLimits(exp).resets;
+            const termId = resets ? document.getElementById('ex-term').value : '';
+            const tm = terms.find(x => x.id === termId);
+            const actor = actorInfo();
+            const ex = {
+                id: 'ex_' + Date.now(), userEmail: email, experienceId: exp.id, experienceTitle: exp.title,
+                extraPerBadge, extraTotal, termId: termId || '', termName: tm ? tm.name : '',
+                note: document.getElementById('ex-note').value.trim(), createdBy: actor.name, createdAt: new Date().toISOString()
+            };
+            exceptions.push(ex);
+            closeExceptionModal();
+            refreshAppData();
+            const saved = await saveToServer('ADD_EXCEPTION', ex);
+            if (!saved) { exceptions = exceptions.filter(x => x.id !== ex.id); refreshAppData(); }
+        }
+
+        async function revokeException(id) {
+            const ex = exceptions.find(x => x.id === id);
+            if (!ex) return;
+            if (!confirm(`Revoke this exception for ${ex.userEmail}?`)) return;
+            exceptions = exceptions.filter(x => x.id !== id);
+            refreshAppData();
+            const saved = await saveToServer('DELETE_EXCEPTION', { id });
+            if (!saved) { exceptions.push(ex); refreshAppData(); }
         }
 
         // REWARDS (shown on the How it Works page; managed by admins)
@@ -3613,6 +4233,7 @@
             
             if (!badgeId) {
                 typeSelect.innerHTML = '<option value="">-- Select Badge First --</option>';
+                updateActivityLimitNote();
                 return;
             }
 
@@ -3628,9 +4249,11 @@
             typeSelect.innerHTML = '<option value="">-- Choose Experience/Activity --</option>' + 
                 relevantExps.map(r => `<option value="${r.id}" data-pts="${r.points}" data-req="${r.linkRequired ? 'true' : 'false'}">${escapeHtml(r.title)} (+${r.points} Pts)</option>`).join('') +
                 otherOption;
+            updateActivityLimitNote();
         }
 
         function handleActivityTypeChange() {
+            updateActivityLimitNote();
             const select = document.getElementById('form-activity-type');
             const selectedOpt = select.options[select.selectedIndex];
             const pts = selectedOpt.getAttribute('data-pts');
@@ -3686,6 +4309,13 @@
                 alert('Please enter a web address that starts with http:// or https://');
                 return;
             }
+            // Limits on the chosen experience (the "Other" option and final reflections are never limited)
+            const chosenExp = isOther ? null : customExperiences.find(x => x.id === typeSelect.value);
+            if (chosenExp && hasLimits(chosenExp)) {
+                const blockMessage = limitBlockMessage(limitStatus(currentUser.email, chosenExp, badgeId), chosenExp, badgeId);
+                if (blockMessage) { alert(blockMessage); return; }
+            }
+            const submitTerm = termForDate(dateInET());
             const ptsRequested = isOther ? 0 : (parseInt(selectedOpt.getAttribute('data-pts')) || 15);
 
             const newSubmission = {
@@ -3701,6 +4331,9 @@
                 pointsGranted: 0,
                 status: 'pending',
                 isCapstone: false,
+                // Every submission is tagged with the term it was made in (never chosen by the student)
+                termId: submitTerm ? submitTerm.id : '',
+                termName: submitTerm ? submitTerm.name : '',
                 timestamp: new Date().toISOString()
             };
 
@@ -3708,6 +4341,7 @@
             saveSubmissions();
 
             document.getElementById('activity-form').reset();
+            updateActivityLimitNote();
             switchTab('my-submissions');
             saveToServer('NEW_SUBMISSION', newSubmission);
         }
